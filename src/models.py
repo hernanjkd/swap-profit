@@ -42,7 +42,8 @@ class Profiles(db.Model):
             "date_created": self.date_created,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "email": self.user.email
+            "email": self.user.email,
+            "flights": list(map(lambda x: x.serialize(), self.flights))
         }
     
 
@@ -63,9 +64,9 @@ class Pictures(db.Model):
 class Tournaments(db.Model):
     __tablename__ = 'tournaments'
     id = db.Column(db.Integer, primary_key=True)
-    date_created = db.Column(db.Date, default=datetime.now())
+    date_created = db.Column(db.DateTime, default=datetime.now())
 
-    name = db.Column(db.String(120))
+    name = db.Column(db.String(120), nullable=False)
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
 
@@ -81,15 +82,22 @@ class Tournaments(db.Model):
             "name": self.name,
             "start_date": self.start_date,
             "end_date": self.end_date,
-            "flights": list(map(lambda e: e.serialize(), self.flights))
+            "flights": list(map(lambda x: x.serialize(), self.flights))
         }
+
+
+
+buy_ins = db.Table('buy_ins',
+    db.column('flight_id', db.Integer, db.ForeignKey('flights.id')),
+    db.column('profile_id', db.Integer, db.ForeignKey('profiles.id'))
+)
 
 
 
 class Flights(db.Model):
     __tablename__ = 'flights'
     id = db.Column(db.Integer, primary_key=True)
-    date_created = db.Column(db.Date, default=datetime.now())
+    date_created = db.Column(db.DateTime, default=datetime.now())
 
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
@@ -97,6 +105,9 @@ class Flights(db.Model):
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
     tournament = db.relationship('Tournaments', back_populates='flights')
 
+    players = db.relationship('Profiles', secondary=buy_ins, lazy='subquery', 
+                                backref=db.backref('flights', lazy='subquery'))
+    
     def __repr__(self):
         return f'<Flights {self.tournament.name} {self.start_date} - {self.end_date}>'
 
@@ -105,23 +116,12 @@ class Flights(db.Model):
             "id": self.id,
             "date_created": self.date_created,
             "start_date": self.start_date,
-            "end_date": self.end_date
+            "end_date": self.end_date,
+            "players": list(map(lambda x: x.serialize(), self.players))
         }
 
 
 
-# tags = db.Table('tags',
-#     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), primary_key=True),
-#     db.Column('page_id', db.Integer, db.ForeignKey('page.id'), primary_key=True)
-# )
-
-# class Page(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     tags = db.relationship('Tag', secondary=tags, lazy='subquery',
-#         backref=db.backref('pages', lazy=True))
-
-# class Tag(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
 
 
 # class Swaps(db.Model):

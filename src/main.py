@@ -6,7 +6,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from flask_jwt_simple import JWTManager, jwt_required, create_jwt, get_jwt_identity
 from utils import APIException, generate_sitemap, verify_json
-from models import db, Users, Profiles, Pictures
+from models import db, Users, Profiles, Pictures, Tournaments, Flights
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -50,33 +50,39 @@ def login():
     return 'The log in information is incorrect', 401
 
 
-@app.route('/users', methods=['GET','POST','PUT'])
+@app.route('/fill_database', methods=['GET'])
 def user():
     
-    # user = Users(
-    #     email = "ikelkwj32@gmail.com",
-    #     password = hash("super secret password")
-    # )
-    # db.session.add(user)
-    # db.session.add(Profiles(
-    #     first_name = "Osvaldo",
-    #     last_name = "Ratata",
-    #     user = user
+    user = Users(
+        email = "ikelkwj32@gmail.com",
+        password = hash("super secret password")
+    )
+    db.session.add(user)
+    db.session.add(Profiles(
+        first_name = "Osvaldo",
+        last_name = "Ratata",
+        user = user
+    ))
+    db.session.commit()
+
+    # tour = Tournaments(name="Grand Tour")
+    # db.session.add(tour)
+    # db.session.add(Flights(
+    #     tournament = tour
+    # ))
+    # db.session.add(Flights(
+    #     tournament = tour
+    # ))
+    # db.session.add(Flights(
+    #     tournament = tour
     # ))
     # db.session.commit()
 
-    if request.method == 'PUT':
-        user = Users.query.get(id)
-        user.number = request.get_json()['number']
-        
-        db.session.commit()
-
-    
-
     # pics = list(map(lambda x: x.serialize(), Pictures.query.all()))
+    # users = list(map(lambda x: x.serialize(), Users.query.all()))
     prof = list(map(lambda x: x.serialize(), Profiles.query.all()))
-    users = list(map(lambda x: x.serialize(), Users.query.all()))
-    return jsonify(prof + users)
+    tours = list(map(lambda x: x.serialize(), Tournaments.query.all()))
+    return jsonify(tours + prof)
 
 
 #############################################################################

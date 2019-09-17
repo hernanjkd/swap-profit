@@ -1,12 +1,15 @@
 # Creating a Database
 
 1. Login in into your mysql terminal:
+
 ```sh
 $ mysql
 ```
+
 2. Once inside, type the following command replacing your db name
+
 ```sql
-CREATE DATABASE example;
+CREATE DATABASE pokerswap;
 ```
 
 # Coding a typical CRUD operation
@@ -37,6 +40,7 @@ class Person(db.Model):
 ## Adding an endpoint
 
 For each endpoint you will need to have:
+
 1. One `@APP` decorator that specifies the path for the expoint.
     - You can have parameters in the url like this `<int:person_id>`
     - You can specify what methods can be called on that endpoint like this `methods=['PUT', 'GET']`
