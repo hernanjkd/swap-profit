@@ -50,20 +50,21 @@ def login():
     return 'The log in information is incorrect', 401
 
 
+
 @app.route('/fill_database', methods=['GET'])
 def user():
     
-    user = Users(
-        email = "ikelkwj32@gmail.com",
-        password = hash("super secret password")
-    )
-    db.session.add(user)
-    db.session.add(Profiles(
-        first_name = "Osvaldo",
-        last_name = "Ratata",
-        user = user
-    ))
-    db.session.commit()
+    # user = Users(
+    #     email = "ikelkwj32@gmail.com",
+    #     password = hash("super secret password")
+    # )
+    # db.session.add(user)
+    # db.session.add(Profiles(
+    #     first_name = "Osvaldo",
+    #     last_name = "Ratata",
+    #     user = user
+    # ))
+    # db.session.commit()
 
     # tour = Tournaments(name="Grand Tour")
     # db.session.add(tour)
@@ -149,6 +150,45 @@ def user():
 #         return "ok", 200
 
 #     return "Invalid Method", 404
+
+
+users = [
+    {
+        "id": 213,
+        "first_name": "Cary",
+        "last_name": "Katz",
+        "email": "katz234@gmail.com",
+        "hendon_url": "https://pokerdb.thehendonmob.com/player.php?a=r&n=26721",
+        "hendon_username": "Cary Katz",
+        "profile_picture_url": "https://pokerdb.thehendonmob.com/pictures/carykatzpic.png",
+        "transactions": "list of transactions",
+        "created_at": "Tue, 17 Sep 2019 04:23:59 GMT",
+        "updated_at": "Tue, 17 Sep 2019 04:23:59 GMT",
+        "tokens": 12,
+        "swaps": [],
+        "buy_ins": []
+    }
+]
+
+tournaments = [
+    {
+        "id": 89,
+        "name": "Heartland Poker Tour - HPT Colorado, Black Hawk",
+        "address": "261 Main St, Black Hawk, CO 80422",
+        "start_at": "Wed, 11 Oct 2019 12:00:00 GMT",
+        "end_at": "Wed, 11 Oct 2019 21:00:00 GMT",
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07",
+        "buy_ins": []
+    }
+]
+
+
+@app.route('/user', methods=['GET'])
+    return {
+        
+        
+    }
 
 
 if __name__ == '__main__':

@@ -6,10 +6,11 @@ db = SQLAlchemy()
 class Users(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    date_created = db.Column(db.Date, default=datetime.now())
-    
     email = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=True, nullable=False)
+
+    # transactions = relationship('Transactions', back_populates='user')
+    # tokens = relationship('Tokens', backref="user")
 
     def __repr__(self):
         return f'<Users {self.email}>'
@@ -17,7 +18,8 @@ class Users(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "date_created": self.date_created,
+            "created_at": "",
+            "updated_at": "",
             "email": self.email
         }
 
@@ -25,7 +27,7 @@ class Users(db.Model):
 
 class Profiles(db.Model):
     __tablename__ = 'profiles'
-    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     date_created = db.Column(db.Date, default=datetime.now())
 
     first_name = db.Column(db.String(80), nullable=False)
@@ -64,7 +66,7 @@ class Pictures(db.Model):
 class Tournaments(db.Model):
     __tablename__ = 'tournaments'
     id = db.Column(db.Integer, primary_key=True)
-    date_created = db.Column(db.DateTime, default=datetime.now())
+    date_created = db.Column(db.Date, default=datetime.now())
 
     name = db.Column(db.String(120), nullable=False)
     start_date = db.Column(db.Date)
