@@ -24,6 +24,73 @@ jwt = JWTManager(app)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
+buy_ins = [
+    {
+        "id": 1,
+        "user_id": 1,
+        "flight_id": 1,
+        "receipt_img_url": "http://lorempixel.com/400/200/",
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "id": 2,
+        "user_id": 1,
+        "flight_id": 1,
+        "receipt_img_url": "http://lorempixel.com/400/200/",
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "id": 3,
+        "user_id": 2,
+        "flight_id": 1,
+        "receipt_img_url": "http://lorempixel.com/400/200/",
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "id": 4,
+        "user_id": 2,
+        "flight_id": 2,
+        "receipt_img_url": "http://lorempixel.com/400/200/",
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "id": 5,
+        "user_id": 3,
+        "flight_id": 1,
+        "receipt_img_url": "http://lorempixel.com/400/200/",
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "id": 6,
+        "user_id": 3,
+        "flight_id": 3,
+        "receipt_img_url": "http://lorempixel.com/400/200/",
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "id": 7,
+        "user_id": 3,
+        "flight_id": 4,
+        "receipt_img_url": "http://lorempixel.com/400/200/",
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "id": 8,
+        "user_id": 3,
+        "flight_id": 5,
+        "receipt_img_url": "http://lorempixel.com/400/200/",
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    }
+]
+
 flights = [
     {
         "id": 1,
@@ -32,7 +99,7 @@ flights = [
         "tournament_id": 1,
         "created_at": "Mon, 16 Sep 2019, 14:55:32",
         "updated_at": "Tue, 17 Sep 2019, 22:44:07",
-        "buy_ins": []
+        "buy_ins": list(filter(lambda x: x['flight_id'] == 1, buy_ins))
     },
     {
         "id": 2,
@@ -41,7 +108,7 @@ flights = [
         "tournament_id": 1,
         "created_at": "Mon, 16 Sep 2019, 14:55:32",
         "updated_at": "Tue, 17 Sep 2019, 22:44:07",
-        "buy_ins": []
+        "buy_ins": list(filter(lambda x: x['flight_id'] == 2, buy_ins))
     },
     {
         "id": 3,
@@ -50,7 +117,7 @@ flights = [
         "tournament_id": 2,
         "created_at": "Mon, 16 Sep 2019, 14:55:32",
         "updated_at": "Tue, 17 Sep 2019, 22:44:07",
-        "buy_ins": []
+        "buy_ins": list(filter(lambda x: x['flight_id'] == 3, buy_ins))
     },
     {
         "id": 4,
@@ -59,7 +126,7 @@ flights = [
         "tournament_id": 2,
         "created_at": "Mon, 16 Sep 2019, 14:55:32",
         "updated_at": "Tue, 17 Sep 2019, 22:44:07",
-        "buy_ins": []
+        "buy_ins": list(filter(lambda x: x['flight_id'] == 4, buy_ins))
     },
     {
         "id": 5,
@@ -68,8 +135,119 @@ flights = [
         "tournament_id": 3,
         "created_at": "Mon, 16 Sep 2019, 14:55:32",
         "updated_at": "Tue, 17 Sep 2019, 22:44:07",
-        "buy_ins": []
+        "buy_ins": list(filter(lambda x: x['flight_id'] == 5, buy_ins))
     },
+]
+
+swaps = [
+    {
+        "tournament_id": 1,
+        "sender_id": 1,
+        "recipient_id": 2,
+        "percentage": 5,
+        "winning_chips": None, # these will be null while they are playing
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "tournament_id": 1,
+        "sender_id": 2,
+        "recipient_id": 1,
+        "percentage": 5,
+        "winning_chips": None, # these will be null while they are playing
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "tournament_id": 1,
+        "sender_id": 2,
+        "recipient_id": 3,
+        "percentage": 10,
+        "winning_chips": None, # these will be null while they are playing
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "tournament_id": 1,
+        "sender_id": 3,
+        "recipient_id": 2,
+        "percentage": 10,
+        "winning_chips": None, # these will be null while they are playing
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "tournament_id": 2,
+        "sender_id": 1,
+        "recipient_id": 3,
+        "percentage": 12,
+        "winning_chips": None, # these will be null while they are playing
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "tournament_id": 2,
+        "sender_id": 3,
+        "recipient_id": 1,
+        "percentage": 12,
+        "winning_chips": None, # these will be null while they are playing
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "tournament_id": 2,
+        "sender_id": 2,
+        "recipient_id": 1,
+        "percentage": 3,
+        "winning_chips": 1000,
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "tournament_id": 2,
+        "sender_id": 1,
+        "recipient_id": 2,
+        "percentage": 3,
+        "winning_chips": 300,
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "tournament_id": 3,
+        "sender_id": 2,
+        "recipient_id": 3,
+        "percentage": 20,
+        "winning_chips": 500,
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "tournament_id": 3,
+        "sender_id": 3,
+        "recipient_id": 2,
+        "percentage": 20,
+        "winning_chips": 0,
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "tournament_id": 3,
+        "sender_id": 1,
+        "recipient_id": 3,
+        "percentage": 16,
+        "winning_chips": 500,
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    },
+    {
+        "tournament_id": 3,
+        "sender_id": 3,
+        "recipient_id": 1,
+        "percentage": 16,
+        "winning_chips": 600,
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07"
+    }
 ]
 
 profiles = [
@@ -77,46 +255,46 @@ profiles = [
         "id": 1,
         "first_name": "Cary",
         "last_name": "Katz",
+        "username": "",
         "email": "katz234@gmail.com",
         "hendon_url": "https://pokerdb.thehendonmob.com/player.php?a=r&n=26721",
-        "hendon_username": "Cary Katz",
         "profile_picture_url": "https://pokerdb.thehendonmob.com/pictures/carykatzpic.png",
         "transactions": "list of transactions",
         "created_at": "Tue, 17 Sep 2019 04:23:59 GMT",
         "updated_at": "Tue, 17 Sep 2019 04:23:59 GMT",
         "tokens": 12,
-        "swaps": [],
-        "buy_ins": []
+        "swaps": list(filter(lambda x: x['sender_id'] == 1, swaps)),
+        "buy_ins": list(filter(lambda x: x['user_id'] == 1, buy_ins))
     },
     {
         "id": 2,
         "first_name": "Kate",
         "last_name": "Hoang",
+        "username": "",
         "email": "hoang234@gmail.com",
         "hendon_url": "https://pokerdb.thehendonmob.com/player.php?a=r&n=421758",
-        "hendon_username": "Kate Hoang",
         "profile_picture_url": "https://pokerdb.thehendonmob.com/pictures/Hoang_2.jpg",
         "transactions": "list of transactions",
         "created_at": "Tue, 17 Sep 2019 04:23:59 GMT",
         "updated_at": "Tue, 17 Sep 2019 04:23:59 GMT",
-        "tokens": 12,
-        "swaps": [],
-        "buy_ins": []
+        "tokens": 0,
+        "swaps": list(filter(lambda x: x['sender_id'] == 2, swaps)),
+        "buy_ins": list(filter(lambda x: x['flight_id'] == 2, buy_ins))
     },
     {
         "id": 3,
-        "first_name": "Cary",
-        "last_name": "Katz",
-        "email": "katz234@gmail.com",
-        "hendon_url": "https://pokerdb.thehendonmob.com/player.php?a=r&n=26721",
-        "hendon_username": "Cary Katz",
-        "profile_picture_url": "https://pokerdb.thehendonmob.com/pictures/carykatzpic.png",
+        "first_name": "Nikita",
+        "last_name": "Bodyakovskiy",
+        "username": "Mikita",
+        "email": "bodyakov@gmail.com",
+        "hendon_url": "https://pokerdb.thehendonmob.com/player.php?a=r&n=159100",
+        "profile_picture_url": "https://pokerdb.thehendonmob.com/pictures/NikitaBadz18FRh.jpg",
         "transactions": "list of transactions",
         "created_at": "Tue, 17 Sep 2019 04:23:59 GMT",
         "updated_at": "Tue, 17 Sep 2019 04:23:59 GMT",
-        "tokens": 12,
-        "swaps": [],
-        "buy_ins": []
+        "tokens": 5,
+        "swaps": list(filter(lambda x: x['sender_id'] == 3, swaps)),
+        "buy_ins": list(filter(lambda x: x['flight_id'] == 3, buy_ins))
     }
 ]
 
