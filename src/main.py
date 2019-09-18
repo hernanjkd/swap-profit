@@ -6,7 +6,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from flask_jwt_simple import JWTManager, jwt_required, create_jwt, get_jwt_identity
 from utils import APIException, generate_sitemap, verify_json
-from models import db, Users, Profiles, Pictures, Tournaments, Flights
+from models import db
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -24,35 +24,97 @@ jwt = JWTManager(app)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
-@app.route('/')
-def sitemap():
-    return generate_sitemap(app)
+flights = [
+    {
+        "id": 54,
+        "start_at": "Wed, 11 Oct 2019 12:00:00 GMT",
+        "end_at": "Wed, 11 Oct 2019 16:00:00 GMT",
+        "tournament_id": 89,
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07",
+        "buy_ins": []
+    },
+    {
+        "id": 55,
+        "start_at": "Wed, 11 Oct 2019 12:00:00 GMT",
+        "end_at": "Wed, 11 Oct 2019 16:00:00 GMT",
+        "tournament_id": 89,
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07",
+        "buy_ins": []
+    }
+]
+
+users = [
+    {
+        "id": 213,
+        "first_name": "Cary",
+        "last_name": "Katz",
+        "email": "katz234@gmail.com",
+        "hendon_url": "https://pokerdb.thehendonmob.com/player.php?a=r&n=26721",
+        "hendon_username": "Cary Katz",
+        "profile_picture_url": "https://pokerdb.thehendonmob.com/pictures/carykatzpic.png",
+        "transactions": "list of transactions",
+        "created_at": "Tue, 17 Sep 2019 04:23:59 GMT",
+        "updated_at": "Tue, 17 Sep 2019 04:23:59 GMT",
+        "tokens": 12,
+        "swaps": [],
+        "buy_ins": []
+    }
+]
+
+tournaments = [
+    {
+        "id": 89,
+        "name": "Heartland Poker Tour - HPT Colorado, Black Hawk",
+        "address": "261 Main St, Black Hawk, CO 80422",
+        "start_at": "Wed, 11 Oct 2019 12:00:00 GMT",
+        "end_at": "Wed, 11 Oct 2019 21:00:00 GMT",
+        "created_at": "Mon, 16 Sep 2019, 14:55:32",
+        "updated_at": "Tue, 17 Sep 2019, 22:44:07",
+        "swaps": "should we put a list of all the swaps for the tournament?",
+        "flights": list(filter(lambda x: x["tournament_id"] == 89, flights))
+    }
+]
+
+
+@app.route('/tournaments', methods=['GET'])
+def get_tournament():
+    return jsonify(tournaments)
+
+@app.route('/profile/<int:id>')
+def get_profile(id):
+    return jsonify()
+
+if __name__ == '__main__':
+    PORT = int(os.environ.get('PORT', 3000))
+    app.run(host='0.0.0.0', port=PORT)
 
 #############################################################################
 
-@app.route('/login', methods=['POST'])
-def login():
-    if request.method != 'POST':
-        return 'Invalid method', 404
+# @app.route('/login', methods=['POST'])
+# def login():
+#     if request.method != 'POST':
+#         return 'Invalid method', 404
 
-    body = request.get_json()
+#     body = request.get_json()
 
-    missing_item = verify_json(body, 'email', 'password')
-    if missing_item:
-        raise APIException('You need to specify the ' + missing_item, status_code=400)
+#     missing_item = verify_json(body, 'email', 'password')
+#     if missing_item:
+#         raise APIException('You need to specify the ' + missing_item, status_code=400)
 
-    all_users = Users.query.all()
-    for user in all_users:
-        if user['email'] == body['email'] and user['password'] == hash(body['password']):
-            ret = {'jwt': create_jwt(identity=body['email'])}
-            return jsonify(ret), 200
+#     all_users = Users.query.all()
+#     for user in all_users:
+#         if user['email'] == body['email'] and user['password'] == hash(body['password']):
+#             ret = {'jwt': create_jwt(identity=body['email'])}
+#             return jsonify(ret), 200
 
-    return 'The log in information is incorrect', 401
+#     return 'The log in information is incorrect', 401
 
 
 
-@app.route('/fill_database', methods=['GET'])
-def user():
+# @app.route('/fill_database', methods=['GET'])
+# def user():
     
     # user = Users(
     #     email = "ikelkwj32@gmail.com",
@@ -81,9 +143,9 @@ def user():
 
     # pics = list(map(lambda x: x.serialize(), Pictures.query.all()))
     # users = list(map(lambda x: x.serialize(), Users.query.all()))
-    prof = list(map(lambda x: x.serialize(), Profiles.query.all()))
-    tours = list(map(lambda x: x.serialize(), Tournaments.query.all()))
-    return jsonify(tours + prof)
+    # prof = list(map(lambda x: x.serialize(), Profiles.query.all()))
+    # tours = list(map(lambda x: x.serialize(), Tournaments.query.all()))
+    # return jsonify(tours + prof)
 
 
 #############################################################################
@@ -150,47 +212,3 @@ def user():
 #         return "ok", 200
 
 #     return "Invalid Method", 404
-
-
-users = [
-    {
-        "id": 213,
-        "first_name": "Cary",
-        "last_name": "Katz",
-        "email": "katz234@gmail.com",
-        "hendon_url": "https://pokerdb.thehendonmob.com/player.php?a=r&n=26721",
-        "hendon_username": "Cary Katz",
-        "profile_picture_url": "https://pokerdb.thehendonmob.com/pictures/carykatzpic.png",
-        "transactions": "list of transactions",
-        "created_at": "Tue, 17 Sep 2019 04:23:59 GMT",
-        "updated_at": "Tue, 17 Sep 2019 04:23:59 GMT",
-        "tokens": 12,
-        "swaps": [],
-        "buy_ins": []
-    }
-]
-
-tournaments = [
-    {
-        "id": 89,
-        "name": "Heartland Poker Tour - HPT Colorado, Black Hawk",
-        "address": "261 Main St, Black Hawk, CO 80422",
-        "start_at": "Wed, 11 Oct 2019 12:00:00 GMT",
-        "end_at": "Wed, 11 Oct 2019 21:00:00 GMT",
-        "created_at": "Mon, 16 Sep 2019, 14:55:32",
-        "updated_at": "Tue, 17 Sep 2019, 22:44:07",
-        "buy_ins": []
-    }
-]
-
-
-@app.route('/user', methods=['GET'])
-    return {
-        
-        
-    }
-
-
-if __name__ == '__main__':
-    PORT = int(os.environ.get('PORT', 3000))
-    app.run(host='0.0.0.0', port=PORT)
