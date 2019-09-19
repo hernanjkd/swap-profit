@@ -3,56 +3,62 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
-# class Users(db.Model):
-#     __tablename__ = 'users'
-#     id = db.Column(db.Integer, primary_key=True)
-#     email = db.Column(db.String(80), unique=True, nullable=False)
-#     password = db.Column(db.String(80), unique=True, nullable=False)
+class Users(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(100), unique=True, nullable=False)
 
-#     # transactions = relationship('Transactions', back_populates='user')
-#     # tokens = relationship('Tokens', backref="user")
+    profile = db.relationship('Profiles', back_populates='user', uselist=False)
+    transactions = db.relationship('Transactions', back_populates='user')
+    tokens = db.relationship('Tokens', back_populates="user")
 
-#     def __repr__(self):
-#         return f'<Users {self.email}>'
+    def __repr__(self):
+        return f'<Users {self.email}>'
 
-#     def serialize(self):
-#         return {
-#             "id": self.id,
-#             "created_at": "",
-#             "updated_at": "",
-#             "email": self.email
-#         }
-
-
-
-# class Profiles(db.Model):
-#     __tablename__ = 'profiles'
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-#     date_created = db.Column(db.Date, default=datetime.now())
-
-#     first_name = db.Column(db.String(80), nullable=False)
-#     last_name = db.Column(db.String(80), nullable=False)
-
-#     user = db.relationship('Users', backref='profile', uselist=False)
-    
-#     def __repr__(self):
-#         return f'<Profiles {self.first_name} {self.last_name}>'
-
-#     def serialize(self):
-#         return {
-#             "id": self.id,
-#             "date_created": self.date_created,
-#             "first_name": self.first_name,
-#             "last_name": self.last_name,
-#             "email": self.user.email,
-#             "flights": list(map(lambda x: x.serialize(), self.flights))
-#         }
+    def serialize(self):
+        return {
+            "id": self.id,
+            "created_at": "",
+            "updated_at": "",
+            "email": self.email
+        }
 
 
 
-# class Tournaments(db.Model):
-#     __tablename__ = 'tournaments'
-#     id = db.Column(db.Integer, primary_key=True)
+class Profiles(db.Model):
+    __tablename__ = 'profiles'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    username = db.Column(db.String(100))
+    hendon_url = db.Column(db.String(200))
+    profile_picture_url = db.Column(db.String(200))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    user = db.relationship('Users', back_populates='profile', uselist=False)
+    swaps = db.relationship('Swaps', back_populates='user')
+    buy_ins = db.relationship('Buy_ins', back_populates='user')
+
+    def __repr__(self):
+        return f'<Profiles {self.first_name} {self.last_name}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "date_created": self.date_created,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.user.email,
+            "flights": list(map(lambda x: x.serialize(), self.flights))
+        }
+
+
+
+class Tournaments(db.Model):
+    __tablename__ = 'tournaments'
+    id = db.Column(db.Integer, primary_key=True)
 #     date_created = db.Column(db.Date, default=datetime.now())
 
 #     name = db.Column(db.String(120), nullable=False)
@@ -76,10 +82,9 @@ db = SQLAlchemy()
 
 
 
-# class Flights(db.Model):
-#     __tablename__ = 'flights'
-#     id = db.Column(db.Integer, primary_key=True)
-#     date_created = db.Column(db.DateTime, default=datetime.now())
+class Flights(db.Model):
+    __tablename__ = 'flights'
+    id = db.Column(db.Integer, primary_key=True)
 
 #     start_date = db.Column(db.Date)
 #     end_date = db.Column(db.Date)
@@ -104,8 +109,9 @@ db = SQLAlchemy()
 
 
 
-# class Swaps(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
+class Swaps(db.Model):
+    __tablename__ = 'swaps'
+    id = db.Column(db.Integer, primary_key=True)
 
 #     amount_percentage = db.Column(db.Integer)
 #     completed = db.Column(db.Boolean, default=False)
@@ -128,8 +134,19 @@ db = SQLAlchemy()
 #         }
 
 
-# class Token_Transactions(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
+class Transactions(db.Model):
+    __tablename__ = 'transactions'
+    id = db.Column(db.Integer, primary_key=True)
 #     amount = db.Column(db.Integer)
 
 #     user_id = db.Column(db.Integer, db.ForeignKey('Users.id'))
+
+
+class Buy_ins(db.Model):
+    __tablename__ = 'buy_ins'
+    id = db.Column(db.Integer, primary_key=True)
+
+class Tokens(db.Model):
+    __tablename__ = 'tokens'
+    id = db.Column(db.Integer, primary_key=True)
+
