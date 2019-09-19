@@ -59,26 +59,24 @@ class Profiles(db.Model):
 class Tournaments(db.Model):
     __tablename__ = 'tournaments'
     id = db.Column(db.Integer, primary_key=True)
-#     date_created = db.Column(db.Date, default=datetime.now())
+    name = db.Column(db.String(120), nullable=False)
+    start_date = db.Column(db.Date)
+    end_date = db.Column(db.Date)
 
-#     name = db.Column(db.String(120), nullable=False)
-#     start_date = db.Column(db.Date)
-#     end_date = db.Column(db.Date)
+    flights = db.relationship('Flights', back_populates='tournament')
 
-#     flights = db.relationship('Flights', back_populates='tournament')
+    def __repr__(self):
+        return f'<Tournament {self.name}>'
 
-#     def __repr__(self):
-#         return f'<Tournament {self.name}>'
-
-#     def serialize(self):
-#         return {
-#             "id": self.id,
-#             "date_created": self.date_created,
-#             "name": self.name,
-#             "start_date": self.start_date,
-#             "end_date": self.end_date,
-#             "flights": list(map(lambda x: x.serialize(), self.flights))
-#         }
+    def serialize(self):
+        return {
+            "id": self.id,
+            "date_created": self.date_created,
+            "name": self.name,
+            "start_date": self.start_date,
+            "end_date": self.end_date,
+            "flights": list(map(lambda x: x.serialize(), self.flights))
+        }
 
 
 
