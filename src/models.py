@@ -28,8 +28,8 @@ class Users(db.Model):
 
 class Profiles(db.Model):
     __tablename__ = 'profiles'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    # id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     username = db.Column(db.String(100))
@@ -52,7 +52,7 @@ class Profiles(db.Model):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.user.email,
-            "swaps": list(map(lambda x: x.serialize(), self.buy_ins))
+            "swaps": list(map(lambda x: x.serialize(), self.swaps)),
             "buy_ins": list(map(lambda x: x.serialize(), self.buy_ins))
         }
 
@@ -89,9 +89,8 @@ class Tournaments(db.Model):
 class Flights(db.Model):
     __tablename__ = 'flights'
     id = db.Column(db.Integer, primary_key=True)
-
-#     start_date = db.Column(db.Date)
-#     end_date = db.Column(db.Date)
+    start_at = db.Column(db.DateTime)
+    end_at = db.Column(db.DateTime)
 
 #     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
 #     tournament = db.relationship('Tournaments', back_populates='flights')
