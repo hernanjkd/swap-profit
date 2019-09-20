@@ -18,9 +18,9 @@ class Users(db.Model):
     def serialize(self):
         return {
             "id": self.id,
+            "email": self.email,
             "created_at": "",
-            "updated_at": "",
-            "email": self.email
+            "updated_at": ""
         }
 
 
@@ -37,7 +37,7 @@ class Profiles(db.Model):
 
     user = db.relationship('Users', back_populates='profile', uselist=False)
     swaps = db.relationship('Swaps', back_populates='user')
-    buy_ins = db.relationship('Buy_ins', back_populates='user')
+    buy_ins = db.relationship('Buy_ins', back_populates='players')
 
     def __repr__(self):
         return f'<Profiles {self.first_name} {self.last_name}>'
@@ -45,11 +45,11 @@ class Profiles(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "created_at": "",
-            "updated_at": "",
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.user.email,
+            "created_at": "",
+            "updated_at": "",
             "swaps": list(map(lambda x: x.serialize(), self.swaps)),
             "buy_ins": list(map(lambda x: x.serialize(), self.buy_ins))
         }
@@ -73,12 +73,12 @@ class Tournaments(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "created_at": "",
-            "updated_at": "",
             "name": self.name,
             "address": self.address,
             "start_at": self.start_at,
             "end_at": self.end_at,
+            "created_at": "",
+            "updated_at": "",
             "flights": list(map(lambda x: x.serialize(), self.flights))
         }
 
@@ -92,6 +92,7 @@ class Flights(db.Model):
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
 
     tournament = db.relationship('Tournaments', back_populates='flights')
+    buy_ins = db.relationship('Buy_ins', back_populates='flights')
 
     def __repr__(self):
         return f'<Flights {self.tournament.name} {self.start_at} - {self.end_at}>'
@@ -100,40 +101,39 @@ class Flights(db.Model):
         return {
             "id": self.id,
             "tournament_id": self.tournament_id,
-            "created_at": "",
-            "updated_at": "",
             "start_at": self.start_at,
             "end_at": self.end_at,
-            "players": list(map(lambda x: x.serialize(), self.players))
+            "created_at": "",
+            "updated_at": "",
+            "buy_ins": list(map(lambda x: x.serialize(), self.buy_ins))
         }
-
-
 
 
 
 class Swaps(db.Model):
     __tablename__ = 'swaps'
-    id = db.Column(db.Integer, primary_key=True)
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    recipient_id = db.Column(db.Integer, primary_key=True)
+    percentage = db.Column(db.Integer, nullable=False)
+    winning_chips = db.Column(db.Integer, default=None)
 
-#     amount_percentage = db.Column(db.Integer)
-#     completed = db.Column(db.Boolean, default=False)
+    tournament = db.relationship('Tournaments', back_populates='swaps')
+    user = db.relationship('Profiles', back_populates='swaps')
 
-#     sender_id = db.Column(db.Integer, db.ForeignKey('Users.id'))
-#     reciever_id = db.Column(db.Integer, db.ForeignKey('Users.id'))
-#     tournament_id = db.Column(db.Integer, db.ForeignKey('Tournaments.id'))
+    def __repr__(self):
+        return f'<Swaps {self.user.email} {self.recipient_id} {self.tournament.name}>'
 
-#     def __repr__(self):
-#         return f'<Swaps {self.id}>'
-
-#     def serialize(self):
-#         return {
-#             "id": self.id,
-#             "amount_percentage": self.amount_percentage,
-#             "completed": self.completed
-#             # "sender": 
-#             # "reciever": 
-#             # "tournament": 
-#         }
+    def serialize(self):
+        return {
+            "tournament_id": self.tournament_id,
+            "sender_id": self.sender_id,
+            "recipient_id": self.recipient_id,
+            "percentage": self.percentage,
+            "winning_chips": self.winning_chips,
+            "created_at": "",
+            "updated_at": ""
+        }
 
 
 class Transactions(db.Model):
