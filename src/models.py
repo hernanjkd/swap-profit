@@ -1,5 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -28,8 +27,7 @@ class Users(db.Model):
 
 class Profiles(db.Model):
     __tablename__ = 'profiles'
-    # id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     username = db.Column(db.String(100))
@@ -91,22 +89,23 @@ class Flights(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_at = db.Column(db.DateTime)
     end_at = db.Column(db.DateTime)
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
 
-#     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
-#     tournament = db.relationship('Tournaments', back_populates='flights')
+    tournament = db.relationship('Tournaments', back_populates='flights')
 
-    
-#     def __repr__(self):
-#         return f'<Flights {self.tournament.name} {self.start_date} - {self.end_date}>'
+    def __repr__(self):
+        return f'<Flights {self.tournament.name} {self.start_at} - {self.end_at}>'
 
-#     def serialize(self):
-#         return {
-#             "id": self.id,
-#             "date_created": self.date_created,
-#             "start_date": self.start_date,
-#             "end_date": self.end_date,
-#             "players": list(map(lambda x: x.serialize(), self.players))
-#         }
+    def serialize(self):
+        return {
+            "id": self.id,
+            "tournament_id": self.tournament_id,
+            "created_at": "",
+            "updated_at": "",
+            "start_at": self.start_at,
+            "end_at": self.end_at,
+            "players": list(map(lambda x: x.serialize(), self.players))
+        }
 
 
 
