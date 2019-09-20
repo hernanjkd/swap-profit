@@ -373,36 +373,36 @@ if __name__ == '__main__':
 # @app.route('/fill_database', methods=['GET'])
 # def user():
     
-    # user = Users(
-    #     email = "ikelkwj32@gmail.com",
-    #     password = hash("super secret password")
-    # )
-    # db.session.add(user)
-    # db.session.add(Profiles(
-    #     first_name = "Osvaldo",
-    #     last_name = "Ratata",
-    #     user = user
-    # ))
-    # db.session.commit()
+#     user = Users(
+#         email = "ikelkwj32@gmail.com",
+#         password = hash("super secret password")
+#     )
+#     db.session.add(user)
+#     db.session.add(Profiles(
+#         first_name = "Osvaldo",
+#         last_name = "Ratata",
+#         user = user
+#     ))
+#     db.session.commit()
 
-    # tour = Tournaments(name="Grand Tour")
-    # db.session.add(tour)
-    # db.session.add(Flights(
-    #     tournament = tour
-    # ))
-    # db.session.add(Flights(
-    #     tournament = tour
-    # ))
-    # db.session.add(Flights(
-    #     tournament = tour
-    # ))
-    # db.session.commit()
+#     tour = Tournaments(name="Grand Tour")
+#     db.session.add(tour)
+#     db.session.add(Flights(
+#         tournament = tour
+#     ))
+#     db.session.add(Flights(
+#         tournament = tour
+#     ))
+#     db.session.add(Flights(
+#         tournament = tour
+#     ))
+#     db.session.commit()
 
-    # pics = list(map(lambda x: x.serialize(), Pictures.query.all()))
-    # users = list(map(lambda x: x.serialize(), Users.query.all()))
-    # prof = list(map(lambda x: x.serialize(), Profiles.query.all()))
-    # tours = list(map(lambda x: x.serialize(), Tournaments.query.all()))
-    # return jsonify(tours + prof)
+#     pics = list(map(lambda x: x.serialize(), Pictures.query.all()))
+#     users = list(map(lambda x: x.serialize(), Users.query.all()))
+#     prof = list(map(lambda x: x.serialize(), Profiles.query.all()))
+#     tours = list(map(lambda x: x.serialize(), Tournaments.query.all()))
+#     return jsonify(tours + prof)
 
 
 #############################################################################

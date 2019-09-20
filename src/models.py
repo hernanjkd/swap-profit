@@ -47,11 +47,13 @@ class Profiles(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "date_created": self.date_created,
+            "created_at": "",
+            "updated_at": "",
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.user.email,
-            "flights": list(map(lambda x: x.serialize(), self.flights))
+            "swaps": list(map(lambda x: x.serialize(), self.buy_ins))
+            "buy_ins": list(map(lambda x: x.serialize(), self.buy_ins))
         }
 
 
@@ -59,11 +61,13 @@ class Profiles(db.Model):
 class Tournaments(db.Model):
     __tablename__ = 'tournaments'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    start_date = db.Column(db.Date)
-    end_date = db.Column(db.Date)
+    name = db.Column(db.String(500), nullable=False)
+    address = db.Column(db.String(250))
+    start_at = db.Column(db.DateTime)
+    end_at = db.Column(db.DateTime)
 
     flights = db.relationship('Flights', back_populates='tournament')
+    swaps = db.relationship('Swaps', back_populates='tournament')
 
     def __repr__(self):
         return f'<Tournament {self.name}>'
@@ -71,10 +75,12 @@ class Tournaments(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "date_created": self.date_created,
+            "created_at": "",
+            "updated_at": "",
             "name": self.name,
-            "start_date": self.start_date,
-            "end_date": self.end_date,
+            "address": self.address,
+            "start_at": self.start_at,
+            "end_at": self.end_at,
             "flights": list(map(lambda x: x.serialize(), self.flights))
         }
 
