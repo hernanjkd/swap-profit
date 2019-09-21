@@ -33,7 +33,6 @@ class Profiles(db.Model):
     username = db.Column(db.String(100))
     hendon_url = db.Column(db.String(200))
     profile_picture_url = db.Column(db.String(200))
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     user = db.relationship('Users', back_populates='profile', uselist=False)
     swaps = db.relationship('Swaps', back_populates='user')
@@ -42,17 +41,26 @@ class Profiles(db.Model):
     def __repr__(self):
         return f'<Profiles {self.first_name} {self.last_name}>'
 
-    def serialize(self):
-        return {
+    def serialize(self, long=False):
+        json = {
             "id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
+            "username": self.username,
             "email": self.user.email,
-            "created_at": "",
-            "updated_at": "",
-            "swaps": list(map(lambda x: x.serialize(), self.swaps)),
-            "buy_ins": list(map(lambda x: x.serialize(), self.buy_ins))
+            "profile_picture_url": self.profile_picture_url
         }
+        if long:
+            json = {
+                **json,
+                "hendon_url": self.hendon_url,
+                "created_at": "",
+                "updated_at": "",
+                "swaps": list(map(lambda x: x.serialize(), self.swaps)),
+                "buy_ins": list(map(lambda x: x.serialize(), self.buy_ins))
+            }
+            
+        return json
 
 
 
@@ -117,6 +125,7 @@ class Swaps(db.Model):
     recipient_id = db.Column(db.Integer, primary_key=True)
     percentage = db.Column(db.Integer, nullable=False)
     winning_chips = db.Column(db.Integer, default=None)
+    due_at = db.Column(db.DateTime, default=None)
 
     tournament = db.relationship('Tournaments', back_populates='swaps')
     user = db.relationship('Profiles', back_populates='swaps')
@@ -124,13 +133,17 @@ class Swaps(db.Model):
     def __repr__(self):
         return f'<Swaps {self.user.email} {self.recipient_id} {self.tournament.name}>'
 
-    def serialize(self):
+    def serialize(self, long=False):
+        json = {
+
+        }
         return {
             "tournament_id": self.tournament_id,
             "sender_id": self.sender_id,
             "recipient_id": self.recipient_id,
             "percentage": self.percentage,
             "winning_chips": self.winning_chips,
+            "due_at": self.due_at,
             "created_at": "",
             "updated_at": ""
         }
