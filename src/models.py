@@ -122,7 +122,7 @@ class Swaps(db.Model):
     __tablename__ = 'swaps'
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), primary_key=True)
     recipient_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('profiles.id') primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
     percentage = db.Column(db.Integer, nullable=False)
     winning_chips = db.Column(db.Integer, default=None)
     due_at = db.Column(db.DateTime, default=None)
