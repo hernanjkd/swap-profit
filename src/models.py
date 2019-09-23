@@ -35,14 +35,14 @@ class Profiles(db.Model):
     profile_picture_url = db.Column(db.String(250))
 
     user = db.relationship('Users', back_populates='profile', uselist=False)
-    buy_ins = db.relationship('Buy_ins', back_populates='players')
+    buy_ins = db.relationship('Buy_ins', back_populates='user')
     # sending_swaps = db.relationship('Swaps', back_populates='sender_user')
     # recieving_swaps = db.relationship('Swaps', back_populates='recipient_user)
 
     def __repr__(self):
         return f'<Profiles {self.first_name} {self.last_name}>'
 
-    def serialize(self, long=False):
+    def serialize(self, large=False):
         json = {
             "id": self.id,
             "first_name": self.first_name,
@@ -51,7 +51,7 @@ class Profiles(db.Model):
             "email": self.user.email,
             "profile_picture_url": self.profile_picture_url
         }
-        if long:
+        if large:
             return {
                 **json,
                 "hendon_url": self.hendon_url,
@@ -100,21 +100,26 @@ class Flights(db.Model):
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
 
     tournament = db.relationship('Tournaments', back_populates='flights')
-    buy_ins = db.relationship('Buy_ins', back_populates='flights')
+    buy_ins = db.relationship('Buy_ins', back_populates='flight')
 
     def __repr__(self):
         return f'<Flights {self.tournament.name} {self.start_at} - {self.end_at}>'
 
-    def serialize(self):
-        return {
+    def serialize(self, l=False):
+        json = {
             "id": self.id,
             "tournament_id": self.tournament_id,
             "start_at": self.start_at,
-            "end_at": self.end_at,
-            "created_at": "",
-            "updated_at": "",
-            "buy_ins": list(map(lambda x: x.serialize(), self.buy_ins))
+            "end_at": self.end_at
         }
+        if long:
+            return {
+                **json,
+                "created_at": "",
+                "updated_at": "",
+                "buy_ins": list(map(lambda x: x.serialize(), self.buy_ins))
+            }
+        return json
 
 
 
@@ -152,12 +157,6 @@ class Swaps(db.Model):
         return json
 
 
-class Transactions(db.Model):
-    __tablename__ = 'transactions'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    amount_in_coins = db.Column(db.Integer)
-    amount_in_dollars = db.Column(db.Integer)
 
 class Buy_ins(db.Model):
     __tablename__ = 'buy_ins'
@@ -165,6 +164,55 @@ class Buy_ins(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
     flight_id = db.Column(db.Integer, db.ForeignKey('flights.id'))
     receipt_image_url = db.Column(db.String(250))
+
+    user = db.relationship('Profiles', back_populates='buy_ins')
+    flight = db.relationship('Flights', back_populates='buy_ins')
+
+    def __repr__(self):
+        return f'<Buy_ins {self.id} {self.user_id} {self.flight_id}>'
+
+    def serialize(self, user=False, flight=False):
+        if user:
+            return {
+                "id": self.id,
+                "user": self.user.serialize()
+            }
+        if flight:
+            return {
+                "id": self.id,
+                "flight": self.flight.serialize()
+            }
+
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "flight_id": self.flight_id,
+            "receipt_image_url": self.receipt_image_url
+        }
+
+
+
+class Transactions(db.Model):
+    __tablename__ = 'transactions'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    amount_in_coins = db.Column(db.Integer)
+    amount_in_dollars = db.Column(db.Integer)
+
+    user = db.relationship('Users', back_populates='transactions')
+
+    def __repr__(self):
+        return f'<Transactions {self.user.name} {self.amount_in_coins} {self.amount_in_dollars}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "amount_in_coins": self.amount_in_coins,
+            "amount_in_dollars": self.amount_in_dollars
+        }
+
+
 
 class Tokens(db.Model):
     __tablename__ = 'tokens'
