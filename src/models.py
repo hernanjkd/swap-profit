@@ -10,7 +10,7 @@ class Users(db.Model):
 
     profile = db.relationship('Profiles', back_populates='user', uselist=False)
     transactions = db.relationship('Transactions', back_populates='user')
-    tokens = db.relationship('Tokens', back_populates="user")
+    tokens = db.relationship('Tokens', back_populates='user')
 
     def __repr__(self):
         return f'<Users {self.email}>'
@@ -42,7 +42,7 @@ class Profiles(db.Model):
     def __repr__(self):
         return f'<Profiles {self.first_name} {self.last_name}>'
 
-    def serialize(self, large=False):
+    def serialize(self, long=False):
         json = {
             "id": self.id,
             "first_name": self.first_name,
@@ -51,14 +51,14 @@ class Profiles(db.Model):
             "email": self.user.email,
             "profile_picture_url": self.profile_picture_url
         }
-        if large:
+        if long:
             return {
                 **json,
                 "hendon_url": self.hendon_url,
                 "created_at": "",
                 "updated_at": "",
                 "swaps": list(map(lambda x: x.serialize(), self.recieving_swaps)),
-                "buy_ins": list(map(lambda x: x.serialize(), self.buy_ins))
+                "buy_ins": list(map(lambda x: x.serialize(flight=True), self.buy_ins))
             }
         return json
 
@@ -105,19 +105,20 @@ class Flights(db.Model):
     def __repr__(self):
         return f'<Flights {self.tournament.name} {self.start_at} - {self.end_at}>'
 
-    def serialize(self, l=False):
+    def serialize(self, long=False):
         json = {
             "id": self.id,
-            "tournament_id": self.tournament_id,
+            "tournament": self.tournament.name,
             "start_at": self.start_at,
             "end_at": self.end_at
         }
         if long:
             return {
                 **json,
+                "tournament_id": self.tournament_id,
                 "created_at": "",
                 "updated_at": "",
-                "buy_ins": list(map(lambda x: x.serialize(), self.buy_ins))
+                "buy_ins": list(map(lambda x: x.serialize(user=True), self.buy_ins))
             }
         return json
 
@@ -182,7 +183,6 @@ class Buy_ins(db.Model):
                 "id": self.id,
                 "flight": self.flight.serialize()
             }
-
         return {
             "id": self.id,
             "user_id": self.user_id,
@@ -221,3 +221,14 @@ class Tokens(db.Model):
     token = db.Column(db.String(500))
     expires_at = db.Column(db.DateTime)
 
+    user = db.relationship('User', back_populates='tokens')
+
+    def __repr__(self):
+        return f'<Tokens {self.token}>'
+
+    def serialize(self):
+        return {
+            "user_id": self.user_id,
+            "token": self.token,
+            "expires_at": self.expires_at
+        }
