@@ -57,7 +57,7 @@ class Profiles(db.Model):
                 "hendon_url": self.hendon_url,
                 "created_at": "",
                 "updated_at": "",
-                "swaps": list(map(lambda x: x.serialize(), self.recieving_swaps)),
+                "swaps": list(map(lambda x: x.serialize(), self.sending_swaps)),
                 "buy_ins": list(map(lambda x: x.serialize(flight=True), self.buy_ins))
             }
         return json
@@ -152,6 +152,7 @@ class Swaps(db.Model):
             return {
                 **json,
                 "sender_id": self.sender_id,
+                "tournament_id": self.tournament_id,
                 "created_at": "",
                 "updated_at": ""
             }

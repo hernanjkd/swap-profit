@@ -8,6 +8,8 @@ from flask_jwt_simple import JWTManager, jwt_required, create_jwt, get_jwt_ident
 from utils import APIException, generate_sitemap, verify_json
 from dummy_data import buy_ins, flights, swaps, profiles, tournaments
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
+from datetime import datetime
+from datetime import timedelta
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -27,36 +29,44 @@ def handle_invalid_usage(error):
 
 @app.route('/fill_database')
 def fill_database():
-    nikita = Users(
-        email='mikitapoker@gmail.com',
-        password=hash('nikitapoker')
-    )
-    db.session.add(nikita)
-    nikita = Profiles(
-        first_name='Nikita', 
-        last_name='Bodyakovskiy',
-        username='Mikita',
-        hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=159100',
-        profile_picture_url='https://pokerdb.thehendonmob.com/pictures/NikitaBadz18FRh.jpg',
-        user=nikita
-    )
-    db.session.add(nikita)
+    
+    lou = Profiles.query.filter_by(username='Lou').first()
+    cary = Profiles.query.filter_by(first_name='Cary').first()
+    kate = Profiles.query.filter_by(first_name='Kate').first()
+    mik = Profiles.query.filter_by(username='Mikita').first()
+
+    tour = Tournaments.query.filter_by(id=3).first()
+
+    db.session.add(Swaps(
+        tournament=tour,
+        sender_user=cary,
+        recipient_user=lou,
+        percentage=10,
+        winning_chips=None,
+        due_at=(tour.end_at + timedelta(days=4))
+    ))
     
     db.session.commit()
 
     return '<h2 style="text-align:center;padding-top:100px">DATA ADDED</h2>'
 
-@app.route('/tournament/<int:id>', methods=['GET'])
-def get_tournament(id):
-    return jsonify(list(filter(lambda x: x['id'] == id, tournaments))[0])
+@app.route('/tournaments/all')
+def get_all_tournaments():
+    return jsonify(list(map(lambda x: x.serialize(), Tournaments.query.all())))
 
-@app.route('/profile/all')
+@app.route('/tournaments/<int:id>', methods=['GET'])
+def get_tournament(id):
+    return jsonify(Tournaments.query.filter_by(id=id).first().serialize())
+
+@app.route('/profiles/all')
 def get_all_profiles():
     return jsonify(list(map(lambda x: x.serialize(long=True), Profiles.query.all())))
 
-@app.route('/profile/<int:id>', methods=['GET'])
+@app.route('/profiles/<int:id>', methods=['GET'])
 def get_profile(id):
-    return jsonify(list(filter(lambda x: x['id'] == id, profiles))[0])
+    return jsonify(Profiles.query.filter_by(id=id).first().serialize(long=True))
+
+
 
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
