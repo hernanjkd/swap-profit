@@ -25,11 +25,31 @@ jwt = JWTManager(app)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
-
+@app.route('/fill_database')
+def fill_database():
+    lou = Users(
+        email='lou@gmail.com',
+        password=hash('loustadler')
+    )
+    db.session.add(lou)
+    lou = Profiles(
+        first_name='Luiz', 
+        last_name='Stadler',
+        username='Lou',
+        hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=207424',
+        profile_picture_url='https://pokerdb.thehendonmob.com/pictures/Lou_Stadler_Winner.JPG',
+        user=lou
+    )
+    db.session.add(lou)
+    db.session.commit()
 
 @app.route('/tournament/<int:id>', methods=['GET'])
 def get_tournament(id):
     return jsonify(list(filter(lambda x: x['id'] == id, tournaments))[0])
+
+@app.route('/profile/all')
+def get_all_profiles():
+    return jsonify(list(map(lambda x: x.serialize(), Profiles.query.all())))
 
 @app.route('/profile/<int:id>', methods=['GET'])
 def get_profile(id):
