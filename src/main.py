@@ -27,21 +27,24 @@ def handle_invalid_usage(error):
 
 @app.route('/fill_database')
 def fill_database():
-    lou = Users(
-        email='lou@gmail.com',
-        password=hash('loustadler')
+    nikita = Users(
+        email='mikitapoker@gmail.com',
+        password=hash('nikitapoker')
     )
-    db.session.add(lou)
-    lou = Profiles(
-        first_name='Luiz', 
-        last_name='Stadler',
-        username='Lou',
-        hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=207424',
-        profile_picture_url='https://pokerdb.thehendonmob.com/pictures/Lou_Stadler_Winner.JPG',
-        user=lou
+    db.session.add(nikita)
+    nikita = Profiles(
+        first_name='Nikita', 
+        last_name='Bodyakovskiy',
+        username='Mikita',
+        hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=159100',
+        profile_picture_url='https://pokerdb.thehendonmob.com/pictures/NikitaBadz18FRh.jpg',
+        user=nikita
     )
-    db.session.add(lou)
+    db.session.add(nikita)
+    
     db.session.commit()
+
+    return '<h2 style="text-align:center;padding-top:100px">DATA ADDED</h2>'
 
 @app.route('/tournament/<int:id>', methods=['GET'])
 def get_tournament(id):
@@ -49,7 +52,7 @@ def get_tournament(id):
 
 @app.route('/profile/all')
 def get_all_profiles():
-    return jsonify(list(map(lambda x: x.serialize(), Profiles.query.all())))
+    return jsonify(list(map(lambda x: x.serialize(long=True), Profiles.query.all())))
 
 @app.route('/profile/<int:id>', methods=['GET'])
 def get_profile(id):

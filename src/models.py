@@ -135,7 +135,7 @@ class Swaps(db.Model):
 
     tournament = db.relationship('Tournaments', back_populates='swaps')
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
-    recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='reccieving_swaps')
+    recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='recieving_swaps')
 
     def __repr__(self):
         return f'<Swaps {self.user.email} {self.recipient_id} {self.tournament.name}>'
@@ -221,7 +221,7 @@ class Tokens(db.Model):
     token = db.Column(db.String(500))
     expires_at = db.Column(db.DateTime)
 
-    user = db.relationship('User', back_populates='tokens')
+    user = db.relationship('Users', back_populates='tokens')
 
     def __repr__(self):
         return f'<Tokens {self.token}>'
