@@ -35,45 +35,11 @@ def fill_database():
     kate = Profiles.query.filter_by(first_name='Kate').first()
     nikita = Profiles.query.filter_by(username='Mikita').first()
 
-    tour = Tournaments.query.filter_by(id=3).first()
+    tour = Tournaments.query.filter_by(id=5).first()
 
-    db.session.add(Swaps(
-        tournament=tour,
-        sender_user=nikita,
-        recipient_user=kate,
-        percentage=15,
-        winning_chips=None,
-        due_at=(tour.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
-        tournament=tour,
-        sender_user=kate,
-        recipient_user=nikita,
-        percentage=15,
-        winning_chips=None,
-        due_at=(tour.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
-        tournament=tour,
-        sender_user=lou,
-        recipient_user=kate,
-        percentage=5,
-        winning_chips=None,
-        due_at=(tour.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
-        tournament=tour,
-        sender_user=kate,
-        recipient_user=lou,
-        percentage=5,
-        winning_chips=None,
-        due_at=(tour.end_at + timedelta(days=4))
-    ))
     
-    db.session.commit()
+    
+    # db.session.commit()
 
     return '<h2 style="text-align:center;padding-top:100px">DATA ADDED</h2>'
 
@@ -92,6 +58,10 @@ def get_all_profiles():
 @app.route('/profiles/<int:id>', methods=['GET'])
 def get_profile(id):
     return jsonify(Profiles.query.filter_by(id=id).first().serialize(long=True))
+
+@app.route('/swaps/all')
+def get_all_swaps():
+    return jsonify(list(map(lambda x: x.serialize(long=True), Swaps.query.all())))
 
 
 
