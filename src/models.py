@@ -57,7 +57,8 @@ class Profiles(db.Model):
                 "hendon_url": self.hendon_url,
                 "created_at": "",
                 "updated_at": "",
-                "swaps": list(map(lambda x: x.serialize(), self.sending_swaps)),
+                "paying_you": list(map(lambda x: x.serialize(), self.sending_swaps)),
+                "your_winning_chips": 
                 "buy_ins": list(map(lambda x: x.serialize(flight=True), self.buy_ins))
             }
         return json
@@ -140,19 +141,26 @@ class Swaps(db.Model):
     def __repr__(self):
         return f'<Swaps {self.user.email} {self.recipient_id} {self.tournament.name}>'
 
-    def serialize(self, long=False):
+    def serialize(self, long=False, sender=False, recipient=False):
         json = {
             "tournament_id": self.tournament_id,
             "recipient_user": self.recipient_user.serialize(),
             "percentage": self.percentage,
             "winning_chips": self.winning_chips,
-            "due_at": self.due_at,
+            "due_at": self.due_at
         }
+        if recipient:
+            return json
+        if sender:
+            return {
+                "tournament_id": self.tournament_id,
+                "due_at": self.due_at,
+                "winning_chips": self.winning_chips
+            }
         if long:
             return {
                 **json,
                 "sender_id": self.sender_id,
-                "tournament_id": self.tournament_id,
                 "created_at": "",
                 "updated_at": ""
             }

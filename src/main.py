@@ -33,15 +33,42 @@ def fill_database():
     lou = Profiles.query.filter_by(username='Lou').first()
     cary = Profiles.query.filter_by(first_name='Cary').first()
     kate = Profiles.query.filter_by(first_name='Kate').first()
-    mik = Profiles.query.filter_by(username='Mikita').first()
+    nikita = Profiles.query.filter_by(username='Mikita').first()
 
     tour = Tournaments.query.filter_by(id=3).first()
 
     db.session.add(Swaps(
         tournament=tour,
-        sender_user=cary,
+        sender_user=nikita,
+        recipient_user=kate,
+        percentage=15,
+        winning_chips=None,
+        due_at=(tour.end_at + timedelta(days=4))
+    ))
+
+    db.session.add(Swaps(
+        tournament=tour,
+        sender_user=kate,
+        recipient_user=nikita,
+        percentage=15,
+        winning_chips=None,
+        due_at=(tour.end_at + timedelta(days=4))
+    ))
+
+    db.session.add(Swaps(
+        tournament=tour,
+        sender_user=lou,
+        recipient_user=kate,
+        percentage=5,
+        winning_chips=None,
+        due_at=(tour.end_at + timedelta(days=4))
+    ))
+
+    db.session.add(Swaps(
+        tournament=tour,
+        sender_user=kate,
         recipient_user=lou,
-        percentage=10,
+        percentage=5,
         winning_chips=None,
         due_at=(tour.end_at + timedelta(days=4))
     ))
