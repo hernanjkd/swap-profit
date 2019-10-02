@@ -86,111 +86,111 @@ def fill_database():
     db.session.add(wpt)
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=heartland,
         sender_user=lou,
         recipient_user=cary,
         percentage=10,
         winning_chips=None,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(heartland.end_at + timedelta(days=4))
     ))
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=heartland,
         sender_user=cary,
         recipient_user=lou,
         percentage=10,
         winning_chips=None,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(heartland.end_at + timedelta(days=4))
     ))
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=heartland,
         sender_user=nikita,
         recipient_user=kate,
         percentage=15,
         winning_chips=None,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(heartland.end_at + timedelta(days=4))
     ))
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=heartland,
         sender_user=kate,
         recipient_user=nikita,
         percentage=15,
         winning_chips=None,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(heartland.end_at + timedelta(days=4))
     ))
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=heartland,
         sender_user=lou,
         recipient_user=kate,
         percentage=5,
         winning_chips=None,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(heartland.end_at + timedelta(days=4))
     ))
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=heartland,
         sender_user=kate,
         recipient_user=lou,
         percentage=5,
         winning_chips=None,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(heartland.end_at + timedelta(days=4))
     ))
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=wpt,
         sender_user=lou,
         recipient_user=cary,
         percentage=10,
         winning_chips=10000,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(wpt.end_at + timedelta(days=4))
     ))
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=wpt,
         sender_user=cary,
         recipient_user=lou,
         percentage=10,
         winning_chips=500,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(wpt.end_at + timedelta(days=4))
     ))
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=wpt,
         sender_user=nikita,
         recipient_user=kate,
         percentage=15,
         winning_chips=100,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(wpt.end_at + timedelta(days=4))
     ))
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=wpt,
         sender_user=kate,
         recipient_user=nikita,
         percentage=15,
         winning_chips=0,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(wpt.end_at + timedelta(days=4))
     ))
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=wpt,
         sender_user=cary,
         recipient_user=kate,
         percentage=5,
         winning_chips=500,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(wpt.end_at + timedelta(days=4))
     ))
 
     db.session.add(Swaps(
-        tournament=tour,
+        tournament=wpt,
         sender_user=kate,
         recipient_user=cary,
         percentage=5,
         winning_chips=0,
-        due_at=(tour.end_at + timedelta(days=4))
+        due_at=(wpt.end_at + timedelta(days=4))
     ))
 
     db.session.commit()

@@ -37,12 +37,15 @@ class Profiles(db.Model):
     user = db.relationship('Users', back_populates='profile', uselist=False)
     buy_ins = db.relationship('Buy_ins', back_populates='user')
     # sending_swaps = db.relationship('Swaps', back_populates='sender_user')
-    # recieving_swaps = db.relationship('Swaps', back_populates='recipient_user)
+    # receiving_swaps = db.relationship('Swaps', back_populates='recipient_user)
 
     def __repr__(self):
         return f'<Profiles {self.first_name} {self.last_name}>'
 
     def serialize(self, long=False):
+        # r = {x['id']: x.serialize() for x in self.receiving_swaps}
+        # lst = [{**x.serialize(sender=True), **r[x['id']]} for x in self.sending_swaps]
+
         json = {
             "id": self.id,
             "first_name": self.first_name,
@@ -57,9 +60,11 @@ class Profiles(db.Model):
                 "hendon_url": self.hendon_url,
                 "created_at": "",
                 "updated_at": "",
-                "recieving_swaps": list(map(lambda x: x.serialize(), self.recieving_swaps)),
-                "sending_swaps": list(map(lambda x: x.serialize(sender=True), self.sending_swaps)),
-                "buy_ins": list(map(lambda x: x.serialize(flight=True), self.buy_ins))
+                # "swaps": lst,
+                "receiving_swaps": [x.serialize() for x in self.receiving_swaps],
+                # "receiving_swaps": list(map(lambda x: x.serialize(), self.receiving_swaps)),
+                # "sending_swaps": list(map(lambda x: x.serialize(sender=True), self.sending_swaps)),
+                "buy_ins": [x.serialize(flight=True) for x in self.buy_ins]
             }
         return json
 
@@ -136,7 +141,7 @@ class Swaps(db.Model):
 
     tournament = db.relationship('Tournaments', back_populates='swaps')
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
-    recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='recieving_swaps')
+    recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='receiving_swaps')
 
     def __repr__(self):
         return f'<Swaps {self.user.email} {self.recipient_id} {self.tournament.name}>'
@@ -148,7 +153,7 @@ class Swaps(db.Model):
             "percentage": self.percentage,
             "winning_chips": self.winning_chips,
             "due_at": self.due_at,
-            "paying_you": self.sender_user.serialize()
+            "user": self.sender_user.serialize()
         }
         if sender:
             return {

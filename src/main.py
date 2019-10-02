@@ -43,25 +43,32 @@ def fill_database():
 
     return '<h2 style="text-align:center;padding-top:100px">DATA ADDED</h2>'
 
-@app.route('/tournaments/all')
+@app.route('/tournaments', methods=['GET'])
 def get_all_tournaments():
-    return jsonify(list(map(lambda x: x.serialize(), Tournaments.query.all())))
+
+    query = Tournaments.query.all()
+
+    if()
+        query = query.filter_by()
+
+    return jsonify([x.serialize() for x in Tournaments.query.all()])
 
 @app.route('/tournaments/<int:id>', methods=['GET'])
 def get_tournament(id):
     return jsonify(Tournaments.query.filter_by(id=id).first().serialize())
 
-@app.route('/profiles/all')
+@app.route('/profiles')
 def get_all_profiles():
-    return jsonify(list(map(lambda x: x.serialize(long=True), Profiles.query.all())))
+    return jsonify([x.serialize(long=True) for x in Profiles.query.all()])
 
-@app.route('/profiles/<int:id>', methods=['GET'])
+@app.route('/profiles/<str:id>', methods=['GET'])
 def get_profile(id):
     return jsonify(Profiles.query.filter_by(id=id).first().serialize(long=True))
 
 @app.route('/swaps/all')
 def get_all_swaps():
     return jsonify(list(map(lambda x: x.serialize(long=True), Swaps.query.all())))
+    # return jsonify(list(map(lambda x: x.serialize(), Swaps.query.filter_by(sender_id=2))))
 
 
 
