@@ -93,7 +93,7 @@ class Tournaments(db.Model):
             "end_at": self.end_at,
             "created_at": "",
             "updated_at": "",
-            "flights": list(map(lambda x: x.serialize(), self.flights))
+            "flights": [x.serialize() for x in self.flights]
         }
 
 
@@ -124,7 +124,7 @@ class Flights(db.Model):
                 "tournament_id": self.tournament_id,
                 "created_at": "",
                 "updated_at": "",
-                "buy_ins": list(map(lambda x: x.serialize(user=True), self.buy_ins))
+                "buy_ins": [x.serialize(user=True) for x in self.buy_ins]
             }
         return json
 
