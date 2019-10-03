@@ -56,7 +56,7 @@ def login():
                             'Content-Type': 'application/json',
                             'authorization': "Bearer {create_jwt(identity=1)}"
                         }},
-                        body: {{'msg': 'received'}}
+                        body: JSON.stringify({{'msg': 'received'}})
                     }})
                 .then(resp => resp.json())
                 .then(data => console.log(data))
@@ -76,8 +76,7 @@ def test():
         return 'request is not json'
     params = request.get_json()
     jwt_data = get_jwt()
-    # print(params.get('msg', None))
-    return jsonify(msg=jwt_data['sub'])
+    return jsonify(msg=jwt_data['sub'], body=params['msg'])
 
 @app.route('/create/token')
 def create_token():
