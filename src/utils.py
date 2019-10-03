@@ -22,7 +22,7 @@ def has_no_empty_params(rule):
 
 def verify_json(body, *args):
     if body is None:
-        return 'request body as an json object'
+        return 'request body as a json object'
     for prop in args:
         if prop not in body:
             return prop
