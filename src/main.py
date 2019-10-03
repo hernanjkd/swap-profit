@@ -4,12 +4,11 @@ from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
-from flask_jwt_simple import JWTManager, jwt_required, create_jwt, get_jwt_identity
+from flask_jwt_simple import JWTManager, jwt_required, create_jwt, get_jwt_identity, get_jwt
 from utils import APIException, generate_sitemap, verify_json
 from dummy_data import buy_ins, flights, swaps, profiles, tournaments
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -27,58 +26,64 @@ jwt = JWTManager(app)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
-@app.route('/fill_database')
-def fill_database():
-    
-    lou = Profiles.query.filter_by(username='Lou').first()
-    cary = Profiles.query.filter_by(first_name='Cary').first()
-    kate = Profiles.query.filter_by(first_name='Kate').first()
-    nikita = Profiles.query.filter_by(username='Mikita').first()
 
-    tour = Tournaments.query.filter_by(id=5).first()
-
-    
-    
-    # db.session.commit()
-
-    return '<h2 style="text-align:center;padding-top:100px">DATA ADDED</h2>'
-
-@app.route('/tournaments', methods=['GET'])
-def get_all_tournaments():
-
-    query = Tournaments.query.all()
-
-    if()
-        query = query.filter_by()
-
-    return jsonify([x.serialize() for x in Tournaments.query.all()])
-
-@app.route('/tournaments/<int:id>', methods=['GET'])
-def get_tournament(id):
-    return jsonify(Tournaments.query.filter_by(id=id).first().serialize())
-
-@app.route('/profiles')
-def get_all_profiles():
-    return jsonify([x.serialize(long=True) for x in Profiles.query.all()])
-
-@app.route('/profiles/<str:id>', methods=['GET'])
-def get_profile(id):
-    return jsonify(Profiles.query.filter_by(id=id).first().serialize(long=True))
-
-@app.route('/swaps/all')
-def get_all_swaps():
-    return jsonify(list(map(lambda x: x.serialize(long=True), Swaps.query.all())))
-    # return jsonify(list(map(lambda x: x.serialize(), Swaps.query.filter_by(sender_id=2))))
-
-
-
-if __name__ == '__main__':
-    PORT = int(os.environ.get('PORT', 3000))
-    app.run(host='0.0.0.0', port=PORT)
+@jwt.jwt_data_loader
+def add_claims_to_access_token(identity):
+    now = datetime.utcnow()
+    return {
+        'exp': now + timedelta(minutes=20),
+        'iat': now,
+        'nbf': now,
+        'sub': identity,
+        'roles': 'user'
+    }
 
 #############################################################################
 
-# @app.route('/login', methods=['POST'])
+
+@app.route('/user/token')
+def login():
+    return (f'''
+        <html>
+        <body>
+        <button onclick='send()'>FETCH</button>
+        <div id='testing'></div>
+        <script>
+            function send() {{
+                fetch('http://127.0.0.1:3000/user/test', {{
+                        method: 'POST',
+                        headers: {{ 
+                            'Content-Type': 'application/json',
+                            'authorization': "Bearer {create_jwt(identity=1)}"
+                        }},
+                        body: {{'msg': 'received'}}
+                    }})
+                .then(resp => resp.json())
+                .then(data => console.log(data))
+            }}
+        </script>
+        </body>
+        </html>
+    ''')
+    # return jsonify({
+    #     'jwt': create_jwt(identity=5)
+    # })
+
+@app.route('/user/test', methods=['POST'])
+@jwt_required
+def test():
+    if not request.is_json:
+        return 'request is not json'
+    params = request.get_json()
+    jwt_data = get_jwt()
+    # print(params.get('msg', None))
+    return jsonify(msg=jwt_data['sub'])
+
+@app.route('/create/token')
+def create_token():
+    return create_jwt(identity=1)
+
+# @app.route('/user/token', methods=['POST'])
 # def login():
 #     if request.method != 'POST':
 #         return 'Invalid method', 404
@@ -98,40 +103,61 @@ if __name__ == '__main__':
 #     return 'The log in information is incorrect', 401
 
 
+# @app.route('/user', methods=['POST'])
 
-# @app.route('/fill_database', methods=['GET'])
-# def user():
+
+# @app.route('/user/validate', methods=['GET'])
+
+
+#############################################################################
+
+
+@app.route('/fill_database')
+def fill_database():
     
-#     user = Users(
-#         email = "ikelkwj32@gmail.com",
-#         password = hash("super secret password")
-#     )
-#     db.session.add(user)
-#     db.session.add(Profiles(
-#         first_name = "Osvaldo",
-#         last_name = "Ratata",
-#         user = user
-#     ))
-#     db.session.commit()
+    lou = Profiles.query.filter_by(username='Lou').first()
+    cary = Profiles.query.filter_by(first_name='Cary').first()
+    kate = Profiles.query.filter_by(first_name='Kate').first()
+    nikita = Profiles.query.filter_by(username='Mikita').first()
 
-#     tour = Tournaments(name="Grand Tour")
-#     db.session.add(tour)
-#     db.session.add(Flights(
-#         tournament = tour
-#     ))
-#     db.session.add(Flights(
-#         tournament = tour
-#     ))
-#     db.session.add(Flights(
-#         tournament = tour
-#     ))
-#     db.session.commit()
+    tour = Tournaments.query.filter_by(id=5).first()
+    
+    # db.session.commit()
 
-#     pics = list(map(lambda x: x.serialize(), Pictures.query.all()))
-#     users = list(map(lambda x: x.serialize(), Users.query.all()))
-#     prof = list(map(lambda x: x.serialize(), Profiles.query.all()))
-#     tours = list(map(lambda x: x.serialize(), Tournaments.query.all()))
-#     return jsonify(tours + prof)
+    return '<h2 style="text-align:center;padding-top:100px">DATA ADDED</h2>'
+
+@app.route('/tournaments', methods=['GET'])
+def get_all_tournaments():
+    return jsonify([x.serialize() for x in Tournaments.query.all()])
+
+@app.route('/tournaments/<int:id>', methods=['GET'])
+def get_tournament(id):
+    return jsonify(Tournaments.query.filter_by(id=id).first().serialize())
+
+@app.route('/profiles')
+def get_all_profiles():
+    return jsonify([x.serialize(long=True) for x in Profiles.query.all()])
+
+@app.route('/profiles/<id>', methods=['GET'])
+def get_profile(id):
+    if id == 'me':
+        return 'me'
+    if not id.isnumeric():
+        return 'id must be numeric'
+    return 'is numeric'
+    # return jsonify(Profiles.query.filter_by(id=id).first().serialize(long=True))
+
+@app.route('/swaps/all')
+def get_all_swaps():
+    return jsonify(list(map(lambda x: x.serialize(long=True), Swaps.query.all())))
+    # return jsonify(list(map(lambda x: x.serialize(), Swaps.query.filter_by(sender_id=2))))
+
+
+
+if __name__ == '__main__':
+    PORT = int(os.environ.get('PORT', 3000))
+    app.run(host='0.0.0.0', port=PORT)
+
 
 
 #############################################################################
