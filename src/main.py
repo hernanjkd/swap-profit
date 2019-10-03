@@ -28,13 +28,17 @@ def handle_invalid_usage(error):
 
 
 @jwt.jwt_data_loader
-def add_claims_to_access_token(identity):
+def add_claims_to_access_token(**kwargs):
     now = datetime.utcnow()
+    id = kwargs['id'] if 'id' in kwargs.keys() else None
+    roles = kwargs['roles'] if 'roles' in kwargs.keys() else None
+    if 'id' in kwargs.keys():
+
     return {
         'exp': now + timedelta(minutes=20),
         'iat': now,
         'nbf': now,
-        'sub': identity,
+        'sub': id,
         'roles': 'user'
     }
 
@@ -54,7 +58,7 @@ def login():
                         method: 'POST',
                         headers: {{ 
                             'Content-Type': 'application/json',
-                            'authorization': "Bearer {create_jwt(identity=1)}"
+                            'authorization': "Bearer {create_jwt(2)}"
                         }},
                         body: JSON.stringify({{'msg': 'received'}})
                     }})
@@ -76,7 +80,7 @@ def test():
         return 'request is not json'
     params = request.get_json()
     jwt_data = get_jwt()
-    return jsonify(msg=jwt_data['sub'], body=params['msg'])
+    return jsonify(id=jwt_data['sub'], body=params['msg'])
 
 @app.route('/create/token')
 def create_token():
