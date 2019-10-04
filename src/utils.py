@@ -1,4 +1,5 @@
 from flask import jsonify, url_for
+from datetime import datetime
 
 class APIException(Exception):
     status_code = 400
@@ -27,6 +28,10 @@ def verify_json(body, *args):
         if prop not in body:
             return prop
     return None
+
+def expired(d):
+  d = d if type(d) is datetime else datetime.fromtimestamp(d)
+  return d < datetime.now()
 
 def generate_sitemap(app):
     links = []

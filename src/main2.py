@@ -18,14 +18,13 @@ MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 
-app.config['JWT_SECRET_KEY'] = '47fh38d3z2w8fhjks0wp9zm4nm8dsd9ss09ds21fn3l7a8xgds'
+app.config['JWT_SECRET_KEY'] = '47fh38d3z2w8fhjks0wp9zm4ncmn36l7a8xgds'
 jwt = JWTManager(app)
 
 
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
-
 
 ###############################################################################
 #
@@ -36,13 +35,14 @@ def handle_invalid_usage(error):
 #
 ###############################################################################
 @jwt.jwt_data_loader
-def add_claims_to_access_token(kwargs):    
+def add_claims_to_access_token(kwargs):
+    
     now = datetime.utcnow()
     kwargs = kwargs if type(kwargs) is dict else {}
     id = kwargs['id'] if 'id' in kwargs.keys() else None
     roles = kwargs['roles'] if 'roles' in kwargs.keys() else 'user'
     expires = kwargs['expires'] if 'expires' in kwargs.keys() else {'minutes':5}
-    
+
     return {
         'exp': now + timedelta(**expires),
         'iat': now,
@@ -51,11 +51,36 @@ def add_claims_to_access_token(kwargs):
         'roles': roles
     }
 
+#############################################################################
 
 
 @app.route('/user/token')
 def login():
-    
+    return (f'''
+        <html>
+        <body>
+        <button onclick='send()'>FETCH</button>
+        <div id='testing'></div>
+        <script>
+            function send() {{
+                fetch('http://127.0.0.1:3000/user/test', {{
+                        method: 'POST',
+                        headers: {{ 
+                            'Content-Type': 'application/json',
+                            'authorization': "Bearer {create_jwt({'id':100,'roles':'admin','expires':{'seconds':5}})}"
+                        }},
+                        body: JSON.stringify({{'msg': 'received'}})
+                    }})
+                .then(resp => resp.json())
+                .then(data => console.log(data))
+            }}
+        </script>
+        </body>
+        </html>
+    ''')
+    # return jsonify({
+    #     'jwt': create_jwt(identity=5)
+    # })
 
 @app.route('/user/test', methods=['POST'])
 @jwt_required
@@ -66,6 +91,7 @@ def test():
     jwt_data = get_jwt()
     
     return jsonify({'exp': expired(jwt_data['exp'])})
+    # return jsonify(roles=jwt_data['roles'], sub=jwt_data['sub'], expires=jwt_data['exp'], body=params['msg'])
 
 @app.route('/create/token')
 def create_token():
@@ -100,6 +126,20 @@ def create_token():
 #############################################################################
 
 
+@app.route('/fill_database')
+def fill_database():
+    
+    lou = Profiles.query.filter_by(username='Lou').first()
+    cary = Profiles.query.filter_by(first_name='Cary').first()
+    kate = Profiles.query.filter_by(first_name='Kate').first()
+    nikita = Profiles.query.filter_by(username='Mikita').first()
+
+    tour = Tournaments.query.filter_by(id=5).first()
+    
+    # db.session.commit()
+
+    return '<h2 style="text-align:center;padding-top:100px">DATA ADDED</h2>'
+
 @app.route('/tournaments', methods=['GET'])
 def get_all_tournaments():
     return jsonify([x.serialize() for x in Tournaments.query.all()])
@@ -119,10 +159,13 @@ def get_profile(id):
     if not id.isnumeric():
         return 'id must be numeric'
     return 'is numeric'
+    # return jsonify(Profiles.query.filter_by(id=id).first().serialize(long=True))
 
 @app.route('/swaps/all')
 def get_all_swaps():
-    return jsonify([x.serialize(long=True) for x in Swaps.query.all()])
+    return jsonify(list(map(lambda x: x.serialize(long=True), Swaps.query.all())))
+    # return jsonify(list(map(lambda x: x.serialize(), Swaps.query.filter_by(sender_id=2))))
+
 
 
 if __name__ == '__main__':
@@ -154,3 +197,44 @@ if __name__ == '__main__':
 #     return "Invalid Method", 404
 
 
+# @app.route('/user/<int:user_id>', methods=['PUT', 'GET', 'DELETE'])
+# def handle_user(user_id):
+#     """
+#     Single user
+#     """
+
+#     # PUT request
+#     if request.method == 'PUT':
+#         body = request.get_json()
+#         if body is None:
+#             raise APIException("You need to specify the request body as a json object", status_code=400)
+
+#         obj = user.query.get(user_id)
+#         if obj is None:
+#             raise APIException('User not found', status_code=404)
+
+#         if "username" in body:
+#             obj.username = body["username"]
+#         if "email" in body:
+#             obj.email = body["email"]
+#         db.session.commit()
+
+#         return jsonify(obj.serialize()), 200
+
+#     # GET request
+#     if request.method == 'GET':
+#         obj = User.query.get(user_id)
+#         if obj is None:
+#             raise APIException('User not found', status_code=404)
+#         return jsonify(obj.serialize()), 200
+
+#     # DELETE request
+#     if request.method == 'DELETE':
+#         obj = user.query.get(user_id)
+#         if obj is None:
+#             raise APIException('User not found', status_code=404)
+#         db.session.delete(obj)
+#         db.session.commit()
+#         return "ok", 200
+
+#     return "Invalid Method", 404
