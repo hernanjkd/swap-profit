@@ -26,20 +26,24 @@ jwt = JWTManager(app)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
-
+###############################################################################
+# Must always pass just one dictionary when using create_jwt(), even if empty
+###############################################################################
 @jwt.jwt_data_loader
-def add_claims_to_access_token(**kwargs):
+def add_claims_to_access_token(kwargs):
+    
     now = datetime.utcnow()
+    kwargs = kwargs if type(kwargs) is dict else {}
     id = kwargs['id'] if 'id' in kwargs.keys() else None
-    roles = kwargs['roles'] if 'roles' in kwargs.keys() else None
-    if 'id' in kwargs.keys():
+    roles = kwargs['roles'] if 'roles' in kwargs.keys() else 'user'
+    expires = kwargs['expires'] if 'expires' in kwargs.keys() else {'minutes':5}
 
     return {
-        'exp': now + timedelta(minutes=20),
+        'exp': now + timedelta(**expires),
         'iat': now,
         'nbf': now,
         'sub': id,
-        'roles': 'user'
+        'roles': roles
     }
 
 #############################################################################
@@ -58,7 +62,7 @@ def login():
                         method: 'POST',
                         headers: {{ 
                             'Content-Type': 'application/json',
-                            'authorization': "Bearer {create_jwt(2)}"
+                            'authorization': "Bearer {create_jwt({'id':100,'roles':'admin','expires':{'hours':1}})}"
                         }},
                         body: JSON.stringify({{'msg': 'received'}})
                     }})
@@ -80,7 +84,7 @@ def test():
         return 'request is not json'
     params = request.get_json()
     jwt_data = get_jwt()
-    return jsonify(id=jwt_data['sub'], body=params['msg'])
+    return jsonify(roles=jwt_data['roles'], sub=jwt_data['sub'], expires=jwt_data['exp'], body=params['msg'])
 
 @app.route('/create/token')
 def create_token():
