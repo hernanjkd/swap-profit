@@ -7,6 +7,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), unique=True, nullable=False)
+    validated = db.Column(db.Boolean)
 
     profile = db.relationship('Profiles', back_populates='user', uselist=False)
     transactions = db.relationship('Transactions', back_populates='user')
@@ -19,6 +20,7 @@ class Users(db.Model):
         return {
             "id": self.id,
             "email": self.email,
+            "validated": self.validated,
             "created_at": "",
             "updated_at": ""
         }
@@ -109,7 +111,7 @@ class Flights(db.Model):
     buy_ins = db.relationship('Buy_ins', back_populates='flight')
 
     def __repr__(self):
-        return f'<Flights {self.tournament.name} {self.start_at} - {self.end_at}>'
+        return f'<Flights tournament:{self.tournament.name} {self.start_at} - {self.end_at}>'
 
     def serialize(self, long=False):
         json = {
@@ -144,7 +146,7 @@ class Swaps(db.Model):
     recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='receiving_swaps')
 
     def __repr__(self):
-        return f'<Swaps {self.user.email} {self.recipient_id} {self.tournament.name}>'
+        return f'<Swaps email:{self.user.email} recipient_user:{self.recipient_id} tournament:{self.tournament.name}>'
 
     def serialize(self, long=False, sender=False):
         json = {
@@ -184,7 +186,7 @@ class Buy_ins(db.Model):
     flight = db.relationship('Flights', back_populates='buy_ins')
 
     def __repr__(self):
-        return f'<Buy_ins {self.id} {self.user_id} {self.flight_id}>'
+        return f'<Buy_ins id:{self.id} user:{self.user_id} flight:{self.flight_id}>'
 
     def serialize(self, user=False, flight=False):
         if user:
@@ -216,7 +218,7 @@ class Transactions(db.Model):
     user = db.relationship('Users', back_populates='transactions')
 
     def __repr__(self):
-        return f'<Transactions {self.user.name} {self.amount_in_coins} {self.amount_in_dollars}>'
+        return f'<Transactions user:{self.user.name} coins:{self.amount_in_coins} dollars:{self.amount_in_dollars}>'
 
     def serialize(self):
         return {
@@ -232,13 +234,13 @@ class Tokens(db.Model):
     __tablename__ = 'tokens'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    token = db.Column(db.String(500))
+    token = db.Column(db.String(200))
     expires_at = db.Column(db.DateTime)
 
     user = db.relationship('Users', back_populates='tokens')
 
     def __repr__(self):
-        return f'<Tokens {self.token}>'
+        return f'<Tokens id:{self.id} user:{self.user_id}>'
 
     def serialize(self):
         return {

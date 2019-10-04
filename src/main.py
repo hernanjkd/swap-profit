@@ -53,23 +53,18 @@ def add_claims_to_access_token(kwargs):
 
 
 
-@app.route('/user/token')
-def login():
-    
 
-@app.route('/user/test', methods=['POST'])
-@jwt_required
-def test():
-    if not request.is_json:
-        return 'request is not json'
-    params = request.get_json()
-    jwt_data = get_jwt()
+# @app.route('/user/test', methods=['POST'])
+# @jwt_required
+# def test():
+#     if not request.is_json:
+#         return 'request is not json'
+#     params = request.get_json()
+#     jwt_data = get_jwt()
     
-    return jsonify({'exp': expired(jwt_data['exp'])})
+#     return jsonify({'exp': expired(jwt_data['exp'])})
 
-@app.route('/create/token')
-def create_token():
-    return create_jwt(identity=1)
+
 
 # @app.route('/user/token', methods=['POST'])
 # def login():
@@ -91,8 +86,6 @@ def create_token():
 #     return 'The log in information is incorrect', 401
 
 
-# @app.route('/user', methods=['POST'])
-
 
 # @app.route('/user/validate', methods=['GET'])
 
@@ -100,17 +93,47 @@ def create_token():
 #############################################################################
 
 
+
+@app.route('/user', methods=['POST'])
+def register_user():
+    
+    if request.method != 'POST':
+        return "Invalid Method", 404
+
+    body = request.get_json()
+
+    missing_item = verify_json(body, 'email', 'password')
+    if missing_item:
+        raise APIException("You need to specify the " + missing_item, status_code=400)
+
+    db.session.add(Users(
+        email=body['email'], 
+        password=hash(body['password'])
+    ))
+    db.session.commit()
+
+    return jsonify([x.serialize() for x in Users.query.all()])
+    #return "ok", 200
+
+
+
 @app.route('/tournaments', methods=['GET'])
 def get_all_tournaments():
     return jsonify([x.serialize() for x in Tournaments.query.all()])
+
+
 
 @app.route('/tournaments/<int:id>', methods=['GET'])
 def get_tournament(id):
     return jsonify(Tournaments.query.filter_by(id=id).first().serialize())
 
+
+
 @app.route('/profiles')
 def get_all_profiles():
     return jsonify([x.serialize(long=True) for x in Profiles.query.all()])
+
+
 
 @app.route('/profiles/<id>', methods=['GET'])
 def get_profile(id):
@@ -120,37 +143,14 @@ def get_profile(id):
         return 'id must be numeric'
     return 'is numeric'
 
+
+
 @app.route('/swaps/all')
 def get_all_swaps():
     return jsonify([x.serialize(long=True) for x in Swaps.query.all()])
 
 
+
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT)
-
-
-
-#############################################################################
-
-# @app.route('/register', methods=['POST'])
-# def register_user():
-
-#     # Register User
-#     if request.method == 'POST':
-#         body = request.get_json()
-
-#         missing_item = verify_json(body, 'first_name', 'last_name', 'email', 'password')
-#         if missing_item:
-#             raise APIException("You need to specify the " + missing_item, status_code=400)
-
-#         obj = Users(first_name=body['first_name'], last_name=body['last_name'], 
-#                     email=body['email'], password=hash(body['password'])
-
-#         db.session.add(obj)
-#         db.session.commit()
-#         return "ok", 200
-
-#     return "Invalid Method", 404
-
-
