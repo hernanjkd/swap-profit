@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from flask_jwt_simple import JWTManager, jwt_required, create_jwt, get_jwt_identity, get_jwt
-from utils import APIException, generate_sitemap, verify_json, expired
+from utils import APIException, generate_sitemap, has_params, expired
 from dummy_data import buy_ins, flights, swaps, profiles, tournaments
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 from datetime import datetime, timedelta
@@ -104,7 +104,7 @@ def create_token():
 
 #     body = request.get_json()
 
-#     missing_item = verify_json(body, 'email', 'password')
+#     missing_item = has_params(body, 'email', 'password')
 #     if missing_item:
 #         raise APIException('You need to specify the ' + missing_item, status_code=400)
 
@@ -183,7 +183,7 @@ if __name__ == '__main__':
 #     if request.method == 'POST':
 #         body = request.get_json()
 
-#         missing_item = verify_json(body, 'first_name', 'last_name', 'email', 'password')
+#         missing_item = has_params(body, 'first_name', 'last_name', 'email', 'password')
 #         if missing_item:
 #             raise APIException("You need to specify the " + missing_item, status_code=400)
 

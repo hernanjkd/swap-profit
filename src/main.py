@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from flask_jwt_simple import JWTManager, jwt_required, create_jwt, decode_jwt, get_jwt
-from utils import APIException, generate_sitemap, verify_json, expired
+from utils import APIException, generate_sitemap, has_params
 from dummy_data import buy_ins, flights, swaps, profiles, tournaments
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 from datetime import datetime, timedelta
@@ -55,26 +55,59 @@ def add_claims_to_access_token(kwargs):
 
 
 
-# @app.route('/user/test', methods=['POST'])
-# @jwt_required
-# def test():
-#     if not request.is_json:
-#         return 'request is not json'
-#     params = request.get_json()
-#     jwt_data = get_jwt()
-    
-#     return jsonify({'exp': expired(jwt_data['exp'])})
-
-
-
 #############################################################################
+## DELETE ENDPOINT - JUST FOR TESTING - DELETE ENDPOINT - JUST FOR TESTING ##
+#############################################################################
+@app.route('/create/token', methods=['POST'])
+def create_token():
+    return jsonify( create_jwt(request.get_json()) )
+
+
+
+
+@app.route('/user/validate/<token>', methods=['GET'])
+def validate(token):
+    
+    jwt_data = decode_jwt(token)
+    
+    user = Users.query.filter_by(id=jwt_data['sub']).first()
+
+    if not user.valid:
+        user.valid = True
+        db.session.commit()
+
+    return redirect('https://www.google.com', code=300)
+
 
 
 
 # id can me the user id, me, or all
 @app.route('/user/<id>', methods=['GET'])
+@jwt_required
 def get_users(id):
-    return jsonify([x.serialize() for x in Users.query.all()]), 200
+
+    jwt_data = get_jwt()
+    
+    if id == 'me':
+        user = Users.query.filter_by(id=jwt_data['sub']).first()
+        return jsonify(user.serialize()), 200
+
+    if id == 'all':
+        if jwt_data['role'] == 'admin':
+            return jsonify([x.serialize() for x in Users.query.all()]), 200
+        else:
+            return 'Invalid request', 401
+
+    try:
+        id = int(id)
+    except:
+        return 'Invalid id', 400
+    else:
+        user = Users.query.filter_by(id=id).first()
+        if user:
+            return jsonify(user.serialize()), 200
+        else:
+            return 'No user found', 404
 
 
 
@@ -84,19 +117,22 @@ def register_user():
 
     body = request.get_json()
 
-    missing_item = verify_json(body, 'email', 'password')
+    missing_item = has_params(body, 'email', 'password')
     if missing_item:
         raise APIException("You need to specify the " + missing_item, status_code=400)
 
     m = hashlib.sha256()
     m.update(body['password'].encode('utf-8'))
 
-    # If user exists and failed to validate his account before token expiration
+    # If user exists and failed to validate his account
     user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
     if user and not user.valid:
         return jsonify({
             'validation_link': 'http://127.0.0.1:3000/user/validate/' + create_jwt({'id': user.id})
         }), 200
+
+    elif user and user.valid:
+        return 'User already exists', 405
     
     db.session.add(Users(
         email=body['email'], 
@@ -114,27 +150,12 @@ def register_user():
 
 
 
-@app.route('/user/validate/<token>')
-def validate(token):
-    
-    jwt_data = decode_jwt(token)
-    
-    user = Users.query.filter_by(id=jwt_data['sub']).first()
-    user.valid = True
-
-    db.session.commit()
-
-    return redirect('https://www.google.com', code=300)
-
-
-
-
 @app.route('/user/token', methods=['POST'])
 def login():
 
     body = request.get_json()
 
-    missing_item = verify_json(body, 'email', 'password')
+    missing_item = has_params(body, 'email', 'password')
     if missing_item:
         raise APIException('You need to specify the ' + missing_item, status_code=400)
 

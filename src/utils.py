@@ -21,7 +21,7 @@ def has_no_empty_params(rule):
     arguments = rule.arguments if rule.arguments is not None else ()
     return len(defaults) >= len(arguments)
 
-def verify_json(body, *args):
+def has_params(body, *args):
     if body is None:
         return 'request body as a json object'
     for prop in args:
