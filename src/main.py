@@ -101,13 +101,13 @@ def get_users(id):
     try:
         id = int(id)
     except:
-        return 'Invalid id', 400
-    else:
-        user = Users.query.filter_by(id=id).first()
-        if user:
-            return jsonify(user.serialize()), 200
-        else:
-            return 'No user found', 404
+        raise APIException('Invalid id', status_code=400)
+    
+    user = Users.query.filter_by(id=id).first()
+    if user:
+        return jsonify(user.serialize()), 200
+    
+    return 'No user found', 404
 
 
 
@@ -163,13 +163,16 @@ def login():
     m.update(body['password'].encode('utf-8'))
 
     user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
-    if user and user.valid:
-        return jsonify({
-            'jwt': create_jwt({
-                'id': user.id,
-                'expires': {'minutes': body['exp'] if 'exp' in body else 15}
-            })
-        }), 200
+    if user:
+        if user.valid:
+            return jsonify({
+                'jwt': create_jwt({
+                    'id': user.id,
+                    'expires': {'minutes': body['exp'] if 'exp' in body else 15}
+                })
+            }), 200
+        
+        return 'Email not validated', 405
 
     return 'The log in information is incorrect', 401
 
