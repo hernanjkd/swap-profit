@@ -19,7 +19,7 @@ MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 
-app.config['JWT_SECRET_KEY'] = '47fh38d3z2w8fhjks0wp9zm4nm8dsd9ss09ds21fn3l7a8xgds'
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 jwt = JWTManager(app)
 
 
@@ -42,10 +42,10 @@ def add_claims_to_access_token(kwargs):
     kwargs = kwargs if type(kwargs) is dict else {}
     id = kwargs['id'] if 'id' in kwargs else None
     role = kwargs['role'] if 'role' in kwargs else 'user'
-    expires = kwargs['expires'] if 'expires' in kwargs else {'minutes': 15}
+    exp = kwargs['exp'] if 'exp' in kwargs else 15
     
     return {
-        'exp': now + timedelta(**expires),
+        'exp': now + timedelta(minutes=exp),
         'iat': now,
         'nbf': now,
         'sub': id,
@@ -151,7 +151,7 @@ def login():
 
 # id can me the user id, me, or all
 @app.route('/profiles/<id>', methods=['GET'])
-@jwt_required
+@jwt_required()
 def get_profiles(id):
 
     jwt_data = get_jwt()
