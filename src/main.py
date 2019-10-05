@@ -67,36 +67,48 @@ def add_claims_to_access_token(kwargs):
 
 
 
-@app.route('/user/token', methods=['POST'])
-def login():
+#############################################################################
+
+
+
+# id can me the user id, me, or all
+@app.route('/user/<id>', methods=['GET'])
+def get_users(id):
+    return jsonify([x.serialize() for x in Users.query.all()]), 200
+
+
+
+
+@app.route('/user', methods=['POST'])
+def register_user():
 
     body = request.get_json()
 
     missing_item = verify_json(body, 'email', 'password')
     if missing_item:
-        raise APIException('You need to specify the ' + missing_item, status_code=400)
+        raise APIException("You need to specify the " + missing_item, status_code=400)
+
+    user = Users.query.filter_by(email=body['email']).first()
+    if user:
+        return "User already exists", 405
 
     m = hashlib.sha256()
     m.update(body['password'].encode('utf-8'))
+    
+    db.session.add(Users(
+        email=body['email'], 
+        password=m.hexdigest()
+    ))
+    db.session.commit()
+    
+    user = Users.query.filter_by(email=body['email']).first()
 
-    user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
-    if user:
-        return jsonify({
-            'validation_link': '',
-            'jwt': create_jwt({
-                'id': user.id,
-                'expires': {'minutes': body['exp'] if 'exp' in body else 15}
-            })
-        }), 200
-
-    return 'The log in information is incorrect', 401
-
-
-
-# @app.route('/user/validate', methods=['GET'])
+    return jsonify({
+        'msg': 'User was created successfully',
+        'validation_link': 'http://127.0.0.1:3000/user/validate/' + create_jwt({'id': user.id})}
+    }), 200
 
 
-#############################################################################
 
 
 @app.route('/user/validate/<token>')
@@ -110,30 +122,32 @@ def validate(token):
     # })
     # return create_jwt({'expires': {'seconds':30}})
 
-@app.route('/user', methods=['GET'])
-def get_users():
-    return jsonify([x.serialize() for x in Users.query.all()])
 
-@app.route('/user', methods=['POST'])
-def register_user():
+
+
+@app.route('/user/token', methods=['POST'])
+def login():
 
     body = request.get_json()
 
     missing_item = verify_json(body, 'email', 'password')
     if missing_item:
-        raise APIException("You need to specify the " + missing_item, status_code=400)
+        raise APIException('You need to specify the ' + missing_item, status_code=400)
 
     m = hashlib.sha256()
     m.update(body['password'].encode('utf-8'))
-    
 
-    db.session.add(Users(
-        email=body['email'], 
-        password=m.hexdigest()
-    ))
-    db.session.commit()
-    
-    return "ok", 200
+    user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
+    if user and user.valid:
+        return jsonify({
+            'jwt': create_jwt({
+                'id': user.id,
+                'expires': {'minutes': body['exp'] if 'exp' in body else 15}
+            })
+        }), 200
+
+    return 'The log in information is incorrect', 401
+
 
 
 
@@ -143,15 +157,18 @@ def get_all_tournaments():
 
 
 
+
 @app.route('/tournaments/<int:id>', methods=['GET'])
 def get_tournament(id):
     return jsonify(Tournaments.query.filter_by(id=id).first().serialize())
 
 
 
+
 @app.route('/profiles')
 def get_all_profiles():
     return jsonify([x.serialize(long=True) for x in Profiles.query.all()])
+
 
 
 
@@ -165,9 +182,11 @@ def get_profile(id):
 
 
 
+
 @app.route('/swaps/all')
 def get_all_swaps():
     return jsonify([x.serialize(long=True) for x in Swaps.query.all()])
+
 
 
 
