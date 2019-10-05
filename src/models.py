@@ -7,7 +7,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(256), unique=True, nullable=False)
-    valid = db.Column(db.Boolean)
+    valid = db.Column(db.Boolean, default=False)
 
     profile = db.relationship('Profiles', back_populates='user', uselist=False)
     transactions = db.relationship('Transactions', back_populates='user')

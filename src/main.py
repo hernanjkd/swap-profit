@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
-from flask_jwt_simple import JWTManager, jwt_required, create_jwt, get_jwt_identity, get_jwt
+from flask_jwt_simple import JWTManager, jwt_required, create_jwt, decode_jwt, get_jwt
 from utils import APIException, generate_sitemap, verify_json, expired
 from dummy_data import buy_ins, flights, swaps, profiles, tournaments
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
@@ -40,16 +40,16 @@ def handle_invalid_usage(error):
 def add_claims_to_access_token(kwargs):    
     now = datetime.utcnow()
     kwargs = kwargs if type(kwargs) is dict else {}
-    id = kwargs['id'] if 'id' in kwargs.keys() else None
-    roles = kwargs['roles'] if 'roles' in kwargs.keys() else 'user'
-    expires = kwargs['expires'] if 'expires' in kwargs.keys() else {'minutes':15}
+    id = kwargs['id'] if 'id' in kwargs else None
+    role = kwargs['roles'] if 'roles' in kwargs else 'user'
+    expires = kwargs['expires'] if 'expires' in kwargs else {'minutes': 15}
     
     return {
         'exp': now + timedelta(**expires),
         'iat': now,
         'nbf': now,
         'sub': id,
-        'roles': roles
+        'role': role
     }
 
 
@@ -79,12 +79,15 @@ def login():
     m = hashlib.sha256()
     m.update(body['password'].encode('utf-8'))
 
-    user = Users.query.filter_by(email=body['email'], password=m.hexdigest()).first()
+    user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
     if user:
-        return jsonify({'jwt': create_jwt({
-            'id': user.id,
-            'expires': {'minutes': body['exp'] if 'exp' in body else 15}
-        })}), 200
+        return jsonify({
+            'validation_link': '',
+            'jwt': create_jwt({
+                'id': user.id,
+                'expires': {'minutes': body['exp'] if 'exp' in body else 15}
+            })
+        }), 200
 
     return 'The log in information is incorrect', 401
 
@@ -96,11 +99,18 @@ def login():
 #############################################################################
 
 
-# @app.route('/validate')
-#     return request.args.get('p') + ' ' + request.args.get('t')
+@app.route('/user/validate/<token>')
+def validate(token):
+    jwt_data = decode_jwt(token)
+    # return jsonify(jwt_data)
+    # return jsonify({
+    #     'expired': expired(jwt_data['exp']),
+    #     'expiration': datetime.fromtimestamp(jwt_data['exp']),
+    #     'now': datetime.now()
+    # })
+    # return create_jwt({'expires': {'seconds':30}})
 
-
-@app.route('/user')
+@app.route('/user', methods=['GET'])
 def get_users():
     return jsonify([x.serialize() for x in Users.query.all()])
 
