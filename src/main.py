@@ -98,7 +98,7 @@ def register_user():
     user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
     if user and not user.valid:
         return jsonify({
-            'validation_link': 'http://127.0.0.1:3000/user/validate/' + create_jwt({'id': user.id})
+            'validation_link': os.environ.get('API_HOST') + '/validate/' + create_jwt({'id': user.id})
         }), 200
 
     elif user and user.valid:
@@ -114,7 +114,7 @@ def register_user():
 
     return jsonify({
         'msg': 'User was created successfully',
-        'validation_link': 'https://pokerswap.herokuapp.com/' + create_jwt({'id': user.id})
+        'validation_link': os.environ.get('API_HOST') + '/validate/' + create_jwt({'id': user.id})
     }), 200
 
 
