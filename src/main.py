@@ -114,7 +114,7 @@ def register_user():
 
     return jsonify({
         'msg': 'User was created successfully',
-        'validation_link': 'http://127.0.0.1:3000/user/validate/' + create_jwt({'id': user.id})
+        'validation_link': 'https://pokerswap.herokuapp.com/' + create_jwt({'id': user.id})
     }), 200
 
 
