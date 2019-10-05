@@ -151,7 +151,7 @@ def login():
 
 # id can me the user id, me, or all
 @app.route('/profiles/<id>', methods=['GET'])
-@jwt_required()
+@jwt_required
 def get_profiles(id):
 
     jwt_data = get_jwt()
