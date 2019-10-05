@@ -41,7 +41,7 @@ def add_claims_to_access_token(kwargs):
     now = datetime.utcnow()
     kwargs = kwargs if type(kwargs) is dict else {}
     id = kwargs['id'] if 'id' in kwargs else None
-    role = kwargs['roles'] if 'roles' in kwargs else 'user'
+    role = kwargs['role'] if 'role' in kwargs else 'user'
     expires = kwargs['expires'] if 'expires' in kwargs else {'minutes': 15}
     
     return {
@@ -70,44 +70,14 @@ def validate(token):
     
     jwt_data = decode_jwt(token)
     
-    user = Users.query.filter_by(id=jwt_data['sub']).first()
-
-    if not user.valid:
-        user.valid = True
-        db.session.commit()
-
-    return redirect('https://www.google.com', code=300)
-
-
-
-
-# id can me the user id, me, or all
-@app.route('/user/<id>', methods=['GET'])
-@jwt_required
-def get_users(id):
-
-    jwt_data = get_jwt()
-    
-    if id == 'me':
+    if jwt_data['role'] == 'validate':
         user = Users.query.filter_by(id=jwt_data['sub']).first()
-        return jsonify(user.serialize()), 200
+        if not user.valid:
+            user.valid = True
+            db.session.commit()
 
-    if id == 'all':
-        if jwt_data['role'] == 'admin':
-            return jsonify([x.serialize() for x in Users.query.all()]), 200
-        else:
-            return 'Invalid request', 401
-
-    try:
-        id = int(id)
-    except:
-        raise APIException('Invalid id', status_code=400)
-    
-    user = Users.query.filter_by(id=id).first()
-    if user:
-        return jsonify(user.serialize()), 200
-    
-    return 'No user found', 404
+    # After validation take to register profile
+    return redirect('https://www.google.com', code=300)
 
 
 
@@ -179,9 +149,47 @@ def login():
 
 
 
-@app.route('/tournaments', methods=['GET'])
-def get_all_tournaments():
-    return jsonify([x.serialize() for x in Tournaments.query.all()])
+# id can me the user id, me, or all
+@app.route('/profiles/<id>', methods=['GET'])
+@jwt_required
+def get_profiles(id):
+
+    jwt_data = get_jwt()
+    
+    if id == 'me':
+        user = Profiles.query.filter_by(id=jwt_data['sub']).first()
+        return jsonify(user.serialize()), 200
+
+    if id == 'all':
+        if jwt_data['role'] == 'admin':
+            return jsonify([x.serialize() for x in Profiles.query.all()]), 200
+        else:
+            return 'Invalid request', 401
+
+    if not id.isnumeric():
+        raise APIException('Invalid id', status_code=400)
+
+    id = int(id)
+    user = Profiles.query.filter_by(id=id).first()
+    if user:
+        return jsonify(user.serialize()), 200
+    
+    return 'No user found', 404
+
+
+
+
+@app.route('/profiles', methods=['POST'])
+@jwt_required
+def register_profiles():
+    
+    body = request.get_json()
+
+    missing_item = has_params(body, 'first_name', 'last_name')
+    if missing_item:
+        raise APIException('You need to specify the ' + missing_item, status_code=400)
+
+    return 'Work in progress', 200
 
 
 
@@ -189,24 +197,6 @@ def get_all_tournaments():
 @app.route('/tournaments/<int:id>', methods=['GET'])
 def get_tournament(id):
     return jsonify(Tournaments.query.filter_by(id=id).first().serialize())
-
-
-
-
-@app.route('/profiles')
-def get_all_profiles():
-    return jsonify([x.serialize(long=True) for x in Profiles.query.all()])
-
-
-
-
-@app.route('/profiles/<id>', methods=['GET'])
-def get_profile(id):
-    if id == 'me':
-        return 'me'
-    if not id.isnumeric():
-        return 'id must be numeric'
-    return 'is numeric'
 
 
 

@@ -60,6 +60,7 @@ class Profiles(db.Model):
             return {
                 **json,
                 "hendon_url": self.hendon_url,
+                "valid": self.user.valid,
                 "created_at": "",
                 "updated_at": "",
                 # "swaps": lst,
@@ -79,6 +80,8 @@ class Tournaments(db.Model):
     address = db.Column(db.String(250))
     start_at = db.Column(db.DateTime)
     end_at = db.Column(db.DateTime)
+    longitude = db.Column(db.Float)
+    latitude = db.Column(db.Float)
 
     flights = db.relationship('Flights', back_populates='tournament')
     swaps = db.relationship('Swaps', back_populates='tournament')
@@ -93,6 +96,8 @@ class Tournaments(db.Model):
             "address": self.address,
             "start_at": self.start_at,
             "end_at": self.end_at,
+            "longitude": self.longitude,
+            "latitude": self.latitude,
             "created_at": "",
             "updated_at": "",
             "flights": [x.serialize() for x in self.flights]
@@ -105,6 +110,7 @@ class Flights(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_at = db.Column(db.DateTime)
     end_at = db.Column(db.DateTime)
+    day = db.Column(db.Integer)
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
 
     tournament = db.relationship('Tournaments', back_populates='flights')
