@@ -1,6 +1,6 @@
 
 import os
-from flask import Flask, request, jsonify, url_for
+from flask import Flask, request, jsonify, url_for, redirect
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
@@ -119,7 +119,7 @@ def validate(token):
     
     jwt_data = decode_jwt(token)
     
-    user = Users.query.filter_by(id=jwt_data['id']).first()
+    user = Users.query.filter_by(id=jwt_data['sub']).first()
     user.valid = True
 
     db.session.commit()
