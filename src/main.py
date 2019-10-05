@@ -88,12 +88,15 @@ def register_user():
     if missing_item:
         raise APIException("You need to specify the " + missing_item, status_code=400)
 
-    user = Users.query.filter_by(email=body['email']).first()
-    if user:
-        return "User already exists", 405
-
     m = hashlib.sha256()
     m.update(body['password'].encode('utf-8'))
+
+    # If user exists and failed to validate his account before token expiration
+    user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
+    if user and not user.valid:
+        return jsonify({
+            'validation_link': 'http://127.0.0.1:3000/user/validate/' + create_jwt({'id': user.id})
+        }), 200
     
     db.session.add(Users(
         email=body['email'], 
@@ -105,7 +108,7 @@ def register_user():
 
     return jsonify({
         'msg': 'User was created successfully',
-        'validation_link': 'http://127.0.0.1:3000/user/validate/' + create_jwt({'id': user.id})}
+        'validation_link': 'http://127.0.0.1:3000/user/validate/' + create_jwt({'id': user.id})
     }), 200
 
 
@@ -113,14 +116,15 @@ def register_user():
 
 @app.route('/user/validate/<token>')
 def validate(token):
+    
     jwt_data = decode_jwt(token)
-    # return jsonify(jwt_data)
-    # return jsonify({
-    #     'expired': expired(jwt_data['exp']),
-    #     'expiration': datetime.fromtimestamp(jwt_data['exp']),
-    #     'now': datetime.now()
-    # })
-    # return create_jwt({'expires': {'seconds':30}})
+    
+    user = Users.query.filter_by(id=jwt_data['id']).first()
+    user.valid = True
+
+    db.session.commit()
+
+    return redirect('https://www.google.com', code=300)
 
 
 
