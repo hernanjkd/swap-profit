@@ -9,6 +9,7 @@ from utils import APIException, generate_sitemap, verify_json, expired
 from dummy_data import buy_ins, flights, swaps, profiles, tournaments
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 from datetime import datetime, timedelta
+import hashlib
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -32,7 +33,7 @@ def handle_invalid_usage(error):
 # Must always pass just one dictionary when using create_jwt(), even if empty
 # The expiration is for timedelta, so any keyworded argument that fits it
 #
-#       create_jwt( {'id':100,'roles':'admin','expires':{'days':4}} )
+#       create_jwt( {'id':100,'role':'admin','expires':{'days':4}} )
 #
 ###############################################################################
 @jwt.jwt_data_loader
@@ -41,7 +42,7 @@ def add_claims_to_access_token(kwargs):
     kwargs = kwargs if type(kwargs) is dict else {}
     id = kwargs['id'] if 'id' in kwargs.keys() else None
     roles = kwargs['roles'] if 'roles' in kwargs.keys() else 'user'
-    expires = kwargs['expires'] if 'expires' in kwargs.keys() else {'minutes':5}
+    expires = kwargs['expires'] if 'expires' in kwargs.keys() else {'minutes':15}
     
     return {
         'exp': now + timedelta(**expires),
@@ -66,24 +67,26 @@ def add_claims_to_access_token(kwargs):
 
 
 
-# @app.route('/user/token', methods=['POST'])
-# def login():
-#     if request.method != 'POST':
-#         return 'Invalid method', 404
+@app.route('/user/token', methods=['POST'])
+def login():
 
-#     body = request.get_json()
+    body = request.get_json()
 
-#     missing_item = verify_json(body, 'email', 'password')
-#     if missing_item:
-#         raise APIException('You need to specify the ' + missing_item, status_code=400)
+    missing_item = verify_json(body, 'email', 'password')
+    if missing_item:
+        raise APIException('You need to specify the ' + missing_item, status_code=400)
 
-#     all_users = Users.query.all()
-#     for user in all_users:
-#         if user['email'] == body['email'] and user['password'] == hash(body['password']):
-#             ret = {'jwt': create_jwt(identity=body['email'])}
-#             return jsonify(ret), 200
+    m = hashlib.sha256()
+    m.update(body['password'].encode('utf-8'))
 
-#     return 'The log in information is incorrect', 401
+    user = Users.query.filter_by(email=body['email'], password=m.hexdigest()).first()
+    if user:
+        return jsonify({'jwt': create_jwt({
+            'id': user.id,
+            'expires': {'minutes': body['exp'] if 'exp' in body else 15}
+        })}), 200
+
+    return 'The log in information is incorrect', 401
 
 
 
@@ -93,12 +96,16 @@ def add_claims_to_access_token(kwargs):
 #############################################################################
 
 
+# @app.route('/validate')
+#     return request.args.get('p') + ' ' + request.args.get('t')
+
+
+@app.route('/user')
+def get_users():
+    return jsonify([x.serialize() for x in Users.query.all()])
 
 @app.route('/user', methods=['POST'])
 def register_user():
-    
-    if request.method != 'POST':
-        return "Invalid Method", 404
 
     body = request.get_json()
 
@@ -106,14 +113,17 @@ def register_user():
     if missing_item:
         raise APIException("You need to specify the " + missing_item, status_code=400)
 
+    m = hashlib.sha256()
+    m.update(body['password'].encode('utf-8'))
+    
+
     db.session.add(Users(
         email=body['email'], 
-        password=hash(body['password'])
+        password=m.hexdigest()
     ))
     db.session.commit()
-
-    return jsonify([x.serialize() for x in Users.query.all()])
-    #return "ok", 200
+    
+    return "ok", 200
 
 
 

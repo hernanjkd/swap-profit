@@ -6,8 +6,8 @@ class Users(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(100), unique=True, nullable=False)
-    validated = db.Column(db.Boolean)
+    password = db.Column(db.String(256), unique=True, nullable=False)
+    valid = db.Column(db.Boolean)
 
     profile = db.relationship('Profiles', back_populates='user', uselist=False)
     transactions = db.relationship('Transactions', back_populates='user')
@@ -20,7 +20,7 @@ class Users(db.Model):
         return {
             "id": self.id,
             "email": self.email,
-            "validated": self.validated,
+            "valid": self.valid,
             "created_at": "",
             "updated_at": ""
         }
@@ -234,7 +234,7 @@ class Tokens(db.Model):
     __tablename__ = 'tokens'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    token = db.Column(db.String(200))
+    token = db.Column(db.String(256))
     expires_at = db.Column(db.DateTime)
 
     user = db.relationship('Users', back_populates='tokens')
