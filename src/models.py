@@ -34,7 +34,7 @@ class Profiles(db.Model):
     last_name = db.Column(db.String(100), nullable=False)
     username = db.Column(db.String(100))
     hendon_url = db.Column(db.String(200))
-    profile_picture_url = db.Column(db.String(250))
+    profile_pic_url = db.Column(db.String(250))
 
     user = db.relationship('Users', back_populates='profile', uselist=False)
     buy_ins = db.relationship('Buy_ins', back_populates='user')
@@ -54,7 +54,7 @@ class Profiles(db.Model):
             "last_name": self.last_name,
             "username": self.username,
             "email": self.user.email,
-            "profile_picture_url": self.profile_picture_url
+            "profile_pic_url": self.profile_pic_url
         }
         if long:
             return {
@@ -188,7 +188,7 @@ class Buy_ins(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
     flight_id = db.Column(db.Integer, db.ForeignKey('flights.id'))
-    receipt_image_url = db.Column(db.String(250))
+    receipt_img_url = db.Column(db.String(250))
 
     user = db.relationship('Profiles', back_populates='buy_ins')
     flight = db.relationship('Flights', back_populates='buy_ins')
@@ -211,7 +211,7 @@ class Buy_ins(db.Model):
             "id": self.id,
             "user_id": self.user_id,
             "flight_id": self.flight_id,
-            "receipt_image_url": self.receipt_image_url
+            "receipt_img_url": self.receipt_img_url
         }
 
 
