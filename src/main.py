@@ -54,8 +54,25 @@ def add_claims_to_access_token(kwargs):
 
 
 
-# 
-role_jwt_required(lst) = jwt_required(role_jwt_required)
+
+# Takes only one param 'user' because admin will have access to all endpoints
+def role_jwt_required(role='admin'):
+    def decorator(func):
+        
+        @jwt_required
+        def wrapper(*args, **kwargs):         
+                jwt_role = get_jwt()['role']            
+                if (
+                    (role == 'admin' and jwt_role != 'admin') or
+                    (role == 'user' and (jwt_role != 'user' or jwt_role != 'admin'))
+                )
+                    raise APIException('Access denied', status_code=401)
+                    
+            return func(*args, **kwargs)
+        
+        return wrapper
+    return decorator
+
 
 
 
