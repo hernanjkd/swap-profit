@@ -33,7 +33,7 @@ def handle_invalid_usage(error):
 # Must always pass just one dictionary when using create_jwt(), even if empty
 # The expiration is for timedelta, so any keyworded argument that fits it
 #
-#       create_jwt( {'id':100,'role':'admin','expires':{'days':4}} )
+#       create_jwt( {'id':100,'role':'admin','exp':15 )
 #
 ###############################################################################
 @jwt.jwt_data_loader
@@ -54,6 +54,11 @@ def add_claims_to_access_token(kwargs):
 
 
 
+# 
+role_jwt_required(lst) = jwt_required(role_jwt_required)
+
+
+
 
 #############################################################################
 ## DELETE ENDPOINT - JUST FOR TESTING - DELETE ENDPOINT - JUST FOR TESTING ##
@@ -70,14 +75,20 @@ def validate(token):
     
     jwt_data = decode_jwt(token)
     
-    if jwt_data['role'] == 'validate':
+    if jwt_data['role'] == 'invalid':
         user = Users.query.filter_by(id=jwt_data['sub']).first()
         if not user.valid:
             user.valid = True
             db.session.commit()
 
-    # After validation take to register profile
-    return redirect('https://www.google.com', code=300)
+    return jsonify({
+        'msg': 'Your email has been validated',
+        'jwt': create_jwt({
+            'id': jwt_data['sub'],
+            'role': 'user',
+            'exp': 600000
+        })
+    })
 
 
 
@@ -86,6 +97,9 @@ def validate(token):
 def register_user():
 
     body = request.get_json()
+    validation_link = (
+        os.environ.get('API_HOST') + '/user/validate/' + create_jwt({'id': user.id,'role':'invalid'})
+    )
 
     missing_item = has_params(body, 'email', 'password')
     if missing_item:
@@ -94,12 +108,11 @@ def register_user():
     m = hashlib.sha256()
     m.update(body['password'].encode('utf-8'))
 
+
     # If user exists and failed to validate his account
     user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
     if user and not user.valid:
-        return jsonify({
-            'validation_link': os.environ.get('API_HOST') + '/user/validate/' + create_jwt({'id': user.id})
-        }), 200
+        return jsonify({'validation_link': validation_link}), 200
 
     elif user and user.valid:
         return 'User already exists', 405
@@ -114,7 +127,7 @@ def register_user():
 
     return jsonify({
         'msg': 'User was created successfully',
-        'validation_link': os.environ.get('API_HOST') + '/user/validate/' + create_jwt({'id': user.id})
+        'validation_link': validation_link
     }), 200
 
 
@@ -133,15 +146,15 @@ def login():
     m.update(body['password'].encode('utf-8'))
 
     user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
-    if user:
+    if user:        
         if user.valid:
             return jsonify({
                 'jwt': create_jwt({
                     'id': user.id,
-                    'expires': {'minutes': body['exp'] if 'exp' in body else 15}
+                    'exp': body['exp'] if 'exp' in body else 15
                 })
             }), 200
-        
+            
         return 'Email not validated', 405
 
     return 'The log in information is incorrect', 401
