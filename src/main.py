@@ -114,8 +114,9 @@ def validate(token):
 def register_user():
 
     body = request.get_json()
-    validation_link = (
-        os.environ.get('API_HOST') + '/user/validate/' + create_jwt({'id': user.id,'role':'invalid'})
+    def validation_link(id):
+        return (
+        os.environ.get('API_HOST') + '/user/validate/' + create_jwt({'id': id,'role':'invalid'})
     )
 
     missing_item = has_params(body, 'email', 'password')
@@ -129,7 +130,7 @@ def register_user():
     # If user exists and failed to validate his account
     user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
     if user and not user.valid:
-        return jsonify({'validation_link': validation_link}), 200
+        return jsonify({'validation_link': validation_link(user.id)}), 200
 
     elif user and user.valid:
         return 'User already exists', 405
@@ -144,7 +145,7 @@ def register_user():
 
     return jsonify({
         'msg': 'User was created successfully',
-        'validation_link': validation_link
+        'validation_link': validation_link(user.id)
     }), 200
 
 
