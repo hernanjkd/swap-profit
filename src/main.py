@@ -55,7 +55,7 @@ def add_claims_to_access_token(kwargs):
 
 
 
-# Decorator: takes only one param 'user' because admin will have access to all endpoints
+# Notes: 'admin' will have access even if arg not passed
 def role_jwt_required(valid_roles=['invalid']):
     def decorator(func):
         
@@ -63,15 +63,12 @@ def role_jwt_required(valid_roles=['invalid']):
         def wrapper(*args, **kwargs):         
             
             jwt_role = get_jwt()['role']
-            rank = wrapper.rank
-            valid = False
+            valid = True if jwt_role == 'admin' else False
 
             for role in valid_roles:
-                if role not in rank:
-                    raise APIException('Invalid role', status_code=400)
-                if rank[jwt_role] > rank[role]:
+                if role == jwt_role:
+                    valid = True
                     
-
             if not valid:    
                 raise APIException('Access denied', status_code=401)
 
@@ -79,11 +76,6 @@ def role_jwt_required(valid_roles=['invalid']):
         
         # change wrapper name so it can be used for more than one function
         wrapper.__name__ = func.__name__
-        wrapper.rank = {
-            'admin': 1,
-            'user': 2,
-            'invalid': 3
-        }
 
         return wrapper
     return decorator
@@ -99,7 +91,7 @@ def create_token():
     return jsonify( create_jwt(request.get_json()) )
 
 @app.route('/testing')
-@role_jwt_required('user')
+@role_jwt_required(['user','admin','invalid'])
 def testing():
     return 'jwt is approved'
 
@@ -222,7 +214,7 @@ def login():
 
 # id can me the user id, me, or all
 @app.route('/profiles/<id>', methods=['GET'])
-@role_jwt_required('user')
+@role_jwt_required(['user'])
 def get_profiles(id):
 
     jwt_data = get_jwt()
@@ -251,7 +243,7 @@ def get_profiles(id):
 
 
 @app.route('/profiles', methods=['POST'])
-@role_jwt_required('user')
+@role_jwt_required(['user'])
 def register_profile():
     
     body = request.get_json()
@@ -281,7 +273,7 @@ def register_profile():
 
 # Can search by id or name
 @app.route('/tournaments/<id>', methods=['GET'])
-@role_jwt_required('user')
+@role_jwt_required(['user'])
 def get_tournament(id):
 
     search = {'id':int(id)} if id.isnumeric() else {'name':id}
