@@ -91,9 +91,38 @@ def create_token():
     return jsonify( create_jwt(request.get_json()) )
 
 @app.route('/testing')
-@role_jwt_required(['user','admin','invalid'])
+@role_jwt_required(['user'])
 def testing():
     return 'jwt is approved'
+
+@app.route('/fill_database')
+def fill_database():
+    heartland = Tournaments(
+        name='Heartland Poker Tour - HPT Colorado, Black Hawk',
+        address='261 Main St, Black Hawk, CO 80422',
+        start_at=datetime(2019,10,11,12),
+        end_at=datetime(2019,10,11,21)
+    )
+    db.session.add(heartland)
+
+    stones = Tournaments(
+        name='Stones Live Fall Poker Series',
+        address='6510 Antelope Rd, Citrus Heights, CA 95621',
+        start_at=datetime(2019,9,30,11),
+        end_at=datetime(2019,10,1,22)
+    )
+    db.session.add(stones)
+
+    wpt = Tournaments(
+        name='WPT DeepStacks - WPTDS Sacramento',
+        address='Thunder Valley Casino Resort, 1200 Athens Ave, Lincoln, CA 95648',
+        start_at=datetime(2019,10,2,12),
+        end_at=datetime(2019,10,2,22)
+    )
+    db.session.add(wpt)
+
+    db.session.commit()
+    return 'ok', 200
 
 @app.route('/tournament', methods=['POST'])
 def add_tournament():
@@ -221,6 +250,8 @@ def get_profiles(id):
     
     if id == 'me':
         user = Profiles.query.filter_by(id=jwt_data['sub']).first()
+        if not user:
+            return 'Not found', 404
         return jsonify(user.serialize()), 200
 
     if id == 'all':
@@ -271,10 +302,13 @@ def register_profile():
 
 
 
-# Can search by id or name
+# Can search by id, name or all for all tournaments
 @app.route('/tournaments/<id>', methods=['GET'])
 @role_jwt_required(['user'])
 def get_tournament(id):
+
+    if id == 'all':
+        return jsonify([x.serialize() for x in Tournaments.query.all()])
 
     search = {'id':int(id)} if id.isnumeric() else {'name':id}
     
