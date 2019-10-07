@@ -56,7 +56,7 @@ def add_claims_to_access_token(kwargs):
 
 
 # Decorator: takes only one param 'user' because admin will have access to all endpoints
-def role_jwt_required(roles_accepted=['invalid']):
+def role_jwt_required(valid_roles=['invalid']):
     def decorator(func):
         
         @jwt_required
@@ -64,12 +64,16 @@ def role_jwt_required(roles_accepted=['invalid']):
             
             jwt_role = get_jwt()['role']
             rank = wrapper.rank
+            valid = False
 
-            for role in roles_accepted:
+            for role in valid_roles:
                 if role not in rank:
                     raise APIException('Invalid role', status_code=400)
                 if rank[jwt_role] > rank[role]:
-                    raise APIException('Access denied', status_code=401)
+                    
+
+            if not valid:    
+                raise APIException('Access denied', status_code=401)
 
             return func(*args, **kwargs)
         
