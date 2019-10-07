@@ -97,50 +97,25 @@ def testing():
 
 @app.route('/fill_database')
 def fill_database():
-    heartland = Tournaments(
-        name='Heartland Poker Tour - HPT Colorado, Black Hawk',
-        address='261 Main St, Black Hawk, CO 80422',
-        start_at=datetime(2019,10,11,12),
-        end_at=datetime(2019,10,11,21)
-    )
-    db.session.add(heartland)
-
-    stones = Tournaments(
-        name='Stones Live Fall Poker Series',
-        address='6510 Antelope Rd, Citrus Heights, CA 95621',
-        start_at=datetime(2019,9,30,11),
-        end_at=datetime(2019,10,1,22)
-    )
-    db.session.add(stones)
-
-    wpt = Tournaments(
-        name='WPT DeepStacks - WPTDS Sacramento',
-        address='Thunder Valley Casino Resort, 1200 Athens Ave, Lincoln, CA 95648',
-        start_at=datetime(2019,10,2,12),
-        end_at=datetime(2019,10,2,22)
-    )
-    db.session.add(wpt)
-
-    db.session.commit()
     return 'ok', 200
 
-@app.route('/tournament', methods=['POST'])
+@app.route('/tournaments', methods=['POST'])
 def add_tournament():
     body = request.get_json()
 
     db.session.add(Tournaments(
-        name=body['name'],
-        address=body['address'],
-        start_at=body['start_at'],
-        end_at=body['end_at'],
-        longitude=body['longitude'],
-        latitude=body['latitude']
+        name = body['name'],
+        address = body['address'],
+        start_at = datetime( *body['start_at'] ),
+        end_at = datetime( *body['end_at'] ),
+        longitude = None,
+        latitude = None
     ))
     db.session.commit()
 
     search = {
         'name': body['name'],
-        'start_at': body['start_at']
+        'start_at': datetime( *body['start_at'] )
     }
     return jsonify(Tournaments.query.filter_by(**search).first().serialize())
 
@@ -196,8 +171,8 @@ def register_user():
         return 'User already exists', 405
     
     db.session.add(Users(
-        email=body['email'], 
-        password=m.hexdigest()
+        email = body['email'], 
+        password = m.hexdigest()
     ))
     db.session.commit()
     
@@ -241,7 +216,7 @@ def login():
 
 
 
-# id can me the user id, me, or all
+# id can be the user id, 'me' or 'all'
 @app.route('/profiles/<id>', methods=['GET'])
 @role_jwt_required(['user'])
 def get_profiles(id):
@@ -302,7 +277,7 @@ def register_profile():
 
 
 
-# Can search by id, name or all for all tournaments
+# Can search by id, 'name' or 'all'
 @app.route('/tournaments/<id>', methods=['GET'])
 @role_jwt_required(['user'])
 def get_tournament(id):
