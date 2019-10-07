@@ -118,11 +118,14 @@ def add_tournament():
         'start_at': datetime( *body['start_at'] )
     }
     return jsonify(Tournaments.query.filter_by(**search).first().serialize())
+#############################################################################
+## DELETE ENDPOINT - JUST FOR TESTING - DELETE ENDPOINT - JUST FOR TESTING ##
+#############################################################################
 
 
 
 
-@app.route('/user/validate/<token>', methods=['GET'])
+@app.route('/users/validate/<token>', methods=['GET'])
 def validate(token):
     
     jwt_data = decode_jwt(token)
@@ -145,7 +148,7 @@ def validate(token):
 
 
 
-@app.route('/user', methods=['POST'])
+@app.route('/users', methods=['POST'])
 def register_user():
 
     body = request.get_json()
@@ -186,7 +189,7 @@ def register_user():
 
 
 
-@app.route('/user/token', methods=['POST'])
+@app.route('/users/token', methods=['POST'])
 def login():
 
     body = request.get_json()
@@ -212,6 +215,21 @@ def login():
         return 'Email not validated', 405
 
     return 'The log in information is incorrect', 401
+
+
+
+
+    @app.route('/user/<id>/email', methods=['PUT'])
+    @role_jwt_required(['user'])
+    def change_email(id):
+
+        if id == 'me':
+            user_id = get_jwt()['sub']
+        
+        elif id.isnumeric():
+            user_id = int(id)
+
+        return 'ok', 200
 
 
 
@@ -280,7 +298,7 @@ def register_profile():
 # Can search by id, 'name' or 'all'
 @app.route('/tournaments/<id>', methods=['GET'])
 @role_jwt_required(['user'])
-def get_tournament(id):
+def get_tournaments(id):
 
     if id == 'all':
         return jsonify([x.serialize() for x in Tournaments.query.all()])
@@ -297,9 +315,25 @@ def get_tournament(id):
 
 
 
-@app.route('/swaps/all')
-def get_all_swaps():
-    return jsonify([x.serialize(long=True) for x in Swaps.query.all()])
+@app.route('/swaps', methods=['POST'])
+@role_jwt_required(['user'])
+def create_swaps():
+    
+    body = request.get_json()
+
+    missing_item = has_params(body, 'tournament_id', 'recipient_id', 'sender_id', 'percentage')
+    if missing_item:
+        raise APIException('You need to specify the ' + missing_item, status_code=400)
+
+    db.session.add(Swaps(
+        tournament_id = body['tournament_id'],
+        recipient_id = body['recipient_id'],
+        sender_id = body['sender_id'],
+        percetange = body['percentage']
+    ))
+    db.session.commit()
+
+    return 'ok', 200
 
 
 
