@@ -63,23 +63,23 @@ def role_jwt_required(roles_accepted=['invalid']):
         def wrapper(*args, **kwargs):         
             
             jwt_role = get_jwt()['role']
-            presedence = {
-                'admin': 1,
-                'user': 2,
-                'invalid': 3
-            }
+            rank = wrapper.rank
 
             for role in roles_accepted:
-                if role not in wrapper.presedenrce:
+                if role not in rank:
                     raise APIException('Invalid role', status_code=400)
-                if wrapper.presedence[role] 
-
-            raise APIException('Access denied', status_code=401)
+                if rank[jwt_role] > rank[role]:
+                    raise APIException('Access denied', status_code=401)
 
             return func(*args, **kwargs)
         
         # change wrapper name so it can be used for more than one function
         wrapper.__name__ = func.__name__
+        wrapper.rank = {
+            'admin': 1,
+            'user': 2,
+            'invalid': 3
+        }
 
         return wrapper
     return decorator
