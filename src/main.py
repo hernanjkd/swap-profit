@@ -33,7 +33,7 @@ def handle_invalid_usage(error):
 # Must always pass just one dictionary when using create_jwt(), even if empty
 # The expiration is for timedelta, so any keyworded argument that fits it
 #
-#       create_jwt( {'id':100,'role':'admin','exp':15 )
+#       create_jwt( {'id':100,'role':'admin','exp':15} )
 #
 ###############################################################################
 @jwt.jwt_data_loader
@@ -41,7 +41,7 @@ def add_claims_to_access_token(kwargs):
     now = datetime.utcnow()
     kwargs = kwargs if type(kwargs) is dict else {}
     id = kwargs['id'] if 'id' in kwargs else None
-    role = kwargs['role'] if 'role' in kwargs else 'user'
+    role = kwargs['role'] if 'role' in kwargs else 'invalid'
     exp = kwargs['exp'] if 'exp' in kwargs else 15
     
     return {
@@ -55,24 +55,34 @@ def add_claims_to_access_token(kwargs):
 
 
 
-# Takes only one param 'user' because admin will have access to all endpoints
-def role_jwt_required(role='admin'):
+# Decorator: takes only one param 'user' because admin will have access to all endpoints
+def role_jwt_required(roles_accepted=['invalid']):
     def decorator(func):
         
         @jwt_required
         def wrapper(*args, **kwargs):         
-            jwt_role = get_jwt()['role']            
-            if (
-                (role == 'admin' and jwt_role != 'admin') or
-                (role == 'user' and jwt_role != 'user' and jwt_role != 'admin')
-            ):
-                raise APIException('Access denied', status_code=401)
+            
+            jwt_role = get_jwt()['role']
+            presedence = {
+                'admin': 1,
+                'user': 2,
+                'invalid': 3
+            }
+
+            for role in roles_accepted:
+                if role not in wrapper.presedenrce:
+                    raise APIException('Invalid role', status_code=400)
+                if wrapper.presedence[role] 
+
+            raise APIException('Access denied', status_code=401)
 
             return func(*args, **kwargs)
         
+        # change wrapper name so it can be used for more than one function
+        wrapper.__name__ = func.__name__
+
         return wrapper
     return decorator
-
 
 
 
@@ -83,6 +93,31 @@ def role_jwt_required(role='admin'):
 @app.route('/create/token', methods=['POST'])
 def create_token():
     return jsonify( create_jwt(request.get_json()) )
+
+@app.route('/testing')
+@role_jwt_required('user')
+def testing():
+    return 'jwt is approved'
+
+@app.route('/tournament', methods=['POST'])
+def add_tournament():
+    body = request.get_json()
+
+    db.session.add(Tournaments(
+        name=body['name'],
+        address=body['address'],
+        start_at=body['start_at'],
+        end_at=body['end_at'],
+        longitude=body['longitude'],
+        latitude=body['latitude']
+    ))
+    db.session.commit()
+
+    search = {
+        'name': body['name'],
+        'start_at': body['start_at']
+    }
+    return jsonify(Tournaments.query.filter_by(**search).first().serialize())
 
 
 
@@ -121,7 +156,7 @@ def register_user():
 
     missing_item = has_params(body, 'email', 'password')
     if missing_item:
-        raise APIException("You need to specify the " + missing_item, status_code=400)
+        raise APIException('You need to specify the ' + missing_item, status_code=400)
 
     m = hashlib.sha256()
     m.update(body['password'].encode('utf-8'))
@@ -169,6 +204,7 @@ def login():
             return jsonify({
                 'jwt': create_jwt({
                     'id': user.id,
+                    'role': 'user',
                     'exp': body['exp'] if 'exp' in body else 15
                 })
             }), 200
@@ -182,7 +218,7 @@ def login():
 
 # id can me the user id, me, or all
 @app.route('/profiles/<id>', methods=['GET'])
-@jwt_required
+@role_jwt_required('user')
 def get_profiles(id):
 
     jwt_data = get_jwt()
@@ -205,29 +241,53 @@ def get_profiles(id):
     if user:
         return jsonify(user.serialize()), 200
     
-    return 'No user found', 404
+    return 'Not found', 404
 
 
 
 
 @app.route('/profiles', methods=['POST'])
-@jwt_required
-def register_profiles():
+@role_jwt_required('user')
+def register_profile():
     
     body = request.get_json()
+    user = Users.query.filter_by( id = get_jwt()['sub'] ).first()
+
+    if not user:
+        raise APIException('User not found', status_code=404)
 
     missing_item = has_params(body, 'first_name', 'last_name')
     if missing_item:
         raise APIException('You need to specify the ' + missing_item, status_code=400)
 
-    return 'Work in progress', 200
+    db.session.add(Profiles(
+        first_name = body['first_name'],
+        last_name = body['last_name'],
+        username = body['username'] if 'username' in body else None,
+        hendon_url = body['hendon_url'] if 'hendon_url' in body else None,
+        profile_pic_url = body['profile_pic_url'] if 'profile_pic_url' in body else None,
+        user = user
+    ))
+    db.session.commit()
+
+    return 'ok', 200
 
 
 
 
-@app.route('/tournaments/<int:id>', methods=['GET'])
+# Can search by id or name
+@app.route('/tournaments/<id>', methods=['GET'])
+@role_jwt_required('user')
 def get_tournament(id):
-    return jsonify(Tournaments.query.filter_by(id=id).first().serialize())
+
+    search = {'id':int(id)} if id.isnumeric() else {'name':id}
+    
+    tournament = Tournaments.query.filter_by(**search).first()
+    
+    if tournament:
+        return jsonify(tournament.serialize())
+
+    return 'Not found', 404
 
 
 
