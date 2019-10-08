@@ -147,6 +147,7 @@ class Swaps(db.Model):
     winning_chips = db.Column(db.Integer, default=None)
     due_at = db.Column(db.DateTime, default=None)
     paid = db.Column(db.Boolean, default=False)
+    status = db.Column(db.String(20), default=None)
 
     tournament = db.relationship('Tournaments', back_populates='swaps')
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
@@ -162,6 +163,7 @@ class Swaps(db.Model):
             "percentage": self.percentage,
             "winning_chips": self.winning_chips,
             "due_at": self.due_at,
+            "status": self.status,
             "user": self.sender_user.serialize()
         }
         if sender:
@@ -189,6 +191,9 @@ class Buy_ins(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
     flight_id = db.Column(db.Integer, db.ForeignKey('flights.id'))
     receipt_img_url = db.Column(db.String(250))
+    chips = db.Column(db.Integer)
+    table = db.Column(db.Integer)
+    seat = db.Column(db.Integer)
 
     user = db.relationship('Profiles', back_populates='buy_ins')
     flight = db.relationship('Flights', back_populates='buy_ins')
@@ -211,6 +216,9 @@ class Buy_ins(db.Model):
             "id": self.id,
             "user_id": self.user_id,
             "flight_id": self.flight_id,
+            "chips": self.chips,
+            "table": self.table,
+            "seat": self.seat,
             "receipt_img_url": self.receipt_img_url
         }
 

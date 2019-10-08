@@ -154,7 +154,7 @@ def register_user():
     body = request.get_json()
     def validation_link(id):
         return (
-        os.environ.get('API_HOST') + '/user/validate/' + create_jwt({'id': id,'role':'invalid'})
+        os.environ.get('API_HOST') + '/users/validate/' + create_jwt({'id': id,'role':'invalid'})
     )
 
     missing_item = has_params(body, 'email', 'password')
