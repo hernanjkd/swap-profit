@@ -70,7 +70,7 @@ def role_jwt_required(valid_roles=['invalid']):
                     valid = True
                     
             if not valid:    
-                raise APIException('Access denied', status_code=401)
+                raise APIException('Access denied', 401)
 
             return func(*args, **kwargs)
         
@@ -91,13 +91,13 @@ def create_token():
     return jsonify( create_jwt(request.get_json()) )
 
 @app.route('/testing')
-@role_jwt_required(['user'])
+# @role_jwt_required(['user'])
 def testing():
-    return 'jwt is approved'
+    raise APIException('read this msg', 406)
 
 @app.route('/fill_database')
 def fill_database():
-    return 'ok', 200
+    return {'message':'ok'}, 200
 
 @app.route('/tournaments', methods=['POST'])
 def add_tournament():
@@ -131,7 +131,7 @@ def validate(token):
     jwt_data = decode_jwt(token)
     
     if jwt_data['role'] == 'invalid':
-        user = Users.query.filter_by(id=jwt_data['sub']).first()
+        user = Users.query.get(jwt_data['sub'])
         if not user.valid:
             user.valid = True
             db.session.commit()
@@ -159,7 +159,7 @@ def register_user():
 
     missing_item = has_params(body, 'email', 'password')
     if missing_item:
-        raise APIException('You need to specify the ' + missing_item, status_code=400)
+        raise APIException('You need to specify the ' + missing_item, 400)
 
     m = hashlib.sha256()
     m.update(body['password'].encode('utf-8'))
@@ -171,7 +171,7 @@ def register_user():
         return jsonify({'validation_link': validation_link(user.id)}), 200
 
     elif user and user.valid:
-        return 'User already exists', 405
+        raise APIException('User already exists', 405)
     
     db.session.add(Users(
         email = body['email'], 
@@ -189,6 +189,24 @@ def register_user():
 
 
 
+#
+@app.route('/users/<id>/email', methods=['PUT'])
+# @role_jwt_required(['user'])
+def update_email(id):
+
+    if id == 'me':
+        id = str(get_jwt()['sub'])
+
+    if not id.isnumeric():
+        raise APIException('Invalid id', 400)
+
+    user = Users.query.get(int(id))
+
+    return jsonify(user.serialize())
+
+
+
+
 @app.route('/users/token', methods=['POST'])
 def login():
 
@@ -196,40 +214,26 @@ def login():
 
     missing_item = has_params(body, 'email', 'password')
     if missing_item:
-        raise APIException('You need to specify the ' + missing_item, status_code=400)
+        raise APIException('You need to specify the ' + missing_item, 400)
 
     m = hashlib.sha256()
     m.update(body['password'].encode('utf-8'))
 
     user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
-    if user:        
-        if user.valid:
-            return jsonify({
-                'jwt': create_jwt({
-                    'id': user.id,
-                    'role': 'user',
-                    'exp': body['exp'] if 'exp' in body else 15
-                })
-            }), 200
-            
-        return 'Email not validated', 405
 
-    return 'The log in information is incorrect', 401
+    if not user:
+        raise APIException('The log in information is incorrect', 401)
 
-
-
-
-    @app.route('/user/<id>/email', methods=['PUT'])
-    @role_jwt_required(['user'])
-    def change_email(id):
-
-        if id == 'me':
-            user_id = get_jwt()['sub']
-        
-        elif id.isnumeric():
-            user_id = int(id)
-
-        return 'ok', 200
+    if not user.valid:
+        raise APIException('Email not validated', 405)
+    
+    return jsonify({
+        'jwt': create_jwt({
+            'id': user.id,
+            'role': 'user',
+            'exp': body['exp'] if 'exp' in body else 15
+        })
+    }), 200
 
 
 
@@ -240,28 +244,24 @@ def login():
 def get_profiles(id):
 
     jwt_data = get_jwt()
-    
-    if id == 'me':
-        user = Profiles.query.filter_by(id=jwt_data['sub']).first()
-        if not user:
-            return 'Not found', 404
-        return jsonify(user.serialize()), 200
 
     if id == 'all':
-        if jwt_data['role'] == 'admin':
-            return jsonify([x.serialize() for x in Profiles.query.all()]), 200
-        else:
-            return 'Invalid request', 401
+        if jwt_data['role'] != 'admin':
+            raise APIException('Access denied', 401)
+        
+        return jsonify([x.serialize() for x in Profiles.query.all()]), 200
+
+    if id == 'me':
+        id == str(jwt_data['sub'])
 
     if not id.isnumeric():
-        raise APIException('Invalid id', status_code=400)
+        raise APIException('Invalid id', 400)
 
-    id = int(id)
-    user = Profiles.query.filter_by(id=id).first()
-    if user:
-        return jsonify(user.serialize()), 200
+    user = Profiles.query.get(int(id))
+    if not user:
+        raise APIException('Not found', 404)
     
-    return 'Not found', 404
+    return jsonify(user.serialize()), 200
 
 
 
@@ -271,14 +271,14 @@ def get_profiles(id):
 def register_profile():
     
     body = request.get_json()
-    user = Users.query.filter_by( id = get_jwt()['sub'] ).first()
+    user = Users.query.get(get_jwt()['sub'])
 
     if not user:
-        raise APIException('User not found', status_code=404)
+        raise APIException('User not found', 404)
 
     missing_item = has_params(body, 'first_name', 'last_name')
     if missing_item:
-        raise APIException('You need to specify the ' + missing_item, status_code=400)
+        raise APIException('You need to specify the ' + missing_item, 400)
 
     db.session.add(Profiles(
         first_name = body['first_name'],
@@ -290,7 +290,7 @@ def register_profile():
     ))
     db.session.commit()
 
-    return 'ok', 200
+    return {'message':'ok'}, 200
 
 
 
@@ -303,14 +303,15 @@ def get_tournaments(id):
     if id == 'all':
         return jsonify([x.serialize() for x in Tournaments.query.all()])
 
-    search = {'id':int(id)} if id.isnumeric() else {'name':id}
+    if id.isnumeric():
+        tournament = Tournaments.query.get(int(id))
+    else:
+        tournament = Tournaments.query.filter(id in name)
     
-    tournament = Tournaments.query.filter_by(**search).first()
+    if not tournament:
+        raise APIException('Not found', 404)
     
-    if tournament:
-        return jsonify(tournament.serialize())
-
-    return 'Not found', 404
+    return jsonify(tournament.serialize())
 
 
 
@@ -323,7 +324,7 @@ def create_swaps():
 
     missing_item = has_params(body, 'tournament_id', 'recipient_id', 'sender_id', 'percentage')
     if missing_item:
-        raise APIException('You need to specify the ' + missing_item, status_code=400)
+        raise APIException('You need to specify the ' + missing_item, 400)
 
     db.session.add(Swaps(
         tournament_id = body['tournament_id'],
@@ -333,7 +334,7 @@ def create_swaps():
     ))
     db.session.commit()
 
-    return 'ok', 200
+    return {'message':'ok'}, 200
 
 
 
