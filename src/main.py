@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from flask_jwt_simple import JWTManager, jwt_required, create_jwt, decode_jwt, get_jwt
-from utils import APIException, generate_sitemap, has_params
+from utils import APIException, generate_sitemap, check_params, validation_link
 from dummy_data import buy_ins, flights, swaps, profiles, tournaments
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 from datetime import datetime, timedelta
@@ -152,14 +152,7 @@ def validate(token):
 def register_user():
 
     body = request.get_json()
-    def validation_link(id):
-        return (
-        os.environ.get('API_HOST') + '/users/validate/' + create_jwt({'id': id,'role':'invalid'})
-    )
-
-    missing_item = has_params(body, 'email', 'password')
-    if missing_item:
-        raise APIException('You need to specify the ' + missing_item, 400)
+    check_params(body, 'email', 'password')
 
     m = hashlib.sha256()
     m.update(body['password'].encode('utf-8'))
@@ -194,6 +187,9 @@ def register_user():
 # @role_jwt_required(['user'])
 def update_email(id):
 
+    body = request.get_json()
+    check_params(body, 'email')
+
     if id == 'me':
         id = str(get_jwt()['sub'])
 
@@ -201,8 +197,13 @@ def update_email(id):
         raise APIException('Invalid id', 400)
 
     user = Users.query.get(int(id))
+    user.valid = False
+    user.email = body['email']
 
-    return jsonify(user.serialize()), 200
+    return jsonify({
+        'msg': 'User was created successfully',
+        'validation_link': validation_link(user.id)
+    }), 200
 
 
 
@@ -211,10 +212,7 @@ def update_email(id):
 def login():
 
     body = request.get_json()
-
-    missing_item = has_params(body, 'email', 'password')
-    if missing_item:
-        raise APIException('You need to specify the ' + missing_item, 400)
+    check_params(body, 'email', 'password')
 
     m = hashlib.sha256()
     m.update(body['password'].encode('utf-8'))
@@ -270,15 +268,12 @@ def get_profiles(id):
 @role_jwt_required(['user'])
 def register_profile():
     
-    body = request.get_json()
     user = Users.query.get(get_jwt()['sub'])
-
     if not user:
         raise APIException('User not found', 404)
 
-    missing_item = has_params(body, 'first_name', 'last_name')
-    if missing_item:
-        raise APIException('You need to specify the ' + missing_item, 400)
+    body = request.get_json()
+    check_params(body, 'first_name', 'last_name')
 
     db.session.add(Profiles(
         first_name = body['first_name'],
@@ -320,14 +315,12 @@ def get_tournaments(id):
 
 
 @app.route('/swaps', methods=['POST'])
-@role_jwt_required(['user'])
+# @role_jwt_required(['user'])
 def create_swaps():
     
     body = request.get_json()
 
-    missing_item = has_params(body, 'tournament_id', 'recipient_id', 'sender_id', 'percentage')
-    if missing_item:
-        raise APIException('You need to specify the ' + missing_item, 400)
+    check_params(body, 'tournament_id', 'recipient_id', 'sender_id', 'percentage')
 
     db.session.add(Swaps(
         tournament_id = body['tournament_id'],

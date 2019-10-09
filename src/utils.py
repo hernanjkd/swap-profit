@@ -1,5 +1,6 @@
 from flask import jsonify, url_for
 from datetime import datetime
+import re
 
 class APIException(Exception):
     status_code = 400
@@ -22,12 +23,16 @@ def has_no_empty_params(rule):
     return len(defaults) >= len(arguments)
 
 def check_params(body, *args):
+    msg = ''
     if body is None:
-        return 'request body as a json object'
-    for prop in args:
-        if prop not in body:
-            return prop
-    return None
+        msg = 'request body as a json object, '
+    else:
+        for prop in args:
+            if prop not in body:
+                msg += f'{prop}, '
+    if msg:
+        msg = re.sub(r'(.*),', r'\1 and', msg[:-2])
+        raise APIException('You must specify the ' + msg, 400)
 
 def validation_link(id):
     return os.environ.get('API_HOST') + '/users/validate/' + create_jwt({'id': id,'role':'invalid'})
