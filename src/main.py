@@ -261,7 +261,7 @@ def get_profiles(id):
         id == str(jwt_data['sub'])
 
     if not id.isnumeric():
-        raise APIException('Invalid id', 400)
+        raise APIException('Invalid id: ' + id, 400)
 
     user = Profiles.query.get(int(id))
     if not user:
