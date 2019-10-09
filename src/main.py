@@ -39,7 +39,7 @@ def handle_invalid_usage(error):
 @jwt.jwt_data_loader
 def add_claims_to_access_token(kwargs):    
     now = datetime.utcnow()
-    kwargs = kwargs if type(kwargs) is dict else {}
+    kwargs = kwargs if isinstance(kwargs, dict) else {}
     id = kwargs['id'] if 'id' in kwargs else None
     role = kwargs['role'] if 'role' in kwargs else 'invalid'
     exp = kwargs['exp'] if 'exp' in kwargs else 15
@@ -306,13 +306,12 @@ def get_tournaments(id):
     if id.isnumeric():
         tournament = Tournaments.query.get(int(id))
     else:
-        tournament = Tournaments.query.filter(Tournaments.name.match('%poker%')).all()
-        return str(tournament), 200
+        tournament = Tournaments.query.filter(Tournaments.name.ilike(f'%{id}%')).all()
     
     if not tournament:
         raise APIException('Not found', 404)
     
-    if tournament is list:
+    if isinstance(tournament, list):
         return jsonify([x.serialize() for x in tournament]), 200
 
     return jsonify(tournament.serialize()), 200
