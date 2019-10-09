@@ -175,20 +175,16 @@ def register_user():
     user = Users.query.filter_by(email=body['email']).first()
 
     return jsonify({
-        'msg': 'User was created successfully',
+        'msg': 'Please verify your email',
         'validation_link': validation_link(user.id)
     }), 200
 
 
 
 
-#
 @app.route('/users/<id>/email', methods=['PUT'])
-# @role_jwt_required(['user'])
+@role_jwt_required(['user'])
 def update_email(id):
-
-    body = request.get_json()
-    check_params(body, 'email')
 
     if id == 'me':
         id = str(get_jwt()['sub'])
@@ -196,12 +192,24 @@ def update_email(id):
     if not id.isnumeric():
         raise APIException('Invalid id', 400)
 
-    user = Users.query.get(int(id))
+    body = request.get_json()
+    check_params(body, 'email', 'password', 'new_email')
+
+    m = hashlib.sha256()
+    m.update(body['password'].encode('utf-8'))
+
+    user = Users.query.get( int(id) )
+    user = Users.query.filter_by( id=int(id), email=body['email'], password=m.hexdigest() ).first()
+    if not user:
+        raise APIException('Invalid parameters', 400)
+
     user.valid = False
-    user.email = body['email']
+    user.email = body['new_email']
+
+    db.session.commit()
 
     return jsonify({
-        'msg': 'User was created successfully',
+        'msg': 'Please verify your new email',
         'validation_link': validation_link(user.id)
     }), 200
 
@@ -315,7 +323,7 @@ def get_tournaments(id):
 
 
 @app.route('/swaps', methods=['POST'])
-# @role_jwt_required(['user'])
+@role_jwt_required(['user'])
 def create_swaps():
     
     body = request.get_json()
