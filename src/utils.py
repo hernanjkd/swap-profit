@@ -21,7 +21,7 @@ def has_no_empty_params(rule):
     arguments = rule.arguments if rule.arguments is not None else ()
     return len(defaults) >= len(arguments)
 
-def has_params(body, *args):
+def check_params(body, *args):
     if body is None:
         return 'request body as a json object'
     for prop in args:
@@ -29,9 +29,8 @@ def has_params(body, *args):
             return prop
     return None
 
-def expired(d):
-  d = d if type(d) is datetime else datetime.fromtimestamp(d)
-  return d < datetime.now()
+def validation_link(id):
+    return os.environ.get('API_HOST') + '/users/validate/' + create_jwt({'id': id,'role':'invalid'})
 
 def generate_sitemap(app):
     links = []
