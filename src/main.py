@@ -258,7 +258,7 @@ def get_profiles(id):
         return jsonify([x.serialize() for x in Profiles.query.all()]), 200
 
     if id == 'me':
-        id == str(jwt_data['sub'])
+        id = str(jwt_data['sub'])
 
     if not id.isnumeric():
         raise APIException('Invalid id: ' + id, 400)
