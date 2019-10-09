@@ -88,7 +88,7 @@ def role_jwt_required(valid_roles=['invalid']):
 #############################################################################
 @app.route('/create/token', methods=['POST'])
 def create_token():
-    return jsonify( create_jwt(request.get_json()) )
+    return jsonify( create_jwt(request.get_json()) ), 200
 
 @app.route('/testing')
 # @role_jwt_required(['user'])
@@ -117,7 +117,7 @@ def add_tournament():
         'name': body['name'],
         'start_at': datetime( *body['start_at'] )
     }
-    return jsonify(Tournaments.query.filter_by(**search).first().serialize())
+    return jsonify(Tournaments.query.filter_by(**search).first().serialize()), 200
 #############################################################################
 ## DELETE ENDPOINT - JUST FOR TESTING - DELETE ENDPOINT - JUST FOR TESTING ##
 #############################################################################
@@ -143,7 +143,7 @@ def validate(token):
             'role': 'user',
             'exp': 600000
         })
-    })
+    }), 200
 
 
 
@@ -202,7 +202,7 @@ def update_email(id):
 
     user = Users.query.get(int(id))
 
-    return jsonify(user.serialize())
+    return jsonify(user.serialize()), 200
 
 
 
@@ -301,17 +301,21 @@ def register_profile():
 def get_tournaments(id):
 
     if id == 'all':
-        return jsonify([x.serialize() for x in Tournaments.query.all()])
+        return jsonify([x.serialize() for x in Tournaments.query.all()]), 200
 
     if id.isnumeric():
         tournament = Tournaments.query.get(int(id))
     else:
-        tournament = Tournaments.query.filter(id in name)
+        tournament = Tournaments.query.filter(Tournaments.name.match('%poker%')).all()
+        return str(tournament), 200
     
     if not tournament:
         raise APIException('Not found', 404)
     
-    return jsonify(tournament.serialize())
+    if tournament is list:
+        return jsonify([x.serialize() for x in tournament]), 200
+
+    return jsonify(tournament.serialize()), 200
 
 
 
