@@ -24,6 +24,7 @@ def has_no_empty_params(rule):
     arguments = rule.arguments if rule.arguments is not None else ()
     return len(defaults) >= len(arguments)
 
+# Raises an exception if required params not in body
 def check_params(body, *args):
     msg = ''
     if body is None:
@@ -35,6 +36,12 @@ def check_params(body, *args):
     if msg:
         msg = re.sub(r'(.*),', r'\1 and', msg[:-2])
         raise APIException('You must specify the ' + msg, 400)
+
+def update_table(table, body):
+    for attr, value in body.items():
+        if not hasattr(table, attr):
+            raise APIException(f'Incorrect parameter in body: {attr}', 400)
+        setattr(table, attr, value)
 
 def validation_link(id):
     return os.environ.get('API_HOST') + '/users/validate/' + create_jwt({'id': id,'role':'invalid'})

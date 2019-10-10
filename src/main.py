@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from flask_jwt_simple import JWTManager, jwt_required, create_jwt, decode_jwt, get_jwt
-from utils import APIException, generate_sitemap, check_params, validation_link
+from utils import APIException, generate_sitemap, check_params, validation_link, update_table
 from dummy_data import buy_ins, flights, swaps, profiles, tournaments
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 from datetime import datetime, timedelta
@@ -340,7 +340,7 @@ def register_profile():
 
 
 @app.route('/profiles/<id>', methods=['PUT'])
-# @role_jwt_required(['user'])
+@role_jwt_required(['user'])
 def update_profile(id):
 
     if id == 'me':
@@ -353,19 +353,10 @@ def update_profile(id):
     if not prof:
         raise APIException('User not found', 404)
 
-    body = request.get_json()
+    body = request.get_json()    
     check_params(body)
-
-    if 'first_name' in body:
-        prof.first_name = body['first_name']
-    if 'last_name' in body:
-        prof.last_name = body['last_name']
-    if 'username' in body:
-        prof.username = body['username']
-    if 'hendon_url' in body:
-        prof.hendon_url = body['hendon_url']
-    if 'profile_pic_url' in body:
-        prof.profile_pic_url = body['profile_pic_url']
+    
+    update_table(prof, body)
 
     db.session.commit()
 
@@ -382,17 +373,17 @@ def get_tournaments(id):
         return jsonify([x.serialize() for x in Tournaments.query.all()]), 200
 
     if id.isnumeric():
-        tournament = Tournaments.query.get(int(id))
+        trnmt = Tournaments.query.get(int(id))
     else:
-        tournament = Tournaments.query.filter(Tournaments.name.ilike(f'%{id}%')).all()
+        trnmt = Tournaments.query.filter(Tournaments.name.ilike(f'%{id}%')).all()
     
-    if not tournament:
+    if not trnmt:
         raise APIException('Tournament not found', 404)
     
-    if isinstance(tournament, list):
-        return jsonify([x.serialize() for x in tournament]), 200
+    if isinstance(trnmt, list):
+        return jsonify([x.serialize() for x in trnmt]), 200
 
-    return jsonify(tournament.serialize()), 200
+    return jsonify(trnmt.serialize()), 200
 
 
 
