@@ -275,6 +275,16 @@ def reset_password(id):
 
 
 
+@app.route('/users/forgot_password/<token>', methods=['POST','PUT'])
+def forgot_password(token):
+    
+    jwt_data = decode_jwt(token)
+
+    return 'ok'
+
+
+
+
 # id can be the user id, 'me' or 'all'
 @app.route('/profiles/<id>', methods=['GET'])
 @role_jwt_required(['user'])
@@ -325,6 +335,29 @@ def register_profile():
     db.session.commit()
 
     return {'message':'ok'}, 200
+
+
+
+
+@app.route('/profiles/<id>', methods=['PUT'])
+@role_jwt_required(['user'])
+def update_profile():
+
+    if id == 'me':
+        id = str(get_jwt())['sub']
+
+    if not id.isnumeric():
+        raise APIException('Invalid id: ' + id, 400)
+
+    profile = Profiles.query.get(int(id))
+    if not profile:
+        raise APIException('Not found', 404)
+
+    body = request.get_json()
+    check_params(body)
+
+    if 'first_name' in body:
+        profile.first_name = body['first_name']
 
 
 
