@@ -137,7 +137,7 @@ def validate(token):
             db.session.commit()
 
     return jsonify({
-        'msg': 'Your email has been validated',
+        'message': 'Your email has been validated',
         'jwt': create_jwt({
             'id': jwt_data['sub'],
             'role': 'user',
@@ -175,41 +175,7 @@ def register_user():
     user = Users.query.filter_by(email=body['email']).first()
 
     return jsonify({
-        'msg': 'Please verify your email',
-        'validation_link': validation_link(user.id)
-    }), 200
-
-
-
-
-@app.route('/users/<id>/email', methods=['PUT'])
-@role_jwt_required(['user'])
-def update_email(id):
-
-    if id == 'me':
-        id = str(get_jwt()['sub'])
-
-    if not id.isnumeric():
-        raise APIException('Invalid id', 400)
-
-    body = request.get_json()
-    check_params(body, 'email', 'password', 'new_email')
-
-    m = hashlib.sha256()
-    m.update(body['password'].encode('utf-8'))
-
-    user = Users.query.get( int(id) )
-    user = Users.query.filter_by( id=int(id), email=body['email'], password=m.hexdigest() ).first()
-    if not user:
-        raise APIException('Invalid parameters', 400)
-
-    user.valid = False
-    user.email = body['new_email']
-
-    db.session.commit()
-
-    return jsonify({
-        'msg': 'Please verify your new email',
+        'message': 'Please verify your email',
         'validation_link': validation_link(user.id)
     }), 200
 
@@ -240,6 +206,71 @@ def login():
             'exp': body['exp'] if 'exp' in body else 15
         })
     }), 200
+
+
+
+
+@app.route('/users/<id>/email', methods=['PUT'])
+@role_jwt_required(['user'])
+def update_email(id):
+
+    if id == 'me':
+        id = str(get_jwt()['sub'])
+
+    if not id.isnumeric():
+        raise APIException('Invalid id: ' + id, 400)
+
+    body = request.get_json()
+    check_params(body, 'email', 'password', 'new_email')
+
+    m = hashlib.sha256()
+    m.update(body['password'].encode('utf-8'))
+
+    user = Users.query.filter_by( id=int(id), email=body['email'], password=m.hexdigest() ).first()
+    if not user:
+        raise APIException('Invalid parameters', 400)
+
+    user.valid = False
+    user.email = body['new_email']
+
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Please verify your new email',
+        'validation_link': validation_link(user.id)
+    }), 200
+
+
+
+
+@app.route('/users/<id>/password', methods=['PUT'])
+@role_jwt_required(['user'])
+def reset_password(id):
+
+    if id == 'me':
+        id = str(get_jwt())['sub']
+
+    if not id.isnumeric():
+        raise APIException('Invalid id: ' + id, 400)
+
+    body = request.get_json()
+    check_params(body, 'email', 'password', 'new_password')
+
+    m = hashlib.sha256()
+    m.update(body['password'].encode('utf-8'))
+
+    user = Users.query.filter_by( id=int(id), email=body['email'], password=m.hexdigest() ).first()
+    if not user:
+        raise APIException('Invalid parameters', 400)
+
+    m = hashlib.sha256()
+    m.update(body['new_password'].encode('utf-8'))
+
+    user.password = m.hexdigest()
+
+    db.session.commit()
+
+    return jsonify({'message': 'Your password has been changed'}), 200
 
 
 
