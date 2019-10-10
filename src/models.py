@@ -54,7 +54,8 @@ class Profiles(db.Model):
             "last_name": self.last_name,
             "username": self.username,
             "email": self.user.email,
-            "profile_pic_url": self.profile_pic_url
+            "profile_pic_url": self.profile_pic_url,
+            "hendon_url": self.hendon_url
         }
         if long:
             return {

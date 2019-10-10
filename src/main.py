@@ -306,7 +306,7 @@ def get_profiles(id):
 
     user = Profiles.query.get(int(id))
     if not user:
-        raise APIException('Not found', 404)
+        raise APIException('User not found', 404)
     
     return jsonify(user.serialize()), 200
 
@@ -340,8 +340,8 @@ def register_profile():
 
 
 @app.route('/profiles/<id>', methods=['PUT'])
-@role_jwt_required(['user'])
-def update_profile():
+# @role_jwt_required(['user'])
+def update_profile(id):
 
     if id == 'me':
         id = str(get_jwt())['sub']
@@ -349,16 +349,27 @@ def update_profile():
     if not id.isnumeric():
         raise APIException('Invalid id: ' + id, 400)
 
-    profile = Profiles.query.get(int(id))
-    if not profile:
-        raise APIException('Not found', 404)
+    prof = Profiles.query.get(int(id))
+    if not prof:
+        raise APIException('User not found', 404)
 
     body = request.get_json()
     check_params(body)
 
     if 'first_name' in body:
-        profile.first_name = body['first_name']
+        prof.first_name = body['first_name']
+    if 'last_name' in body:
+        prof.last_name = body['last_name']
+    if 'username' in body:
+        prof.username = body['username']
+    if 'hendon_url' in body:
+        prof.hendon_url = body['hendon_url']
+    if 'profile_pic_url' in body:
+        prof.profile_pic_url = body['profile_pic_url']
 
+    db.session.commit()
+
+    return jsonify(prof.serialize())
 
 
 
@@ -376,7 +387,7 @@ def get_tournaments(id):
         tournament = Tournaments.query.filter(Tournaments.name.ilike(f'%{id}%')).all()
     
     if not tournament:
-        raise APIException('Not found', 404)
+        raise APIException('Tournament not found', 404)
     
     if isinstance(tournament, list):
         return jsonify([x.serialize() for x in tournament]), 200
