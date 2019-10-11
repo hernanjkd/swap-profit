@@ -46,7 +46,8 @@ class Profiles(db.Model):
         return f'<Profiles {self.first_name} {self.last_name}>'
 
     @hybrid_method
-    def 
+    def total_swap_percentage(self, tournament_id):
+        swaps = [x.serialize(percentage=True) for x in sending_swaps if x.tournament_id == tournament.id]
 
     def serialize(self, long=False):
         json = {
@@ -154,7 +155,17 @@ class Swaps(db.Model):
     def __repr__(self):
         return f'<Swaps email:{self.user.email} recipient_user:{self.recipient_id} tournament:{self.tournament.name}>'
 
-    def serialize(self, long=False, sender=False):
+    def serialize(self, long=False, sender=False, percentage=False):
+        # Being used in Profiles @hybrid_method
+        if percentage:
+            return {"percentage": self.percentage}
+        if sender:
+            return {
+                "recipient_id": self.recipient_id,
+                "tournament_id": self.tournament_id,
+                "due_at": self.due_at,
+                "winning_chips": self.winning_chips
+            }
         json = {
             "sender_id": self.sender_id,
             "tournament_id": self.tournament_id,
@@ -164,13 +175,6 @@ class Swaps(db.Model):
             "status": self.status,
             "user": self.sender_user.serialize()
         }
-        if sender:
-            return {
-                "recipient_id": self.recipient_id,
-                "tournament_id": self.tournament_id,
-                "due_at": self.due_at,
-                "winning_chips": self.winning_chips
-            }
         if long:
             return {
                 **json,
