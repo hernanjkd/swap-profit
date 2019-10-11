@@ -31,23 +31,27 @@ class Users(db.Model):
 class Profiles(db.Model):
     __tablename__ = 'profiles'
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100), nullable=False)
-    username = db.Column(db.String(100))
-    hendon_url = db.Column(db.String(200))
-    profile_pic_url = db.Column(db.String(250))
+    first_name = db.Column(db.String(100), default=None)
+    last_name = db.Column(db.String(100), default=None)
+    username = db.Column(db.String(100), default=None)
+    hendon_url = db.Column(db.String(200), default=None)
+    profile_pic_url = db.Column(db.String(250), default=None)
 
     user = db.relationship('Users', back_populates='profile', uselist=False)
     buy_ins = db.relationship('Buy_ins', back_populates='user')
-    sending_swaps = db.relationship('Swaps', back_populates='sender_user')
-    receiving_swaps = db.relationship('Swaps', back_populates='recipient_user)
+    # sending_swaps
+    # receiving_swaps
 
     def __repr__(self):
         return f'<Profiles {self.first_name} {self.last_name}>'
 
     @hybrid_method
-    def total_swap_percentage(self, tournament_id):
-        swaps = [x.serialize(percentage=True) for x in sending_swaps if x.tournament_id == tournament.id]
+    def available_percentage(self, tournament_id):
+        total = 0
+        for swap in self.sending_swaps:
+            if swap.tournament_id == tournament_id:
+                total += swap.percentage
+        return 50 - total
 
     def serialize(self, long=False):
         json = {

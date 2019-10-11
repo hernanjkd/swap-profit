@@ -388,19 +388,39 @@ def get_tournaments(id):
 
 
 
-@app.route('/swaps', methods=['POST'])
+@app.route('/swaps', methods=['GET'])
+def get_swaps():
+    prof = Profiles.query.get(7)
+    return str(prof.available_percentage(1))
+    # return jsonify( [x.serialize() for x in Swaps.query.all()] )
+
+
+
+
+@app.route('/swaps/me', methods=['POST'])
 @role_jwt_required(['user'])
 def create_swaps():
     
     body = request.get_json()
+    check_params(body, 'tournament_id', 'recipient_id', 'percentage')
 
-    check_params(body, 'tournament_id', 'recipient_id', 'sender_id', 'percentage')
+    id = int(get_jwt()['sub'])
+
+    prof = Profiles.query.get(id)
+    if not prof:
+        raise APIException('User not found', 404)
+
+    available = prof.available_percentage( body['tournament_id'] )
+
+    if body['percentage'] > available:
+        raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
+                            f'You have available: {available}%'), 400)
 
     db.session.add(Swaps(
+        sender_id = id,
         tournament_id = body['tournament_id'],
         recipient_id = body['recipient_id'],
-        sender_id = body['sender_id'],
-        percetange = body['percentage']
+        percentage = body['percentage']
     ))
     db.session.commit()
 
