@@ -44,7 +44,7 @@ def update_table(table, body):
         setattr(table, attr, value)
 
 def validation_link(id):
-    return os.environ.get('API_HOST') + '/users/validate/' + create_jwt({'id': id,'role':'invalid'})
+    return os.environ.get('API_HOST') + '/users/validate/' + create_jwt({'id':id, 'role':'invalid'})
 
 def generate_sitemap(app):
     links = []

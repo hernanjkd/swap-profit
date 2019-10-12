@@ -31,11 +31,11 @@ class Users(db.Model):
 class Profiles(db.Model):
     __tablename__ = 'profiles'
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    first_name = db.Column(db.String(100), default=None)
-    last_name = db.Column(db.String(100), default=None)
-    username = db.Column(db.String(100), default=None)
-    hendon_url = db.Column(db.String(200), default=None)
-    profile_pic_url = db.Column(db.String(250), default=None)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    username = db.Column(db.String(100))
+    hendon_url = db.Column(db.String(200))
+    profile_pic_url = db.Column(db.String(250))
 
     user = db.relationship('Users', back_populates='profile', uselist=False)
     buy_ins = db.relationship('Buy_ins', back_populates='user')

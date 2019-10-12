@@ -243,8 +243,44 @@ def update_email(id):
 
 
 
+@app.route('/users/reset_password/<token>')
+def html_reset_password(token):
+
+    jwt_data = decode_jwt(token)
+
+    return '''
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta charset="UTF-8">
+                <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+                <title>Poker Swap Reset Password</title>
+            </head>
+            <body>
+                <div class="mt-5 mx-auto text-right" style="width:300px">
+                    <div class="">
+                        Email: 
+                        <input type="text" />
+                    </div>
+                    <div>
+                        Password: 
+                        <input type="password" />
+                    </div>
+                    <div>
+                        Re enter password:
+                        <input type="password" />
+                    </div>
+                </div>
+            </body>
+        </html>
+    '''
+
+
+
+
 @app.route('/users/<id>/password', methods=['PUT'])
-@role_jwt_required(['user'])
+# @role_jwt_required(['user'])
 def reset_password(id):
 
     if id == 'me':
@@ -252,23 +288,31 @@ def reset_password(id):
 
     if not id.isnumeric():
         raise APIException('Invalid id: ' + id, 400)
+    
+    
+    if request.args.get('forgot') == 'true':        
+        return jsonify({
+            'message': 'A link has been sent to your email to reset the password',
+            'link': os.environ.get('API_HOST') + '/users/reset_password/' + create_jwt({'id':id, 'role':'user'})
+        }), 200
 
-    body = request.get_json()
-    check_params(body, 'email', 'password', 'new_password')
 
-    m = hashlib.sha256()
-    m.update(body['password'].encode('utf-8'))
+    # body = request.get_json()
+    # check_params(body, 'email', 'password', 'new_password')
 
-    user = Users.query.filter_by( id=int(id), email=body['email'], password=m.hexdigest() ).first()
-    if not user:
-        raise APIException('Invalid parameters', 400)
+    # m = hashlib.sha256()
+    # m.update(body['password'].encode('utf-8'))
 
-    m = hashlib.sha256()
-    m.update(body['new_password'].encode('utf-8'))
+    # user = Users.query.filter_by( id=int(id), email=body['email'], password=m.hexdigest() ).first()
+    # if not user:
+    #     raise APIException('Invalid parameters', 400)
 
-    user.password = m.hexdigest()
+    # m = hashlib.sha256()
+    # m.update(body['new_password'].encode('utf-8'))
 
-    db.session.commit()
+    # user.password = m.hexdigest()
+
+    # db.session.commit()
 
     return jsonify({'message': 'Your password has been changed'}), 200
 
