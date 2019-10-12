@@ -1,8 +1,9 @@
 import os
+import re
+import hashlib
 from flask import jsonify, url_for
 from flask_jwt_simple import create_jwt
 from datetime import datetime
-import re
 
 class APIException(Exception):
     status_code = 400
@@ -45,6 +46,11 @@ def update_table(table, body):
 
 def validation_link(id):
     return os.environ.get('API_HOST') + '/users/validate/' + create_jwt({'id':id, 'role':'validating'})
+
+def sha256(string):
+    m = hashlib.sha256()
+    m.update(string.encode('utf-8'))
+    return m.hexdigest()
 
 def generate_sitemap(app):
     links = []

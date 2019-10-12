@@ -5,11 +5,10 @@ from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from flask_jwt_simple import JWTManager, jwt_required, create_jwt, decode_jwt, get_jwt
-from utils import APIException, generate_sitemap, check_params, validation_link, update_table
+from utils import APIException, generate_sitemap, check_params, validation_link, update_table, sha256
 from dummy_data import buy_ins, flights, swaps, profiles, tournaments
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 from datetime import datetime, timedelta
-import hashlib
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -156,12 +155,8 @@ def register_user():
     body = request.get_json()
     check_params(body, 'email', 'password')
 
-    m = hashlib.sha256()
-    m.update(body['password'].encode('utf-8'))
-
-
     # If user exists and failed to validate his account
-    user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
+    user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
     if user and not user.valid:
         return jsonify({'validation_link': validation_link(user.id)}), 200
 
@@ -190,10 +185,7 @@ def login():
     body = request.get_json()
     check_params(body, 'email', 'password')
 
-    m = hashlib.sha256()
-    m.update(body['password'].encode('utf-8'))
-
-    user = Users.query.filter_by( email=body['email'], password=m.hexdigest() ).first()
+    user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
 
     if not user:
         raise APIException('The log in information is incorrect', 401)
@@ -225,10 +217,7 @@ def update_email(id):
     body = request.get_json()
     check_params(body, 'email', 'password', 'new_email')
 
-    m = hashlib.sha256()
-    m.update(body['password'].encode('utf-8'))
-
-    user = Users.query.filter_by( id=int(id), email=body['email'], password=m.hexdigest() ).first()
+    user = Users.query.filter_by( id=int(id), email=body['email'], password=sha256(body['password']) ).first()
     if not user:
         raise APIException('Invalid parameters', 400)
 
@@ -252,11 +241,21 @@ def html_reset_password(token):
     if jwt_data['role'] != 'password':
         raise APIException('Access denied', 401)
 
+
     if request.method == 'PUT':
 
         body = request.get_json()
         check_params(body, 'email', 'password')
-        return jsonify({'email':body['email'],'password':body['password']})
+
+        user = Users.query.filter_by(id = jwt_data['sub'], email = body['email']).first()
+        if not user:
+            raise APIException('User not found', 404)
+
+        user.password = sha256(body['password'])
+
+        db.session.commit()
+
+        return jsonify({'message': 'Your password has been updated'}), 200
 
     
     return f'''
@@ -269,8 +268,8 @@ def html_reset_password(token):
                 <title>Poker Swap Reset Password</title>
             </head>
             <body>
-                <div id="page" class="mx-auto" style="width:350px">
-                    <div class="mt-5 pt-5">
+                <div id="page" class="mx-auto pt-5" style="width:350px">
+                    <div class="mt-5">
                         <input id="email" class="form-control" placeholder="Email" type="text" />
                     </div>
                     <div class="py-4">
@@ -309,7 +308,7 @@ def html_reset_password(token):
                             }})
                         }})
                         .then(resp => resp.json())
-                        .then(data => document.querySelector('#page').innerHTML = data.message)
+                        .then(data => document.querySelector('#page').innerHTML = `<div class="text-center">${{data.message}}</div>`)
                 }}
                 </script>
             </body>
@@ -320,7 +319,7 @@ def html_reset_password(token):
 
 
 @app.route('/users/<id>/password', methods=['PUT'])
-# @role_jwt_required(['user'])
+@role_jwt_required(['user'])
 def reset_password(id):
 
     if id == 'me':
@@ -337,22 +336,16 @@ def reset_password(id):
         }), 200
 
 
-    # body = request.get_json()
-    # check_params(body, 'email', 'password', 'new_password')
+    body = request.get_json()
+    check_params(body, 'email', 'password', 'new_password')
 
-    # m = hashlib.sha256()
-    # m.update(body['password'].encode('utf-8'))
+    user = Users.query.filter_by( id=int(id), email=body['email'], password=sha256(body['password']) ).first()
+    if not user:
+        raise APIException('Invalid parameters', 400)
 
-    # user = Users.query.filter_by( id=int(id), email=body['email'], password=m.hexdigest() ).first()
-    # if not user:
-    #     raise APIException('Invalid parameters', 400)
+    user.password = sha256(body['new_password'])
 
-    # m = hashlib.sha256()
-    # m.update(body['new_password'].encode('utf-8'))
-
-    # user.password = m.hexdigest()
-
-    # db.session.commit()
+    db.session.commit()
 
     return jsonify({'message': 'Your password has been changed'}), 200
 
