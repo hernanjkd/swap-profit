@@ -258,18 +258,15 @@ def html_reset_password(token):
                 <title>Poker Swap Reset Password</title>
             </head>
             <body>
-                <div class="mt-5 mx-auto text-right" style="width:300px">
-                    <div class="">
-                        Email: 
-                        <input type="text" />
+                <div class="mx-auto" style="width:350px">
+                    <div>
+                        <input class="form-control" placeholder="Email" type="text" />
                     </div>
                     <div>
-                        Password: 
-                        <input type="password" />
+                        <input class="form-control" placeholder="Password" type="password" />
                     </div>
                     <div>
-                        Re enter password:
-                        <input type="password" />
+                        <input class="form-control" placeholder="Re Enter Password" type="password" />
                     </div>
                 </div>
             </body>
