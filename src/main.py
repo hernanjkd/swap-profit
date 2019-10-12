@@ -130,11 +130,13 @@ def validate(token):
     
     jwt_data = decode_jwt(token)
     
-    if jwt_data['role'] == 'invalid':
-        user = Users.query.get(jwt_data['sub'])
-        if not user.valid:
-            user.valid = True
-            db.session.commit()
+    if jwt_data['role'] != 'validating':
+        raise APIException('Incorrect token', 400)
+
+    user = Users.query.get(jwt_data['sub'])
+    if not user.valid:
+        user.valid = True
+        db.session.commit()
 
     return jsonify({
         'message': 'Your email has been validated',
@@ -243,12 +245,21 @@ def update_email(id):
 
 
 
-@app.route('/users/reset_password/<token>')
+@app.route('/users/reset_password/<token>', methods=['GET','PUT'])
 def html_reset_password(token):
 
-    jwt_data = decode_jwt(token)
+    jwt_data = decode_jwt(token)    
+    if jwt_data['role'] != 'password':
+        raise APIException('Access denied', 401)
 
-    return '''
+    if request.method == 'PUT':
+
+        body = request.get_json()
+        check_params(body, 'email', 'password')
+        return jsonify({'email':body['email'],'password':body['password']})
+
+    
+    return f'''
         <!DOCTYPE html>
         <html>
             <head>
@@ -258,17 +269,49 @@ def html_reset_password(token):
                 <title>Poker Swap Reset Password</title>
             </head>
             <body>
-                <div class="mx-auto" style="width:350px">
-                    <div>
-                        <input class="form-control" placeholder="Email" type="text" />
+                <div id="page" class="mx-auto" style="width:350px">
+                    <div class="mt-5 pt-5">
+                        <input id="email" class="form-control" placeholder="Email" type="text" />
+                    </div>
+                    <div class="py-4">
+                        <input id="password" class="form-control" placeholder="Password" type="password" />
                     </div>
                     <div>
-                        <input class="form-control" placeholder="Password" type="password" />
+                        <input id="re-password" class="form-control" placeholder="Re Enter Password" type="password" />
                     </div>
-                    <div>
-                        <input class="form-control" placeholder="Re Enter Password" type="password" />
+                    <div class="pt-4">
+                        <button class="btn-success py-2 px-3 border rounded" onclick="submit()">Submit</button>
                     </div>
+                    <div id="warning" class="bg-warning text-center mt-4 border rounded p-2 d-none" />
                 </div>
+                <script type="text/javascript">
+                function submit() {{
+                    let password = document.querySelector('#password').value;
+                    let message;
+                    if (password === '')
+                        message = 'Your password can not be left empty';
+                    if (password !== document.querySelector('#re-password').value)
+                        message = 'Your passwords do not match';
+                    if (message) {{
+                        let warn = document.querySelector('#warning');
+                        warn.classList.remove('d-none');
+                        warn.innerHTML = message;
+                    }}
+                    else
+                        fetch('{os.environ.get('API_HOST')}/users/reset_password/{token}', {{
+                            method: 'PUT',
+                            headers: {{
+                                "Content-Type": "application/json"
+                            }},
+                            body: JSON.stringify({{
+                                'email': document.querySelector('#email').value,
+                                'password': password
+                            }})
+                        }})
+                        .then(resp => resp.json())
+                        .then(data => document.querySelector('#page').innerHTML = data.message)
+                }}
+                </script>
             </body>
         </html>
     '''
@@ -290,7 +333,7 @@ def reset_password(id):
     if request.args.get('forgot') == 'true':        
         return jsonify({
             'message': 'A link has been sent to your email to reset the password',
-            'link': os.environ.get('API_HOST') + '/users/reset_password/' + create_jwt({'id':id, 'role':'user'})
+            'link': os.environ.get('API_HOST') + '/users/reset_password/' + create_jwt({'id':id, 'role':'password'})
         }), 200
 
 
