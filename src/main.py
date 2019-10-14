@@ -440,6 +440,22 @@ def update_profile(id):
 
 
 
+
+@app.route('/profiles/<id>/image', methods=['PUT'])
+@role_jwt_required(['user'])
+def upload_prof_pic(id):
+
+    if id == 'me':
+        id = str(get_jwt()['sub'])
+
+    if not id.isnumeric():
+        raise APIException('Invalid id ' + id, 400)
+
+    return 'ok'
+
+
+
+
 # Can search by id, 'name' or 'all'
 @app.route('/tournaments/<id>', methods=['GET'])
 @role_jwt_required(['user'])
