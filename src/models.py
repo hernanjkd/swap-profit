@@ -35,7 +35,7 @@ class Profiles(db.Model):
     last_name = db.Column(db.String(100), nullable=False)
     username = db.Column(db.String(100))
     hendon_url = db.Column(db.String(200))
-    profile_pic_url = db.Column(db.String(250))
+    profile_pic_url = db.Column(db.String(250), default=None)
 
     user = db.relationship('Users', back_populates='profile', uselist=False)
     buy_ins = db.relationship('Buy_ins', back_populates='user')
