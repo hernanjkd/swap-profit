@@ -406,7 +406,6 @@ def register_profile():
         last_name = body['last_name'],
         username = body['username'] if 'username' in body else None,
         hendon_url = body['hendon_url'] if 'hendon_url' in body else None,
-        profile_pic_url = body['profile_pic_url'] if 'profile_pic_url' in body else None,
         user = user
     ))
     db.session.commit()
