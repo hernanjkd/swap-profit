@@ -97,20 +97,20 @@ def testing():
 @app.route('/fill_database')
 def fill_database():
     
-    db.add(Flights(
+    db.session.add(Flights(
         start_at = datetime(2019,10,11,12),
         end_at = datetime(2019,10,11,16),
         tournament_id = 1,
         day = 1
     ))
-    db.add(Flights(
+    db.session.add(Flights(
         start_at = datetime(2019,10,11,16),
         end_at = datetime(2019,10,11,21),
         tournament_id = 1,
         day = 1
     ))
 
-    db.commit()
+    db.session.commit()
 
     return {'message':'ok'}, 200
 
