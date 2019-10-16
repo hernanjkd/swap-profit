@@ -97,17 +97,6 @@ def testing():
 @app.route('/fill_database')
 def fill_database():
     
-    f = Flights.query.get(8)
-    db.session.delete(f)
-    f = Flights.query.get(3)
-    db.session.delete(f)
-    f = Flights.query.get(4)
-    db.session.delete(f)
-    f = Tournaments.query.get(4)
-    db.session.delete(f)
-
-    db.session.commit()
-
     return {'message':'ok'}, 200
 
 @app.route('/tournaments', methods=['POST'])
@@ -450,7 +439,7 @@ def get_swaps():
 
 @app.route('/swaps/me', methods=['POST'])
 @role_jwt_required(['user'])
-def create_swaps():
+def create_swap():
     
     body = request.get_json()
     check_params(body, 'tournament_id', 'recipient_id', 'percentage')
@@ -476,6 +465,33 @@ def create_swaps():
     db.session.commit()
 
     return {'message':'ok'}, 200
+
+
+
+
+@app.route('/buy_ins/me', methods=['POST'])
+@role_jwt_required(['user'])
+def create_buy_in():
+
+    body = request.get_json()
+    check_params(body, 'flight_id', 'chips', 'table', 'seat')
+
+    id = int(get_jwt()['sub'])
+
+    prof = Profiles.query.get(id)
+    if not prof:
+        raise APIException('User not found', 404)
+
+    db.session.add(Buy_ins(
+        user_id = id,
+        flight_id = body['flight_id'],
+        chips = body['chips'],
+        table = body['table'],
+        seat = body['seat']
+    ))
+    db.session.commit()
+
+    return {'message':'ok'}, 200    
 
 
 
