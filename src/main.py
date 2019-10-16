@@ -166,7 +166,7 @@ def register_user():
     
     db.session.add(Users(
         email = body['email'], 
-        password = m.hexdigest()
+        password = sha256(body['password'])
     ))
     db.session.commit()
     
