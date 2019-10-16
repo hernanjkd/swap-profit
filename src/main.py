@@ -98,8 +98,8 @@ def testing():
 def fill_database():
     
     db.session.add(Flights(
-        start_at = datetime(2019,11,2,12),
-        end_at = datetime(2019,11,2,22),
+        start_at = datetime(2019,10,2,12),
+        end_at = datetime(2019,10,2,22),
         tournament_id = 3,
         day = 1
     ))
