@@ -462,6 +462,12 @@ def create_swap():
         recipient_id = body['recipient_id'],
         percentage = body['percentage']
     ))
+    db.session.add(Swaps(
+        sender_id = body['recipient_id'],
+        tournament_id = body['tournament_id'],
+        recipient_id = id,
+        percentage = body['percentage']
+    ))
     db.session.commit()
 
     return {'message':'ok'}, 200
