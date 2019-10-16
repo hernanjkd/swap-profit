@@ -127,15 +127,16 @@ class Flights(db.Model):
             "id": self.id,
             "tournament": self.tournament.name,
             "start_at": self.start_at,
-            "end_at": self.end_at
+            "end_at": self.end_at,
+            "day": self.day,
+            "buy_ins": [x.serialize(user=True) for x in self.buy_ins]
         }
         if long:
             return {
                 **json,
                 "tournament_id": self.tournament_id,
                 "created_at": "",
-                "updated_at": "",
-                "buy_ins": [x.serialize(user=True) for x in self.buy_ins]
+                "updated_at": ""
             }
         return json
 
