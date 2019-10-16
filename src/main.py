@@ -1,6 +1,6 @@
 
 import os
-from flask import Flask, request, jsonify, url_for, redirect
+from flask import Flask, request, jsonify, url_for, redirect, render_template
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
@@ -181,7 +181,7 @@ def register_user():
 
 @app.route('/users/token', methods=['POST'])
 def login():
-
+    
     body = request.get_json()
     check_params(body, 'email', 'password')
 
@@ -258,62 +258,9 @@ def html_reset_password(token):
         return jsonify({'message': 'Your password has been updated'}), 200
 
     
-    return f'''
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta charset="UTF-8">
-                <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-                <title>Poker Swap Reset Password</title>
-            </head>
-            <body>
-                <div id="page" class="mx-auto pt-5" style="width:350px">
-                    <div class="mt-5">
-                        <input id="email" class="form-control" placeholder="Email" type="text" />
-                    </div>
-                    <div class="py-4">
-                        <input id="password" class="form-control" placeholder="Password" type="password" />
-                    </div>
-                    <div>
-                        <input id="re-password" class="form-control" placeholder="Re Enter Password" type="password" />
-                    </div>
-                    <div class="pt-4">
-                        <button class="btn-success py-2 px-3 border rounded" onclick="submit()">Submit</button>
-                    </div>
-                    <div id="warning" class="bg-warning text-center mt-4 border rounded p-2 d-none" />
-                </div>
-                <script type="text/javascript">
-                function submit() {{
-                    let password = document.querySelector('#password').value;
-                    let message;
-                    if (password === '')
-                        message = 'Your password can not be left empty';
-                    if (password !== document.querySelector('#re-password').value)
-                        message = 'Your passwords do not match';
-                    if (message) {{
-                        let warn = document.querySelector('#warning');
-                        warn.classList.remove('d-none');
-                        warn.innerHTML = message;
-                    }}
-                    else
-                        fetch('{os.environ.get('API_HOST')}/users/reset_password/{token}', {{
-                            method: 'PUT',
-                            headers: {{
-                                "Content-Type": "application/json"
-                            }},
-                            body: JSON.stringify({{
-                                'email': document.querySelector('#email').value,
-                                'password': password
-                            }})
-                        }})
-                        .then(resp => resp.json())
-                        .then(data => document.querySelector('#page').innerHTML = `<div class="text-center">${{data.message}}</div>`)
-                }}
-                </script>
-            </body>
-        </html>
-    '''
+    return render_template('reset_password.html', data={
+        "host": os.environ.get('API_HOST')
+    })
 
 
 
