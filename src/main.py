@@ -321,7 +321,7 @@ def get_profiles(id):
         if jwt_data['role'] != 'admin':
             raise APIException('Access denied', 401)
         
-        return jsonify([x.serialize() for x in Profiles.query.all()]), 200
+        return jsonify([x.serialize(long=True) for x in Profiles.query.all()]), 200
 
     if id == 'me':
         id = str(jwt_data['sub'])
@@ -333,7 +333,7 @@ def get_profiles(id):
     if not user:
         raise APIException('User not found', 404)
     
-    return jsonify(user.serialize()), 200
+    return jsonify(user.serialize(long=True)), 200
 
 
 
@@ -441,14 +441,14 @@ def get_swaps():
 @role_jwt_required(['user'])
 def create_swap():
     
-    body = request.get_json()
-    check_params(body, 'tournament_id', 'recipient_id', 'percentage')
-
     id = int(get_jwt()['sub'])
 
     prof = Profiles.query.get(id)
     if not prof:
         raise APIException('User not found', 404)
+    
+    body = request.get_json()
+    check_params(body, 'tournament_id', 'recipient_id', 'percentage')
 
     available = prof.available_percentage( body['tournament_id'] )
 
@@ -471,6 +471,19 @@ def create_swap():
     db.session.commit()
 
     return {'message':'ok'}, 200
+
+
+
+
+@app.route('/swaps/me', methods=['PUT'])
+@role_jwt_required(['user'])
+def update_swap():
+
+    body = request.get_json()
+    check_params(body)
+
+    return "ok"
+
 
 
 
