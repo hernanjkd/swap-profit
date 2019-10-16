@@ -5,6 +5,6 @@ def test_invalid_email():
     with pytest.raises(APIException):
         login('alejo', '23234')
 
-def test_emapl():
+def test_email():
     with pytest.raises(APIException):
         login('alejo', '')
