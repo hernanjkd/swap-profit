@@ -97,12 +97,14 @@ def testing():
 @app.route('/fill_database')
 def fill_database():
     
-    db.session.add(Flights(
-        start_at = datetime(2019,10,2,12),
-        end_at = datetime(2019,10,2,22),
-        tournament_id = 3,
-        day = 1
-    ))
+    f = Flights.query.get(8)
+    db.session.delete(f)
+    f = Flights.query.get(3)
+    db.session.delete(f)
+    f = Flights.query.get(4)
+    db.session.delete(f)
+    f = Tournaments.query.get(4)
+    db.session.delete(f)
 
     db.session.commit()
 

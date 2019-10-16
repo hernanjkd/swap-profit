@@ -85,6 +85,45 @@ def fill_database():
     )
     db.session.add(wpt)
 
+    db.session.add(Flights(
+        start_at = datetime(2019,10,11,12),
+        end_at = datetime(2019,10,11,16),
+        tournament = heartland,
+        day = 1
+    ))
+    db.session.add(Flights(
+        start_at = datetime(2019,10,11,16),
+        end_at = datetime(2019,10,11,21),
+        tournament = heartland,
+        day = 1
+    ))
+
+    db.session.add(Flights(
+        start_at = datetime(2019,9,30,12),
+        end_at = datetime(2019,9,30,15),
+        tournament = stones,
+        day = 1
+    ))
+    db.session.add(Flights(
+        start_at = datetime(2019,9,30,15),
+        end_at = datetime(2019,9,30,21),
+        tournament = stones,
+        day = 1
+    ))
+    db.session.add(Flights(
+        start_at = datetime(2019,10,1,12),
+        end_at = datetime(2019,10,1,21),
+        tournament = stones,
+        day = 2
+    ))
+
+    db.session.add(Flights(
+        start_at = datetime(2019,10,2,12),
+        end_at = datetime(2019,10,2,22),
+        tournament = wpt,
+        day = 1
+    ))
+
     db.session.add(Swaps(
         tournament=heartland,
         sender_user=lou,
