@@ -145,14 +145,14 @@ class Flights(db.Model):
 
 class Swaps(db.Model):
     __tablename__ = 'swaps'
+    sender_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), primary_key=True)
     recipient_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
     percentage = db.Column(db.Integer, nullable=False)
     winning_chips = db.Column(db.Integer, default=None)
     due_at = db.Column(db.DateTime, default=None)
     paid = db.Column(db.Boolean, default=False)
-    status = db.Column(db.String(20), default=None)
+    status = db.Column(db.String(20), default='pending')
 
     tournament = db.relationship('Tournaments', back_populates='swaps')
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
@@ -170,7 +170,9 @@ class Swaps(db.Model):
                 "recipient_id": self.recipient_id,
                 "tournament_id": self.tournament_id,
                 "due_at": self.due_at,
-                "winning_chips": self.winning_chips
+                "winning_chips": self.winning_chips,
+                "status": self.status,
+                "paid": self.paid
             }
         json = {
             "sender_id": self.sender_id,

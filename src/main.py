@@ -430,8 +430,12 @@ def get_tournaments(id):
 
 
 
-@app.route('/swaps', methods=['GET'])
-def get_swaps():
+@app.route('/swaps/<id>', methods=['GET'])
+def get_swaps(id):
+
+    if id == 'all':
+        return jsonify([x.serialize() for x in Swaps.query.all()])
+
     prof = Profiles.query.get(7)
     return str(prof.available_percentage(1))
     # return jsonify( [x.serialize() for x in Swaps.query.all()] )
@@ -481,10 +485,21 @@ def create_swap():
 @role_jwt_required(['user'])
 def update_swap():
 
-    body = request.get_json()
-    check_params(body)
+    id = int(get_jwt()['sub'])
 
-    return "ok"
+    prof = Profiles.query.get(id)
+    if not prof:
+        raise APIException('User not found', 404)
+    
+    body = request.get_json()
+    check_params(body, 'tournament_id', 'recipient_id')
+
+    swap = Swaps.query.get((id, body['tournament_id'], body['recipient_id']))
+
+    return jsonify(swap.serialize())
+
+    # if 'percentage' in body:
+
 
 
 
