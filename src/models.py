@@ -175,18 +175,17 @@ class Swaps(db.Model):
                 "paid": self.paid
             }
         json = {
-            "sender_id": self.sender_id,
             "tournament_id": self.tournament_id,
             "percentage": self.percentage,
             "winning_chips": self.winning_chips,
             "due_at": self.due_at,
             "status": self.status,
-            "user": self.sender_user.serialize()
+            "sender_user": self.sender_user.serialize(),
+            "recipient_user": self.recipient_user.serialize()
         }
         if long:
             return {
                 **json,
-                "recipient_id": self.recipient_id,
                 "paid": self.paid,
                 "created_at": "",
                 "updated_at": ""
