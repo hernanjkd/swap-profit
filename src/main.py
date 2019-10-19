@@ -260,7 +260,8 @@ def html_reset_password(token):
 
     
     return render_template('reset_password.html', data={
-        "host": os.environ.get('API_HOST')
+        'host': os.environ.get('API_HOST'),
+        'token': token
     })
 
 
