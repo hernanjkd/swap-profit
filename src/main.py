@@ -242,27 +242,28 @@ def html_reset_password(token):
     if jwt_data['role'] != 'password':
         raise APIException('Access denied', 401)
 
+    if request.method == 'GET':
+        return render_template('reset_password.html', data={
+            'host': os.environ.get('API_HOST'),
+            'token': token
+        })
 
-    if request.method == 'PUT':
+    # request.method == 'PUT'
+    body = request.get_json()
+    check_params(body, 'email', 'password')
 
-        body = request.get_json()
-        check_params(body, 'email', 'password')
+    user = Users.query.filter_by(id = jwt_data['sub'], email = body['email']).first()
+    if not user:
+        raise APIException('User not found', 404)
 
-        user = Users.query.filter_by(id = jwt_data['sub'], email = body['email']).first()
-        if not user:
-            raise APIException('User not found', 404)
+    user.password = sha256(body['password'])
 
-        user.password = sha256(body['password'])
+    db.session.commit()
 
-        db.session.commit()
-
-        return jsonify({'message': 'Your password has been updated'}), 200
+    return jsonify({'message': 'Your password has been updated'}), 200
 
     
-    return render_template('reset_password.html', data={
-        'host': os.environ.get('API_HOST'),
-        'token': token
-    })
+    
 
 
 
