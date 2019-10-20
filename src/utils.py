@@ -38,11 +38,12 @@ def check_params(body, *args):
         msg = re.sub(r'(.*),', r'\1 and', msg[:-2])
         raise APIException('You must specify the ' + msg, 400)
 
-def update_table(table, body):
+def update_table(table, body, ignore=[]):
     for attr, value in body.items():
         if not hasattr(table, attr):
             raise APIException(f'Incorrect parameter in body: {attr}', 400)
-        setattr(table, attr, value)
+        if attr not in ignore:
+            setattr(table, attr, value)
 
 def validation_link(id):
     return os.environ.get('API_HOST') + '/users/validate/' + create_jwt({'id':id, 'role':'validating'})

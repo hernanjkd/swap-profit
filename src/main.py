@@ -499,7 +499,7 @@ def update_swap():
 
     # get sender user
     sender = Profiles.query.get(id)
-    if not prof:
+    if not sender:
         raise APIException('User not found', 404)
     
     body = request.get_json()
@@ -507,7 +507,7 @@ def update_swap():
 
     # get recipient user
     recipient = Profiles.query.get(body['recipient_id'])
-    if not prof:
+    if not recipient:
         raise APIException('Recipient user not found', 404)
 
     # get swap
@@ -524,11 +524,13 @@ def update_swap():
 
         recipient_availability = recipient.available_percentage( body['tournament_id'] )
         if body['percentage'] > recipient_availability:
-            raise APIException(('Swap percentage too large for recipient.
+            raise APIException(('Swap percentage too large for recipient. '
                                 f'He has available to swap: {available}%'), 400)
 
+        # So it can be updated correctly with the update_table funcion
+        body['percentage'] = swap.percentage + body['percentage']
 
-    update_table(swap, body)
+    update_table(swap, body, ignore=['tournament_id','recipient_id','paid'])
 
     return jsonify(swap.serialize())
 
