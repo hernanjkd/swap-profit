@@ -449,6 +449,7 @@ def create_swap():
     
     id = int(get_jwt()['sub'])
 
+    # get sender user
     prof = Profiles.query.get(id)
     if not prof:
         raise APIException('User not found', 404)
@@ -456,11 +457,20 @@ def create_swap():
     body = request.get_json()
     check_params(body, 'tournament_id', 'recipient_id', 'percentage')
 
-    available = prof.available_percentage( body['tournament_id'] )
-
-    if body['percentage'] > available:
+    sender_availability = prof.available_percentage( body['tournament_id'] )
+    if body['percentage'] > sender_availability:
         raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
                             f'You have available: {available}%'), 400)
+
+    # get recipient user
+    prof = Profiles.query.get(body['recipient_id'])
+    if not prof:
+        raise APIException('Recipient user not found', 404)
+
+    recipient_availability = prof.available_percentage( body['tournament_id'] )
+    if body['percentage'] > recipient_availability:
+        raise APIException(('Swap percentage too large for recipient.
+                            f'He has available to swap: {available}%'), 400)
 
     db.session.add(Swaps(
         sender_id = id,
@@ -487,14 +497,38 @@ def update_swap():
 
     id = int(get_jwt()['sub'])
 
-    prof = Profiles.query.get(id)
+    # get sender user
+    sender = Profiles.query.get(id)
     if not prof:
         raise APIException('User not found', 404)
     
     body = request.get_json()
     check_params(body, 'tournament_id', 'recipient_id')
 
-    swap = Swaps.query.get((id, body['tournament_id'], body['recipient_id']))
+    # get recipient user
+    recipient = Profiles.query.get(body['recipient_id'])
+    if not prof:
+        raise APIException('Recipient user not found', 404)
+
+    # get swap
+    swap = Swaps.query.get((id, recipient.id, body['tournament_id']))
+    if not swap:
+        raise APIException('Swap not found', 404)
+
+    if 'percentage' in body:
+
+        sender_availability = sender.available_percentage( body['tournament_id'] )
+        if body['percentage'] > sender_availability:
+            raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
+                                f'You have available: {available}%'), 400)
+
+        recipient_availability = recipient.available_percentage( body['tournament_id'] )
+        if body['percentage'] > recipient_availability:
+            raise APIException(('Swap percentage too large for recipient.
+                                f'He has available to swap: {available}%'), 400)
+
+
+    update_table(swap, body)
 
     return jsonify(swap.serialize())
 
