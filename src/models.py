@@ -211,14 +211,23 @@ class Buy_ins(db.Model):
         return f'<Buy_ins id:{self.id} user:{self.user_id} flight:{self.flight_id}>'
 
     def serialize(self, user=False, flight=False):
+        json = {
+            "chips": self.chips,
+            "table": self.table,
+            "seat": self.seat
+        }
         if user:
             return {
+                **json,
                 "id": self.id,
+                "flight_id": self.flight_id,
                 "user": self.user.serialize()
             }
         if flight:
             return {
+                **json,
                 "id": self.id,
+                "user_id": self.user_id,
                 "flight": self.flight.serialize()
             }
         return {
