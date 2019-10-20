@@ -96,13 +96,11 @@ def testing():
 
 @app.route('/fill_database')
 def fill_database():
-    
-    return {'message':'ok'}, 200
+    return jsonify({'message':'ok'}), 200
 
 @app.route('/tournaments', methods=['POST'])
 def add_tournament():
     body = request.get_json()
-
     db.session.add(Tournaments(
         name = body['name'],
         address = body['address'],
@@ -112,12 +110,53 @@ def add_tournament():
         latitude = None
     ))
     db.session.commit()
-
     search = {
         'name': body['name'],
         'start_at': datetime( *body['start_at'] )
     }
     return jsonify(Tournaments.query.filter_by(**search).first().serialize()), 200
+
+@app.route('/flights', methods=['POST'])
+def create_flight():
+    body = request.get_json()
+    db.session.add(Flights(
+        tournament_id = body['tournament_id'],
+        start_at = datetime( *body['start_at'] ),
+        end_at = datetime( *body['end_at'] ),
+        day = body['day']
+    ))
+    db.session.commit()
+    search = {
+        'tournament_id': body['tournament_id'],
+        'start_at': datetime(*body['start_at']),
+        'end_at': datetime(*body['end_at']),
+        'day': body['day']
+    }
+    return jsonify(Flights.query.filter_by(**search).first().serialize()), 200
+
+@app.route('/flights/<id>', methods=['DELETE'])
+def delete_flight(id):
+    db.session.delete( Flights.query.get(id) )
+    db.session.commit()
+    return jsonify({'message':'hoe hoe hoe'}), 200
+
+@app.route('/tournaments/<id>', methods=['DELETE'])
+def delete_tournament(id):
+    db.session.delete( Tournaments.query.get(id) )
+    db.session.commit()
+    return jsonify({'message':'Tournament deleted by jolly o Saint Nick'}), 200
+
+@app.route('/buy_ins/<id>', methods=['DELETE'])
+def delete_buy_in(id):
+    db.session.delete( Buy_ins.query.get(id) )
+    db.session.commit()
+    return jsonify({'message':'Buy in deleted, and Santa will put you in the naughty list if you contine deleting stuff'}), 200
+
+@app.route('/swaps/<id>', methods=['DELETE'])
+def delete_swap(id):
+    db.session.delete( Swaps.query.get(id) )
+    db.session.commit()
+    return jsonify({'message':"Swap deleted from Santa's list"}), 200
 #############################################################################
 ## DELETE ENDPOINT - JUST FOR TESTING - DELETE ENDPOINT - JUST FOR TESTING ##
 #############################################################################
@@ -360,7 +399,7 @@ def register_profile():
     ))
     db.session.commit()
 
-    return {'message':'ok'}, 200
+    return jsonify({'message':'ok'}), 200
 
 
 
@@ -382,7 +421,7 @@ def update_profile(id):
     body = request.get_json()    
     check_params(body)
     
-    update_table(prof, body)
+    update_table(prof, body, ignore=['profile_pic_url'])
 
     db.session.commit()
 
@@ -450,27 +489,27 @@ def create_swap():
     id = int(get_jwt()['sub'])
 
     # get sender user
-    prof = Profiles.query.get(id)
-    if not prof:
+    sender = Profiles.query.get(id)
+    if not sender:
         raise APIException('User not found', 404)
     
     body = request.get_json()
     check_params(body, 'tournament_id', 'recipient_id', 'percentage')
 
-    sender_availability = prof.available_percentage( body['tournament_id'] )
-    if body['percentage'] > sender_availability:
-        raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
-                            f'You have available: {available}%'), 400)
-
     # get recipient user
-    prof = Profiles.query.get(body['recipient_id'])
-    if not prof:
+    recipient = Profiles.query.get(body['recipient_id'])
+    if not recipient:
         raise APIException('Recipient user not found', 404)
 
-    recipient_availability = prof.available_percentage( body['tournament_id'] )
+    sender_availability = sender.available_percentage( body['tournament_id'] )
+    if body['percentage'] > sender_availability:
+        raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
+                            f'You have available: {sender_availability}%'), 400)
+
+    recipient_availability = recipient.available_percentage( body['tournament_id'] )
     if body['percentage'] > recipient_availability:
         raise APIException(('Swap percentage too large for recipient. '
-                            f'He has available to swap: {available}%'), 400)
+                            f'He has available to swap: {recipient_availability}%'), 400)
 
     db.session.add(Swaps(
         sender_id = id,
@@ -486,7 +525,7 @@ def create_swap():
     ))
     db.session.commit()
 
-    return {'message':'ok'}, 200
+    return jsonify({'message':'ok'}), 200
 
 
 
@@ -520,23 +559,46 @@ def update_swap():
         sender_availability = sender.available_percentage( body['tournament_id'] )
         if body['percentage'] > sender_availability:
             raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
-                                f'You have available: {available}%'), 400)
+                                f'You have available: {sender_availability}%'), 400)
 
         recipient_availability = recipient.available_percentage( body['tournament_id'] )
         if body['percentage'] > recipient_availability:
             raise APIException(('Swap percentage too large for recipient. '
-                                f'He has available to swap: {available}%'), 400)
+                                f'He has available to swap: {recipient_availability}%'), 400)
 
         # So it can be updated correctly with the update_table funcion
         body['percentage'] = swap.percentage + body['percentage']
 
     update_table(swap, body, ignore=['tournament_id','recipient_id','paid'])
 
+    db.session.commit()
+
     return jsonify(swap.serialize())
 
-    # if 'percentage' in body:
 
 
+
+@app.route('/users/me/swaps/<id>/done', methods=['PUT'])
+@role_jwt_required(['user'])
+def set_swap_paid(id):
+
+    id = int(get_jwt()['sub'])
+
+    # get sender user
+    sender = Profiles.query.get(id)
+    if not sender:
+        raise APIException('User not found', 404)
+    
+    body = request.get_json()
+    check_params(body, 'tournament_id', 'recipient_id')
+
+    swap = Swaps.query.get(id, body['recipient_id'], body['tournament_id'])
+
+    swap.paid = True
+
+    db.session.commit()
+
+    return jsonify({'message':'Swap has been paid'})
 
 
 
@@ -563,7 +625,7 @@ def create_buy_in():
     ))
     db.session.commit()
 
-    return {'message':'ok'}, 200    
+    return jsonify({'message':'ok'}), 200    
 
 
 

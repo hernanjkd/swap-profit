@@ -36,6 +36,7 @@ class Profiles(db.Model):
     username = db.Column(db.String(100))
     hendon_url = db.Column(db.String(200))
     profile_pic_url = db.Column(db.String(250), default=None)
+    roi = db.Column(db.Float)
 
     user = db.relationship('Users', back_populates='profile', uselist=False)
     buy_ins = db.relationship('Buy_ins', back_populates='user')
@@ -61,7 +62,8 @@ class Profiles(db.Model):
             "username": self.username,
             "email": self.user.email,
             "profile_pic_url": self.profile_pic_url,
-            "hendon_url": self.hendon_url
+            "hendon_url": self.hendon_url,
+            "roi": self.roi
         }
         if long:
             return {
