@@ -469,7 +469,7 @@ def create_swap():
 
     recipient_availability = prof.available_percentage( body['tournament_id'] )
     if body['percentage'] > recipient_availability:
-        raise APIException(('Swap percentage too large for recipient.
+        raise APIException(('Swap percentage too large for recipient. '
                             f'He has available to swap: {available}%'), 400)
 
     db.session.add(Swaps(
