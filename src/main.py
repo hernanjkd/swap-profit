@@ -154,7 +154,8 @@ def delete_buy_in(id):
 
 @app.route('/swaps/<id>', methods=['DELETE'])
 def delete_swap(id):
-    db.session.delete( Swaps.query.get(id) )
+    body = request.get_json()
+    db.session.delete( Swaps.query.get(id), body['recipient_id'], body['tournament_id'])
     db.session.commit()
     return jsonify({'message':"Swap deleted from Santa's list"}), 200
 #############################################################################
