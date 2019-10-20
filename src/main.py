@@ -152,10 +152,10 @@ def delete_buy_in(id):
     db.session.commit()
     return jsonify({'message':'Buy in deleted, and Santa will put you in the naughty list if you contine deleting stuff'}), 200
 
-@app.route('/swaps/<id>', methods=['DELETE'])
-def delete_swap(id):
+@app.route('/swaps', methods=['DELETE'])
+def delete_swap():
     body = request.get_json()
-    db.session.delete( Swaps.query.get(id), body['recipient_id'], body['tournament_id'])
+    db.session.delete( Swaps.query.get(body['sender_id'], body['recipient_id'], body['tournament_id'])
     db.session.commit()
     return jsonify({'message':"Swap deleted from Santa's list"}), 200
 #############################################################################
