@@ -394,7 +394,7 @@ def register_profile():
     db.session.add(Profiles(
         first_name = body['first_name'],
         last_name = body['last_name'],
-        username = body['username'] if 'username' in body else None,
+        nickname = body['nickname'] if 'nickname' in body else None,
         hendon_url = body['hendon_url'] if 'hendon_url' in body else None,
         user = user
     ))

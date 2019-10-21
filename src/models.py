@@ -33,7 +33,7 @@ class Profiles(db.Model):
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
-    username = db.Column(db.String(100))
+    nickname = db.Column(db.String(100))
     hendon_url = db.Column(db.String(200))
     profile_pic_url = db.Column(db.String(250), default=None)
     roi = db.Column(db.Float)
@@ -59,7 +59,7 @@ class Profiles(db.Model):
             "id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "username": self.username,
+            "nickname": self.nickname,
             "email": self.user.email,
             "profile_pic_url": self.profile_pic_url,
             "hendon_url": self.hendon_url,
@@ -72,7 +72,7 @@ class Profiles(db.Model):
                 "created_at": "",
                 "updated_at": "",
                 "receiving_swaps": [x.serialize() for x in self.receiving_swaps],
-                "buy_ins": [x.serialize(flight=True) for x in self.buy_ins]
+                "buy_ins": [x.serialize() for x in self.buy_ins]
             }
         return json
 
@@ -284,3 +284,10 @@ class Tokens(db.Model):
             "token": self.token,
             "expires_at": self.expires_at
         }
+
+'''
+SWAP PAGE
+nickname table seat chips (latest buy in)
+
+swap: incoming sending agreed rejected
+'''
