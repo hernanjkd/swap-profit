@@ -236,6 +236,7 @@ class Buy_ins(db.Model):
             "id": self.id,
             "user_id": self.user_id,
             "flight_id": self.flight_id,
+            "tournament_id": self.flight.tournament_id,
             "chips": self.chips,
             "table": self.table,
             "seat": self.seat,
@@ -289,5 +290,9 @@ class Tokens(db.Model):
 SWAP PAGE
 nickname table seat chips (latest buy in)
 
-swap: incoming sending agreed rejected
+swap: incoming sending agreed rejected unable_to_contact percentage
+
+TOURNAMENT PAGE
+
 '''
+
