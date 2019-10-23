@@ -55,6 +55,20 @@ class Profiles(db.Model):
                     total += swap.percentage
         return 50 - total
 
+    @hybrid_method
+    def swaps_actions(self, tournament_id):
+        actions = 0
+        swaps = 0
+        for swap in self.sending_swaps:
+            if swap.tournament_id == tournament_id:
+                if swap.status != 'rejected' and swap.status != 'unable to contact':
+                    actions += swap.percentage
+                    swaps += 1
+        return {
+            'actions': actions,
+            'swaps': swaps
+        }
+
     def serialize(self, long=False):
         json = {
             "id": self.id,
