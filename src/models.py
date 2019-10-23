@@ -51,7 +51,8 @@ class Profiles(db.Model):
         total = 0
         for swap in self.sending_swaps:
             if swap.tournament_id == tournament_id:
-                total += swap.percentage
+                if swap.status != 'rejected' and swap.status != 'unable to contact': 
+                    total += swap.percentage
         return 50 - total
 
     def serialize(self, long=False):
@@ -292,7 +293,9 @@ nickname table seat chips (latest buy in)
 
 swap: incoming sending agreed rejected unable_to_contact percentage
 
-TOURNAMENT PAGE
+For the user:
+total swaps for the tournament and the acummulative action % of swaps
 
+the hybrid function should count the swaps, not the rejected nor the unable to contact
 '''
 
