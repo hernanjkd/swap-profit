@@ -87,7 +87,7 @@ class Profiles(db.Model):
                 "created_at": "",
                 "updated_at": "",
                 "receiving_swaps": [x.serialize() for x in self.receiving_swaps],
-                "buy_ins": [x.serialize() for x in self.buy_ins]
+                "buy_ins": [x.serialize() for x in self.buy_ins] 
             }
         return json
 
@@ -227,26 +227,8 @@ class Buy_ins(db.Model):
     def __repr__(self):
         return f'<Buy_ins id:{self.id} user:{self.user_id} flight:{self.flight_id}>'
 
-    def serialize(self, user=False, flight=False):
-        json = {
-            "chips": self.chips,
-            "table": self.table,
-            "seat": self.seat
-        }
-        if user:
-            return {
-                **json,
-                "id": self.id,
-                "flight_id": self.flight_id,
-                "user": self.user.serialize()
-            }
-        if flight:
-            return {
-                **json,
-                "id": self.id,
-                "user_id": self.user_id,
-                "flight": self.flight.serialize()
-            }
+    def serialize(self):
+        u = self.user
         return {
             "id": self.id,
             "user_id": self.user_id,
@@ -255,7 +237,8 @@ class Buy_ins(db.Model):
             "chips": self.chips,
             "table": self.table,
             "seat": self.seat,
-            "receipt_img_url": self.receipt_img_url
+            "receipt_img_url": self.receipt_img_url,
+            "user_name": u.nickname if u.nickname else f'{u.first_name} {u.last_name}'
         }
 
 
