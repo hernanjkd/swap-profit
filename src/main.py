@@ -604,6 +604,17 @@ def set_swap_paid(id):
 
 
 
+@app.route('/buy_ins/me', methods=['GET'])
+@role_jwt_required(['user'])
+def get_buy_in():
+    
+    id = int(get_jwt()['sub'])
+
+    return jsonify({'message':'ok'}), 200
+
+
+
+
 @app.route('/buy_ins/me', methods=['POST'])
 @role_jwt_required(['user'])
 def create_buy_in():
@@ -617,16 +628,19 @@ def create_buy_in():
     if not prof:
         raise APIException('User not found', 404)
 
-    db.session.add(Buy_ins(
+    buyin = Buy_ins(
         user_id = id,
         flight_id = body['flight_id'],
         chips = body['chips'],
         table = body['table'],
         seat = body['seat']
-    ))
+    )
+    db.session.add(buyin)
     db.session.commit()
 
-    return jsonify({'message':'ok'}), 200    
+    name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
+
+    return jsonify({ **buyin, name }), 200
 
 
 
