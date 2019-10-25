@@ -422,7 +422,7 @@ def update_profile(id):
     body = request.get_json()    
     check_params(body)
     
-    update_table(prof, body, ignore=['profile_pic_url'])
+    update_table(prof, body, ignore=['profile_pic_url'], action=actions.update_user)
 
     db.session.commit()
 
@@ -641,6 +641,22 @@ def create_buy_in():
     name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
 
     return jsonify({ **buyin, name }), 200
+
+
+
+
+@app.route('/buy_ins/me/<int:id>', methods=['PUT'])
+@role_jwt_required(['user'])
+def update_buy_in(id):
+
+    body = request.get_json()
+    check_params(body)
+
+    user_id = int(get_jwt()['sub'])
+
+    buyin = Buy_ins.query.get(id)
+
+    update_table(buyin, body, ignore=['user_id','flight_id','receipt_img_url'])
 
 
 
