@@ -36,7 +36,7 @@ def check_params(body, *args):
                 msg += f'{prop}, '
     if msg:
         msg = re.sub(r'(.*),', r'\1 and', msg[:-2])
-        raise APIException('You must specify the ' + msg, 400)
+        raise Exception('You must specify the ' + msg, 400)
 
 def update_table(table, body, ignore=[]):
     for attr, value in body.items():

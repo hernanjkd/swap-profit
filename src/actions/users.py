@@ -12,23 +12,5 @@ from datetime import datetime, timedelta
 
 
 
-def login():
+def update_user(data, user):
 
-    body = request.get_json()
-    
-
-    user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
-
-    if not user:
-        raise APIException('The log in information is incorrect', 401)
-
-    if not user.valid:
-        raise APIException('Email not validated', 405)
-    
-    return jsonify({
-        'jwt': create_jwt({
-            'id': user.id,
-            'role': 'user',
-            'exp': body['exp'] if 'exp' in body else 15
-        })
-    }), 200
