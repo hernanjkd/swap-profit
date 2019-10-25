@@ -46,7 +46,6 @@ class Profiles(db.Model):
     def __repr__(self):
         return f'<Profiles {self.first_name} {self.last_name}>'
 
-    @hybrid_method
     def available_percentage(self, tournament_id):
         total = 0
         for swap in self.sending_swaps:
@@ -55,7 +54,6 @@ class Profiles(db.Model):
                     total += swap.percentage
         return 50 - total
 
-    @hybrid_method
     def swaps_actions(self, tournament_id):
         actions = 0
         swaps = 0
