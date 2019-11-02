@@ -118,8 +118,8 @@ class Tournaments(db.Model):
             "latitude": self.latitude,
             "created_at": "",
             "updated_at": "",
-            "flights": [x.serialize() for x in self.flights]
-            # "swaps": [x.serialize(long=True) for x in self.swaps]
+            # "flights": [x.serialize() for x in self.flights]
+            "swaps": [x.serialize(long=True) for x in self.swaps]
         }
 
 
