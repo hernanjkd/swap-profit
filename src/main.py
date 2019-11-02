@@ -652,13 +652,20 @@ def create_buy_in():
         table = body['table'],
         seat = body['seat']
     )
-    # db.session.add(buyin)
-    # db.session.commit()
+    db.session.add(buyin)
+    db.session.commit()
 
     name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
+    buyin = Buy_ins.query.filter_by(
+        user_id = id,
+        flight_id = body['flight_id'],
+        chips = body['chips'],
+        table = body['table'],
+        seat = body['seat']
+    )
 
-    # return jsonify({ **buyin.serialize(), name }), 200
-    return 'hello'
+    return jsonify({ **buyin.serialize(), name }), 200
+    
 
 
 
