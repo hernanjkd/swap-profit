@@ -666,7 +666,7 @@ def create_buy_in():
         seat = body['seat']
     ).first()
 
-    return jsonify({ **buyin.serialize(), name }), 200
+    return jsonify({ **buyin.serialize(), "name": name }), 200
     
 
 
