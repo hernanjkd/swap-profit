@@ -54,7 +54,7 @@ class Profiles(db.Model):
                     total += swap.percentage
         return 50 - total
 
-    def swaps_actions(self, tournament_id):
+    def get_swaps_actions(self, tournament_id):
         actions = 0
         swaps = 0
         for swap in self.sending_swaps:
