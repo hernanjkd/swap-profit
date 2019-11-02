@@ -662,7 +662,7 @@ def create_buy_in():
         chips = body['chips'],
         table = body['table'],
         seat = body['seat']
-    )
+    ).first()
 
     return jsonify({ **buyin.serialize(), name }), 200
     
