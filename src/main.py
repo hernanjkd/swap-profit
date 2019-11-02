@@ -116,6 +116,11 @@ def add_tournament():
     }
     return jsonify(Tournaments.query.filter_by(**search).first().serialize()), 200
 
+@app.route('/flights/<id>')
+def get_flights(id):
+    if id == 'all':
+        return jsonify([x.serialize() for x in Flights.query.all()])
+
 @app.route('/flights', methods=['POST'])
 def create_flight():
     body = request.get_json()
