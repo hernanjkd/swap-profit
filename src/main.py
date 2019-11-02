@@ -579,13 +579,19 @@ def update_swap():
 
 
 
-@app.route('/swaps/me/actions', methods=['GET'])
+@app.route('/swaps/me/tournament/<int:id>', methods=['GET'])
 @role_jwt_required(['user'])
-def get_swaps_actions():
+def get_swaps_actions(id):
 
     id = int(get_jwt()['sub'])
 
-    
+    prof = Profiles.query.get(id)
+    if not prof:
+        raise APIException('User not found', 404)
+
+    return jsonify(prof.get_swaps_actions(id))
+
+
 
 
 
