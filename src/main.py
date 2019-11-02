@@ -579,6 +579,17 @@ def update_swap():
 
 
 
+@app.route('/swaps/me/actions', methods=['GET'])
+@role_jwt_required(['user'])
+def get_swaps_actions():
+
+    id = int(get_jwt()['sub'])
+
+    
+
+
+
+
 @app.route('/users/me/swaps/<id>/done', methods=['PUT'])
 @role_jwt_required(['user'])
 def set_swap_paid(id):
