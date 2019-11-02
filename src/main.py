@@ -657,7 +657,7 @@ def create_buy_in():
 
     name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
 
-    return jsonify({ **buyin.serialize(), name }), 200
+    # return jsonify({ **buyin.serialize(), name }), 200
     return 'hello'
 
 
