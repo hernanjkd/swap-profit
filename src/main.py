@@ -636,28 +636,28 @@ def get_buy_in():
 @role_jwt_required(['user'])
 def create_buy_in():
 
-    # body = request.get_json()
-    # check_params(body, 'flight_id', 'chips', 'table', 'seat')
+    body = request.get_json()
+    check_params(body, 'flight_id', 'chips', 'table', 'seat')
 
-    # id = int(get_jwt()['sub'])
+    id = int(get_jwt()['sub'])
 
-    # prof = Profiles.query.get(id)
-    # if not prof:
-    #     raise APIException('User not found', 404)
+    prof = Profiles.query.get(id)
+    if not prof:
+        raise APIException('User not found', 404)
 
-    # buyin = Buy_ins(
-    #     user_id = id,
-    #     flight_id = body['flight_id'],
-    #     chips = body['chips'],
-    #     table = body['table'],
-    #     seat = body['seat']
-    # )
+    buyin = Buy_ins(
+        user_id = id,
+        flight_id = body['flight_id'],
+        chips = body['chips'],
+        table = body['table'],
+        seat = body['seat']
+    )
     # db.session.add(buyin)
     # db.session.commit()
 
-    # name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
+    name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
 
-    # return jsonify({ **buyin.serialize(), name }), 200
+    return jsonify({ **buyin.serialize(), name }), 200
     return 'hello'
 
 
