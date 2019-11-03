@@ -507,6 +507,9 @@ def create_swap():
     if not recipient:
         raise APIException('Recipient user not found', 404)
 
+    if Swaps.query.get((id, body['recipient_id'], body['tournament_id'])):
+        raise APIException('Swap already exists, can not duplicate', 400)
+
     sender_availability = sender.available_percentage( body['tournament_id'] )
     if body['percentage'] > sender_availability:
         raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '

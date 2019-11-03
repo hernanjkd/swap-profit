@@ -67,6 +67,9 @@ class Profiles(db.Model):
             'swaps': swaps
         }
 
+    def testing(self):
+        return jsonify({'msg':'working'})
+
     def serialize(self, long=False):
         json = {
             "id": self.id,
@@ -235,8 +238,8 @@ class Buy_ins(db.Model):
             "chips": self.chips,
             "table": self.table,
             "seat": self.seat,
-            "receipt_img_url": self.receipt_img_url,
-            "user_name": u.nickname if u.nickname else f'{u.first_name} {u.last_name}'
+            "receipt_img_url": self.receipt_img_url
+            # "user_name": u.nickname if u.nickname else f'{u.first_name} {u.last_name}'
         }
 
 
