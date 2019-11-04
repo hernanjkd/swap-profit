@@ -121,7 +121,7 @@ class Tournaments(db.Model):
             "latitude": self.latitude,
             "created_at": "",
             "updated_at": "",
-            # "flights": [x.serialize() for x in self.flights]
+            "flights": [x.serialize() for x in self.flights]
         }
 
 
@@ -147,7 +147,7 @@ class Flights(db.Model):
             "start_at": self.start_at,
             "end_at": self.end_at,
             "day": self.day,
-            "buy_ins": [x.serialize(user=True) for x in self.buy_ins]
+            "buy_ins": [x.serialize() for x in self.buy_ins]
         }
         if long:
             return {
@@ -179,7 +179,7 @@ class Swaps(db.Model):
         return f'<Swaps email:{self.user.email} recipient_user:{self.recipient_id} tournament:{self.tournament.name}>'
 
     def serialize(self, long=False, sender=False, percentage=False):
-        # Being used in Profiles @hybrid_method
+        # Being used in Profiles method
         if percentage:
             return {"percentage": self.percentage}
         if sender:
