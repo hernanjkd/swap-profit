@@ -143,8 +143,8 @@ def create_flight():
 @app.route('/buy_ins/<id>')
 def get_buyins(id):
     if id == 'all':
-        return jsonify([x.serialize() for x in Swaps.query.all()])
-    return jsonify(Swaps.query.get(int(id)).serialize())
+        return jsonify([x.serialize() for x in Buy_ins.query.all()])
+    return jsonify(Buy_ins.query.get(int(id)).serialize())
 
 @app.route('/flights/<id>', methods=['DELETE'])
 def delete_flight(id):
