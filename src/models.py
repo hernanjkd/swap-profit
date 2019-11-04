@@ -67,7 +67,7 @@ class Profiles(db.Model):
         return {
             'actions': actions,
             'swaps': swaps,
-            'status': swap_status
+            'status': status
         }
 
     def testing(self):
