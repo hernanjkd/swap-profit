@@ -59,15 +59,11 @@ class Profiles(db.Model):
         swaps = 0
         status = []
         for swap in self.sending_swaps:
-            status.append({
-                str(type(swap.tournament_id)): swap.tournament_id,
-                str(type(tournament_id)): tournament_id
-            })
             if swap.tournament_id == tournament_id:
-                # if swap.status != 'rejected' and swap.status != 'unable to contact':
-                actions += swap.percentage
-                swaps += 1
-                status.append(swap.status)
+                if swap.status != 'rejected' and swap.status != 'unable to contact':
+                    actions += swap.percentage
+                    swaps += 1
+                    status.append(swap.status)
         return {
             'actions': actions,
             'swaps': swaps,

@@ -92,6 +92,7 @@ def create_token():
 @app.route('/testing')
 # @role_jwt_required(['user'])
 def testing():
+    
     raise APIException('read this msg', 406)
 
 @app.route('/fill_database')
@@ -591,9 +592,9 @@ def update_swap():
 @role_jwt_required(['user'])
 def get_swaps_actions(id):
 
-    id = int(get_jwt()['sub'])
+    user_id = int(get_jwt()['sub'])
 
-    prof = Profiles.query.get(id)
+    prof = Profiles.query.get(user_id)
     if not prof:
         raise APIException('User not found', 404)
 
