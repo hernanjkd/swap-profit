@@ -122,7 +122,6 @@ class Tournaments(db.Model):
             "created_at": "",
             "updated_at": "",
             # "flights": [x.serialize() for x in self.flights]
-            "swaps": [x.serialize(long=True) for x in self.swaps]
         }
 
 
