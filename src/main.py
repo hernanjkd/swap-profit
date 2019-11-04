@@ -140,6 +140,12 @@ def create_flight():
     }
     return jsonify(Flights.query.filter_by(**search).first().serialize()), 200
 
+@app.route('/buy_ins/<id>')
+def get_buyins(id):
+    if id == 'all':
+        return jsonify([x.serialize() for x in Swaps.query.all()])
+    return jsonify(Swaps.query.get(int(id)).serialize())
+
 @app.route('/flights/<id>', methods=['DELETE'])
 def delete_flight(id):
     db.session.delete( Flights.query.get(id) )

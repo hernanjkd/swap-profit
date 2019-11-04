@@ -57,18 +57,14 @@ class Profiles(db.Model):
     def get_swaps_actions(self, tournament_id):
         actions = 0
         swaps = 0
-        status = []
         for swap in self.sending_swaps:
             if swap.tournament_id == tournament_id:
                 if swap.status != 'rejected' and swap.status != 'unable to contact':
                     actions += swap.percentage
                     swaps += 1
-                    status.append(swap.status)
         return {
             'actions': actions,
-            'swaps': swaps,
-            'status': status,
-            'list': [x.serialize() for x in self.sending_swaps]
+            'swaps': swaps
         }
 
     def testing(self):
@@ -241,8 +237,8 @@ class Buy_ins(db.Model):
             "chips": self.chips,
             "table": self.table,
             "seat": self.seat,
-            "receipt_img_url": self.receipt_img_url
-            # "user_name": u.nickname if u.nickname else f'{u.first_name} {u.last_name}'
+            "receipt_img_url": self.receipt_img_url,
+            "user_name": u.nickname if u.nickname else f'{u.first_name} {u.last_name}'
         }
 
 
