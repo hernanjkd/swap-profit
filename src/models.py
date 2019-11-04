@@ -64,6 +64,7 @@ class Profiles(db.Model):
                 actions += swap.percentage
                 swaps += 1
                 status.append(swap.status)
+        return self.sending_swaps
         return {
             'actions': actions,
             'swaps': swaps,
