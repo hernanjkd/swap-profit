@@ -714,8 +714,20 @@ def swap_tracker():
     id = int(get_jwt()['sub'])
 
     buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
+    if not buyin:
+        raise APIException('Buy_in not found', 404)
 
-    return jsonify(buyin.serialize())
+    swaps = Swaps.query.filter_by(
+        sender_id = id,
+        tournament_id = buyin.flight.tournament_id
+    )
+    if not swaps:
+        return jsonify({'message':'You have no live swaps in this tournament'})
+
+    return jsonify({
+        'buy_in': buyin.serialize(),
+        'swaps': [x.serialize() for x in swaps]
+    })
 
 
 
