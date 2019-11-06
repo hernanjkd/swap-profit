@@ -285,14 +285,7 @@ class Tokens(db.Model):
         }
 
 '''
-SWAP PAGE
-nickname table seat chips (latest buy in)
-
-swap: incoming sending agreed rejected unable_to_contact percentage
-
-For the user:
-total swaps for the tournament and the acummulative action % of swaps
-
-the hybrid function should count the swaps, not the rejected nor the unable to contact
+on swap update.. should it swap both swaps w the same json? or do 2 fetches to swap
+each swap.. out of the 2 that are created
 '''
 

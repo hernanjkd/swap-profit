@@ -706,6 +706,17 @@ def update_buy_in(id):
 
 
 
+@app.route('/swap_tracker/me')
+@role_jwt_required(['user'])
+def swap_tracker():
+
+    id = int(get_jwt()['sub'])
+
+    buyin = Buy_ins.query.filter_by(user_id=id)
+
+
+
+
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT)
