@@ -1,5 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.ext.hybrid import hybrid_method
 
 db = SQLAlchemy()
 
