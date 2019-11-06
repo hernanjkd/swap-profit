@@ -713,10 +713,11 @@ def swap_tracker():
 
     id = int(get_jwt()['sub'])
 
-    buyin = Buy_ins.query(func.max(id)).filter_by(user_id=id)
+    # buyin = Buy_ins.query.max(id).filter_by(user_id=id)
     # buyin = Profiles.query(func.max(id)).filter_by(id=id)
+    buyin = session.query(func.max(id)).filter_by(user_id=id)
 
-    return jsonify(buyin)
+    return jsonify(buyin.serialize())
 
 
 
