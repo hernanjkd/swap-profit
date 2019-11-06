@@ -713,9 +713,10 @@ def swap_tracker():
 
     id = int(get_jwt()['sub'])
 
-    buyin = Buy_ins.query.filter_by(user_id=id).order_by(desc('id')).first()
+    buyin = Buy_ins.query.filter_by(user_id=id).order_by(desc(Buy_ins.id)).first()
+    # buyin = Buy_ins.query.order_by(desc(Buy_ins.id)).first()
 
-    return jsonify([x.serialize() for x in buyin])
+    return jsonify(buyin)
 
 
 
