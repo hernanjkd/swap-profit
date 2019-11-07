@@ -26,13 +26,13 @@ def has_no_empty_params(rule):
     return len(defaults) >= len(arguments)
 
 # Raises an exception if required params not in body
-def check_params(body, *args):
+def check_params(body, *args, add=[]):
     msg = ''
     if body is None:
         msg = 'request body as a json object, '
     else:
         for prop in args:
-            if prop not in body:
+            if prop not in body and prop not in add:
                 msg += f'{prop}, '
     if msg:
         msg = re.sub(r'(.*),', r'\1 and', msg[:-2])
