@@ -568,7 +568,8 @@ def update_swap():
 
     # get swap
     swap = Swaps.query.get((id, recipient.id, body['tournament_id']))
-    if not swap:
+    counter_swap = Swaps.query.get((recipient.id, id, body['tournament_id']))
+    if not swap or not counter_swap:
         raise APIException('Swap not found', 404)
 
     if 'percentage' in body:
@@ -587,7 +588,8 @@ def update_swap():
                                 f'He has available to swap: {recipient_availability}%'), 400)
 
         # So it can be updated correctly with the update_table funcion
-        body['percentage'] = swap.percentage + body['percentage']
+        body['percentage'] = swap.percentage + percentage
+        body['counter_percentage'] = counter_swap.percentage + counter
 
     update_table(swap, body, ignore=['tournament_id','recipient_id','paid'])
 
