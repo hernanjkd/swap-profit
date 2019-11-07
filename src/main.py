@@ -573,13 +573,16 @@ def update_swap():
 
     if 'percentage' in body:
 
+        percentage = abs(body['percentage'])
+        counter = abs(body['counter_percentage']) if 'counter_percentage' in body else percentage
+
         sender_availability = sender.available_percentage( body['tournament_id'] )
-        if body['percentage'] > sender_availability:
+        if percentage > sender_availability:
             raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
                                 f'You have available: {sender_availability}%'), 400)
 
         recipient_availability = recipient.available_percentage( body['tournament_id'] )
-        if body['percentage'] > recipient_availability:
+        if counter > recipient_availability:
             raise APIException(('Swap percentage too large for recipient. '
                                 f'He has available to swap: {recipient_availability}%'), 400)
 
@@ -707,7 +710,7 @@ def update_buy_in(id):
 
 
 
-@app.route('/me/swap_tracker')
+@app.route('/me/swap_tracker', methods=['GET'])
 @role_jwt_required(['user'])
 def swap_tracker():
 
