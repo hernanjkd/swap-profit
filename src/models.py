@@ -288,5 +288,7 @@ on swap update.. should it swap both swaps w the same json? or do 2 fetches to s
 each swap.. out of the 2 that are created
 
 in the swap tracker, since both swaps could have different values, maybe show both?
+
+in swap tracker, I can get the latest buyin if it is currently live?
 '''
 

@@ -496,7 +496,7 @@ def get_swaps(id):
 
 
 
-@app.route('/swaps/me', methods=['POST'])
+@app.route('/me/swaps', methods=['POST'])
 @role_jwt_required(['user'])
 def create_swap():
     
@@ -547,7 +547,7 @@ def create_swap():
 
 
 
-@app.route('/swaps/me', methods=['PUT'])
+@app.route('/me/swaps', methods=['PUT'])
 @role_jwt_required(['user'])
 def update_swap():
 
@@ -637,7 +637,7 @@ def set_swap_paid(id):
 
 
 
-@app.route('/buy_ins/me', methods=['GET'])
+@app.route('/me/buy_ins', methods=['GET'])
 @role_jwt_required(['user'])
 def get_buy_in():
     
@@ -648,7 +648,7 @@ def get_buy_in():
 
 
 
-@app.route('/buy_ins/me', methods=['POST'])
+@app.route('/me/buy_ins', methods=['POST'])
 @role_jwt_required(['user'])
 def create_buy_in():
 
@@ -687,7 +687,7 @@ def create_buy_in():
 
 
 
-@app.route('/buy_ins/me/<int:id>', methods=['PUT'])
+@app.route('/me/buy_ins/<int:id>', methods=['PUT'])
 @role_jwt_required(['user'])
 def update_buy_in(id):
 
@@ -707,7 +707,7 @@ def update_buy_in(id):
 
 
 
-@app.route('/swap_tracker/me')
+@app.route('/me/swap_tracker')
 @role_jwt_required(['user'])
 def swap_tracker():
 

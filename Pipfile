@@ -19,6 +19,7 @@ mysqlclient = "*"
 gunicorn = "*"
 flask-jwt-simple = "*"
 datetime = "*"
+requests = "*"
 
 [requires]
 python_version = "3.7"
