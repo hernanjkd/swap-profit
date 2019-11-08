@@ -40,9 +40,9 @@ def check_params(body, *args):
 
 def update_table(table, body, ignore=[]):
     for attr, value in body.items():
-        if not hasattr(table, attr):
-            raise APIException(f'Incorrect parameter in body: {attr}', 400)
         if attr not in ignore:
+            if not hasattr(table, attr):
+                raise APIException(f'Incorrect parameter in body: {attr}', 400)
             setattr(table, attr, value)
 
 def validation_link(id):
