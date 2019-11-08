@@ -444,15 +444,11 @@ def update_profile(id):
 
 
 
-@app.route('/profiles/<id>/image', methods=['PUT'])
+@app.route('/profiles/me/image', methods=['PUT'])
 @role_jwt_required(['user'])
-def upload_prof_pic(id):
+def upload_prof_pic():
 
-    if id == 'me':
-        id = str(get_jwt()['sub'])
-
-    if not id.isnumeric():
-        raise APIException('Invalid id ' + id, 400)
+    id = get_jwt()['sub']
 
     return 'ok'
 
@@ -734,6 +730,12 @@ def swap_tracker():
         'buy_in': buyin.serialize(),
         'swaps': [x.serialize() for x in swaps]
     })
+
+    {
+        mycurrentbuyin: mybuying,
+        otheruserswap and buyin:[{currentbuyin, swap},{currentbuyin, swap},]
+        tournament: {name, time, and attritbute able to tell past, live, scheduled}
+    }
 
 
 
