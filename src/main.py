@@ -547,6 +547,7 @@ def create_swap():
 
 
 
+# JSON receives a counter_percentage to update the swap of the recipient
 @app.route('/me/swaps', methods=['PUT'])
 @role_jwt_required(['user'])
 def update_swap():
@@ -559,7 +560,7 @@ def update_swap():
         raise APIException('User not found', 404)
     
     body = request.get_json()
-    check_params(body, 'tournament_id', 'recipient_id', add=['counter_percentage'])
+    check_params(body, 'tournament_id', 'recipient_id')
 
     # get recipient user
     recipient = Profiles.query.get(body['recipient_id'])
@@ -589,9 +590,9 @@ def update_swap():
 
         # So it can be updated correctly with the update_table funcion
         body['percentage'] = swap.percentage + percentage
-        body['counter_percentage'] = counter_swap.percentage + counter
+        update_table(counter_swap, {'percentage': counter_swap.percentage + counter})
 
-    update_table(swap, body, ignore=['tournament_id','recipient_id','paid'])
+    update_table(swap, body, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
 
     db.session.commit()
 
