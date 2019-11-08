@@ -559,7 +559,7 @@ def update_swap():
         raise APIException('User not found', 404)
     
     body = request.get_json()
-    check_params(body, 'tournament_id', 'recipient_id')
+    check_params(body, 'tournament_id', 'recipient_id', add=['counter_percentage'])
 
     # get recipient user
     recipient = Profiles.query.get(body['recipient_id'])
