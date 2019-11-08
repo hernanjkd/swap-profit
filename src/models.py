@@ -216,6 +216,7 @@ class Buy_ins(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
     flight_id = db.Column(db.Integer, db.ForeignKey('flights.id'))
     receipt_img_url = db.Column(db.String(250))
+    place = db.Column(db.Integer)
     chips = db.Column(db.Integer)
     table = db.Column(db.Integer)
     seat = db.Column(db.Integer)
@@ -233,6 +234,7 @@ class Buy_ins(db.Model):
             "user_id": self.user_id,
             "flight_id": self.flight_id,
             "tournament_id": self.flight.tournament_id,
+            "place": self.place,
             "chips": self.chips,
             "table": self.table,
             "seat": self.seat,
