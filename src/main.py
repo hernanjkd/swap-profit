@@ -713,28 +713,30 @@ def update_buy_in(id):
 @role_jwt_required(['user'])
 def swap_tracker():
 
-    # id = int(get_jwt()['sub'])
+    id = int(get_jwt()['sub'])
 
-    # buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
-    # if not buyin:
-    #     raise APIException('Buy_in not found', 404)
+    buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
+    if not buyin:
+        raise APIException('Buy_in not found', 404)
 
-    # swaps = Swaps.query.filter_by(
-    #     sender_id = id,
-    #     tournament_id = buyin.flight.tournament_id
-    # )
-    # if not swaps:
-    #     return jsonify({'message':'You have no live swaps in this tournament'})
+    swaps = Swaps.query.filter_by(
+        sender_id = id,
+        tournament_id = buyin.flight.tournament_id
+    )
+    if not swaps:
+        return jsonify({'message':'You have no live swaps in this tournament'})
 
     now = datetime.utcnow()
-    now = datetime(2019,10,11,14)
-    trnmt = Tournaments.query.filter(
-        Tournaments.start_at < now and Tournaments.end_at > now).first()
+    trnmt = (Tournaments.query.filter(Tournaments.start_at < now)
+                             .filter(Tournaments.end_at > now)).first()
+    if not trnmt:
+        raise APIException('No current tournaments')
+
 
     return jsonify({
-        'tournament': now
-        # 'my_current_buy_in': buyin.serialize(),
-        # 'others_swaps_buy_ins': [x.serialize() for x in swaps]
+        'tournament': trnmt
+        'my_current_buy_in': buyin.serialize(),
+        'others_swaps': [x.serialize() for x in swaps]
     })
 
 
