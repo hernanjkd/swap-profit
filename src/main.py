@@ -727,7 +727,8 @@ def swap_tracker():
         return jsonify({'message':'You have no live swaps in this tournament'})
 
     return jsonify({
-        'buy_in': buyin.serialize(),
+        'tournament': 
+        'my_current_buy_in': buyin.serialize(),
         'swaps': [x.serialize() for x in swaps]
     })
 
