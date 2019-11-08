@@ -727,11 +727,12 @@ def swap_tracker():
     #     return jsonify({'message':'You have no live swaps in this tournament'})
 
     now = datetime.utcnow()
+    now = datetime(2019,10,11,14)
     trnmt = Tournaments.query.filter(
         Tournaments.start_at < now and Tournaments.end_at > now).first()
 
     return jsonify({
-        'tournament': trnmt.serialize()
+        'tournament': now
         # 'my_current_buy_in': buyin.serialize(),
         # 'others_swaps_buy_ins': [x.serialize() for x in swaps]
     })
