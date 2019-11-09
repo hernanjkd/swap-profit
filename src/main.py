@@ -734,7 +734,7 @@ def swap_tracker():
 
 
     return jsonify({
-        'tournament': trnmt,
+        'tournament': trnmt.serialize(),
         'my_current_buy_in': buyin.serialize(),
         'others_swaps': [x.serialize() for x in swaps]
     })
