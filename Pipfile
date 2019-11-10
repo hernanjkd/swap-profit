@@ -20,14 +20,19 @@ gunicorn = "*"
 flask-jwt-simple = "*"
 datetime = "*"
 requests = "*"
+pytest = "*"
+flask-admin = "*"
+pytest-flask = "*"
+pytest-flask-sqlalchemy = "*"
 
 [requires]
 python_version = "3.7"
 
 [scripts]
-start="flask run -p 3000"
+start="flask run -p 3000 --host=0.0.0.0"
 init="flask db init"
 migrate="flask db migrate"
 upgrade="flask db upgrade"
+test='PYTHONPATH=./src; pytest'
 diagram="python3 diagram.py"
 deploy="echo 'Please follow this 3 steps to deploy: https://github.com/4GeeksAcademy/flask-rest-hello/blob/master/README.md#deploy-your-website-to-heroku' "
