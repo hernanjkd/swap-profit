@@ -2,7 +2,7 @@ import os
 import re
 import hashlib
 from flask import jsonify, url_for
-from flask_jwt_simple import create_jwt, jwt_required
+from flask_jwt_simple import create_jwt, jwt_required, get_jwt
 from datetime import datetime
 
 class APIException(Exception):

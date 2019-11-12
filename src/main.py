@@ -8,7 +8,6 @@ from flask_cors import CORS
 from flask_jwt_simple import JWTManager, create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc
 from utils import APIException, generate_sitemap, check_params, validation_link, update_table, sha256, role_jwt_required
-from dummy_data import buy_ins, flights, swaps, profiles, tournaments
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 from datetime import datetime, timedelta
 from methods import player_methods, public_methods, sample_methods, admin_methods
@@ -447,7 +446,7 @@ def get_swaps(id):
 @role_jwt_required(['user'])
 def create_swap():
 
-    id = int(get_jwt()['sub'])
+    id = get_jwt()['sub']
 
     # get sender user
     sender = Profiles.query.get(id)
@@ -499,7 +498,7 @@ def create_swap():
 @role_jwt_required(['user'])
 def update_swap():
 
-    id = int(get_jwt()['sub'])
+    id = get_jwt()['sub']
 
     # get sender user
     sender = Profiles.query.get(id)
@@ -552,7 +551,7 @@ def update_swap():
 @role_jwt_required(['user'])
 def get_swaps_actions(id):
 
-    user_id = int(get_jwt()['sub'])
+    user_id = get_jwt()['sub']
 
     prof = Profiles.query.get(user_id)
     if not prof:
@@ -569,7 +568,7 @@ def get_swaps_actions(id):
 @role_jwt_required(['user'])
 def set_swap_paid(id):
 
-    id = int(get_jwt()['sub'])
+    id = get_jwt()['sub']
 
     # get sender user
     sender = Profiles.query.get(id)
@@ -593,8 +592,8 @@ def set_swap_paid(id):
 @app.route('/me/buy_ins', methods=['GET'])
 @role_jwt_required(['user'])
 def get_buy_in():
-    return str(type(get_jwt()['sub']))
-    id = int(get_jwt()['sub'])
+    
+    id = get_jwt()['sub']
 
     buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
     if not buyin:
@@ -609,7 +608,7 @@ def get_buy_in():
 @role_jwt_required(['user'])
 def swap_tracker():
 
-    id = int(get_jwt()['sub'])
+    id = get_jwt()['sub']
 
     buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
     if not buyin:
