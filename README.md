@@ -3,9 +3,10 @@
 If you are using gitpod that project gets automatically configured.
 
 ## For non-gitpod users:
-1. The .env.example must by duplicated and renamed to `.env`, then replace variables with your own values.
-
-
+1. Install the packages: `$ pipenv install`.
+2. The .env.example must by duplicated and renamed to `.env`, then replace variables with your own values.
+3. Apply the migrations: `$ pipenv run upgrade`.
+4. Run the project.
 
 # Runnin the application
 
