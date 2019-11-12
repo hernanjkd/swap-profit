@@ -87,12 +87,10 @@ def get_template_content(slug, data={}, formats=None):
 
     #d = Context({ 'username': username })
     con = {
-        'EMPLOYEE_URL': os.environ.get('EMPLOYEE_URL'),
-        'EMPLOYER_URL': os.environ.get('EMPLOYER_URL'),
         'API_URL': os.environ.get('API_URL'),
-        'COMPANY_NAME': 'JobCore',
-        'COMPANY_LEGAL_NAME': 'JobCore LLC',
-        'COMPANY_ADDRESS': '270 Catalonia, Coral Gables, 33134'
+        'COMPANY_NAME': 'Swap App',
+        'COMPANY_LEGAL_NAME': 'Swap App LLC',
+        'COMPANY_ADDRESS': '2323 Hello, Coral Gables, 33134'
     }
     z = con.copy()   # start with x's keys and values
     z.update(data)
@@ -117,48 +115,15 @@ def get_template_content(slug, data={}, formats=None):
 def get_template_info(slug):
     subjects = {
         "general": {"type": "utils", "subject": "Important message from JobCore"},
-        "invite_to_jobcore": {
-            "type": "employee",
-            "subject": "A job is waiting for you",
-        },
         "email_validated": {"type": "views", "subject": "Your email has been validated"},
         "reset_password_form": {"type": "views", "subject": "Reset your password"},
         "registration": {"type": "registration", "subject": "Welcome to JobCore"},
         "password_reset_link": {"type": "registration", "subject": "About your password reset"},
         "password_reset": {"type": "registration", "subject": "You password has been reset"},
 
-        # more complex notifications
-        "invite_to_shift": {
-            "type": "invite",
-            "subject": "You have been invited to work on a shift"
-        },
-        "invite_accepted": {
-            "type": "registration",
-            "subject": "Someone you invited has join JobCore"
-        },
-        "cancelled_shift": {
-            "type": "shift",
-            "subject": "One of your upcoming shifts have been cancelled"
-        },
-        "updated_shift": {
-            "type": "shift",
-            "subject": "Atention Needed: One of your upcoming shifts was updated"
-        },
-        "new_shift": {
-            "type": "invite",
-            "subject": "There is a new shift waiting for you to apply"
-        },
-        "new_rating": {
-            "type": "rating",
-            "subject": "You have received a new rating"
-        },
-        "applicant_accepted": {
-            "type": "shift",
-            "subject": "Job application accepted, time to work :)"
-        },
-        "applicant_rejected": {
-            "type": "shift",
-            "subject": "Job application rejected, we are sorry :("
+        "update_chips": {
+            "type": "tournament",
+            "subject": "Remember to update your chipts"
         },
     }
     if slug in subjects:
