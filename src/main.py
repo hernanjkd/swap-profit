@@ -593,10 +593,16 @@ def set_swap_paid(id):
 @app.route('/me/buy_ins', methods=['GET'])
 @role_jwt_required(['user'])
 def get_buy_in():
-
+    return str(type(get_jwt()['sub']))
     id = int(get_jwt()['sub'])
 
-    return jsonify({'message':'ok'}), 200
+    buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
+    if not buyin:
+        raise APIException('Buy_in not found', 404)
+
+    return jsonify(buyin.serialize()), 200
+
+
 
 
 @app.route('/me/swap_tracker', methods=['GET'])
