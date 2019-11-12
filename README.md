@@ -14,10 +14,10 @@ WELCOME GEEK! 🐍 + 💻 = 🤓
 
 The server is already running, `ctr + c` to stop the server if you like
 
-The following commands are available to stat coding:
+The following commands are available to start coding:
 
-- pipenv run migrate create database migrations (if models.py is edited)
-- pipenv run upgrade run database migrations (if pending)
-- pipenv run start start flask web server (if not running)
-- pipenv run diagram create database diagram image (if needed)
-- pipenv run deploy deploy to heroku (if needed)
+- `$ pipenv run migrate` create database migrations (if models.py is edited)
+- `$ pipenv run upgrade` run database migrations (if pending)
+- `$ pipenv run start` start flask web server (if not running)
+- `$ pipenv run diagram` create database diagram image (if needed)
+- `$ pipenv run deploy` deploy to heroku (if needed)
