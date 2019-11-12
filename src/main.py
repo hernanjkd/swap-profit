@@ -11,7 +11,7 @@ from utils import APIException, generate_sitemap, check_params, validation_link,
 from dummy_data import buy_ins, flights, swaps, profiles, tournaments
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 from datetime import datetime, timedelta
-from methods import buy_in_methods, auth_methods, sample_methods
+from methods import player_methods, public_methods, sample_methods, admin_methods
 
 def create_app(testing=False):
     app = Flask(__name__)
@@ -63,8 +63,9 @@ def create_app(testing=False):
         }
 
     app = sample_methods.attach(app)
-    app = auth_methods.attach(app)
-    app = buy_in_methods.attach(app)
+    app = player_methods.attach(app)
+    app = public_methods.attach(app)
+    app = admin_methods.attach(app)
 
     return app
 
