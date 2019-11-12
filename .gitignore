@@ -3,3 +3,5 @@
 database.database
 database.db
 diagram.png
+
+*.sqlite
