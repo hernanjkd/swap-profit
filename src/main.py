@@ -305,16 +305,6 @@ def reset_password(id):
 
 
 
-@app.route('/users/forgot_password/<token>', methods=['POST','PUT'])
-def forgot_password(token):
-
-    jwt_data = decode_jwt(token)
-
-    return 'ok'
-
-
-
-
 # id can be the user id, 'me' or 'all'
 @app.route('/profiles/<id>', methods=['GET'])
 @role_jwt_required(['user'])
@@ -604,35 +594,35 @@ def get_buy_in():
 
 
 
-@app.route('/me/swap_tracker', methods=['GET'])
-@role_jwt_required(['user'])
-def swap_tracker():
+# @app.route('/me/swap_tracker', methods=['GET'])
+# @role_jwt_required(['user'])
+# def swap_tracker():
 
-    id = get_jwt()['sub']
+#     id = get_jwt()['sub']
 
-    buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
-    if not buyin:
-        raise APIException('Buy_in not found', 404)
+#     buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
+#     if not buyin:
+#         raise APIException('Buy_in not found', 404)
 
-    swaps = Swaps.query.filter_by(
-        sender_id = id,
-        tournament_id = buyin.flight.tournament_id
-    )
-    if not swaps:
-        return jsonify({'message':'You have no live swaps in this tournament'})
+#     swaps = Swaps.query.filter_by(
+#         sender_id = id,
+#         tournament_id = buyin.flight.tournament_id
+#     )
+#     if not swaps:
+#         return jsonify({'message':'You have no live swaps in this tournament'})
 
-    now = datetime.utcnow()
-    trnmt = (Tournaments.query.filter(Tournaments.start_at < now)
-                             .filter(Tournaments.end_at > now)).first()
-    if not trnmt:
-        raise APIException('No current tournaments')
+#     now = datetime.utcnow()
+#     trnmt = (Tournaments.query.filter(Tournaments.start_at < now)
+#             .filter(Tournaments.end_at > now).filter_by(flight.))
+#     if not trnmt:
+#         return jsonify({'message':'No current tournaments'})
 
 
-    return jsonify({
-        'tournament': trnmt.serialize(),
-        'my_current_buy_in': buyin.serialize(),
-        'others_swaps': [x.serialize() for x in swaps]
-    })
+#     return jsonify({
+#         'tournament': trnmt.serialize(),
+#         'my_current_buy_in': buyin.serialize(),
+#         'others_swaps': [x.serialize() for x in swaps]
+#     })
 
 
 

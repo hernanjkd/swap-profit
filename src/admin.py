@@ -5,7 +5,7 @@ from models import (db, Users, Profiles, Tournaments, Flights, Swaps, Buy_ins,
 # Flask and Flask-SQLAlchemy initialization here
 
 def SetupAdmin(app):
-    admin = Admin(app, name='Swapp App', template_mode='bootstrap3')
+    admin = Admin(app, name='Swap App', template_mode='bootstrap3')
     admin.add_view(ModelView(Users, db.session))
     admin.add_view(ModelView(Profiles, db.session))
     admin.add_view(ModelView(Tournaments, db.session))

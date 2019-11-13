@@ -1,4 +1,5 @@
 from utils import role_jwt_required
+from sqlalchemy import desc
 from flask import Flask, request, jsonify, url_for, redirect, render_template
 
 def attach(app):
@@ -28,14 +29,13 @@ def attach(app):
 
         name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
 
-        # Get the latest entry by checking the created_at
         buyin = Buy_ins.query.filter_by(
             user_id = id,
             flight_id = body['flight_id'],
             chips = body['chips'],
             table = body['table'],
             seat = body['seat']
-        ).first()
+        ).order_by(Buy_ins.id.desc()).first()
 
         return jsonify({ **buyin.serialize(), "name": name }), 200
 
@@ -49,9 +49,12 @@ def attach(app):
         body = request.get_json()
         check_params(body)
 
-        user_id = int(get_jwt()['sub'])
+        user_id = get_jwt()['sub']
 
         buyin = Buy_ins.query.get(id)
+
+        if not buyin:
+            raise APIException('Buy_in not found', 404)
 
         update_table(buyin, body, ignore=['user_id','flight_id','receipt_img_url'])
 
