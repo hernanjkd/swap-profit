@@ -404,17 +404,17 @@ def get_tournaments(id):
         return jsonify([x.serialize() for x in Tournaments.query.all()]), 200
 
     if id.isnumeric():
-        trnmt = Tournaments.query.get(int(id))
+        trmnt = Tournaments.query.get(int(id))
     else:
-        trnmt = Tournaments.query.filter(Tournaments.name.ilike(f'%{id}%')).all()
+        trmnt = Tournaments.query.filter(Tournaments.name.ilike(f'%{id}%')).all()
 
-    if not trnmt:
+    if not trmnt:
         raise APIException('Tournament not found', 404)
 
-    if isinstance(trnmt, list):
-        return jsonify([x.serialize() for x in trnmt]), 200
+    if isinstance(trmnt, list):
+        return jsonify([x.serialize() for x in trmnt]), 200
 
-    return jsonify(trnmt.serialize()), 200
+    return jsonify(trmnt.serialize()), 200
 
 
 
@@ -594,11 +594,15 @@ def get_buy_in():
 
 
 
-# @app.route('/me/swap_tracker', methods=['GET'])
-# @role_jwt_required(['user'])
-# def swap_tracker():
+@app.route('/me/swap_tracker', methods=['GET'])
+@role_jwt_required(['user'])
+def swap_tracker():
 
-#     id = get_jwt()['sub']
+    id = get_jwt()['sub']
+
+    trmnt = Tournaments.query.filter(Tournaments.flights.any(day=1))
+
+    return jsonify([x.serialize() for x in trmnt])
 
 #     buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
 #     if not buyin:
@@ -612,14 +616,14 @@ def get_buy_in():
 #         return jsonify({'message':'You have no live swaps in this tournament'})
 
 #     now = datetime.utcnow()
-#     trnmt = (Tournaments.query.filter(Tournaments.start_at < now)
+#     trmnt = (Tournaments.query.filter(Tournaments.start_at < now)
 #             .filter(Tournaments.end_at > now).filter_by(flight.))
-#     if not trnmt:
+#     if not trmnt:
 #         return jsonify({'message':'No current tournaments'})
 
 
 #     return jsonify({
-#         'tournament': trnmt.serialize(),
+#         'tournament': trmnt.serialize(),
 #         'my_current_buy_in': buyin.serialize(),
 #         'others_swaps': [x.serialize() for x in swaps]
 #     })
