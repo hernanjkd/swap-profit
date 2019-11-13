@@ -46,7 +46,7 @@ def create_app(testing=False):
     #
     ###############################################################################
     @jwt.jwt_data_loader
-    def add_claims_to_access_token(kwargs):
+    def add_claims_to_access_token(kwargs={}):
         now = datetime.utcnow()
         kwargs = kwargs if isinstance(kwargs, dict) else {}
         id = kwargs['id'] if 'id' in kwargs else None
