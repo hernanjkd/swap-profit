@@ -5,9 +5,35 @@ from utils import APIException
 
 def attach(app):
 
-    @app.route('/create/token', methods=['POST'])
-    def create_token():
-        return jsonify( create_jwt(request.get_json()) ), 200
+    @app.route('/users', methods=['POST'])
+    def register_user():
+
+        body = request.get_json()
+        check_params(body, 'email', 'password')
+
+        # If user exists and failed to validate his account
+        user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
+        if user and not user.valid:
+            return jsonify({'validation_link': validation_link(user.id)}), 200
+
+        elif user and user.valid:
+            raise APIException('User already exists', 405)
+
+        db.session.add(Users(
+            email = body['email'],
+            password = sha256(body['password'])
+        ))
+        db.session.commit()
+
+        user = Users.query.filter_by(email=body['email']).first()
+
+        return jsonify({
+            'message': 'Please verify your email',
+            'validation_link': validation_link(user.id)
+        }), 200
+
+
+
 
     @app.route('/users/validate/<token>', methods=['GET'])
     def validate(token):
@@ -33,5 +59,8 @@ def attach(app):
                 'exp': 600000
             })
         }), 200
+
+
+
 
     return app
