@@ -142,16 +142,15 @@ class Flights(db.Model):
     def serialize(self, long=False):
         json = {
             "id": self.id,
+            "tournament_id": self.tournament_id,
             "tournament": self.tournament.name,
             "start_at": self.start_at,
             "end_at": self.end_at,
-            "day": self.day,
-            "buy_ins": [x.serialize() for x in self.buy_ins]
+            "day": self.day
         }
         if long:
             return {
                 **json,
-                "tournament_id": self.tournament_id,
                 "created_at": "",
                 "updated_at": ""
             }
@@ -284,13 +283,3 @@ class Tokens(db.Model):
             "token": self.token,
             "expires_at": self.expires_at
         }
-
-'''
-on swap update.. should it swap both swaps w the same json? or do 2 fetches to swap
-each swap.. out of the 2 that are created
-
-in the swap tracker, since both swaps could have different values, maybe show both?
-
-in swap tracker, I can get the latest buyin if it is currently live?
-'''
-
