@@ -489,10 +489,17 @@ def attach(app):
 
         id = get_jwt()['sub']
 
-        trmnt = (Profiles.query.filter(Profiles.receiving_swaps.any(
-                        Swaps.recipient_user.has(id=7))))
-        # return jsonify([z.serialize() for z in trmnt])
-        return str(isinstance(trmnt, list))
+        trmnt_id = request.args.get('tournament_id')
+
+        # trmnt = (Profiles.query.filter(Profiles.receiving_swaps.any(
+        #                 Swaps.recipient_user.has(id=7))))
+        trmnt = Profiles.query.filter(id == 0).first()
+        # # return str(isinstance(trmnt, list))
+        # # return jsonify([z.serialize() for z in trmnt])
+        # return str(not trmnt)
+        if not trmnt:
+            return 'not trmnt '
+        return 'yes trmnt ' + str(trmnt.count())
 
         now = datetime.utcnow()
         trmnt = (Tournaments.query
@@ -500,12 +507,12 @@ def attach(app):
                     .filter(Tournaments.end_at > now)
                     .filter(Tournaments.flights.any(
                         Flights.buy_ins.any(user_id=id)
-                    ))
-                )
+                    )))
         if not trmnt:
             raise APIException('You have not bought into any current tournaments', 404)
 
-        buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
+        buyin = (Buy_ins.query.filter_by(user_id=id, tournament_id=trmnt.id)
+                    .order_by(Buy_ins.id.desc()).first())
         if not buyin:
             raise APIException('Buy_in not found', 404)
 
