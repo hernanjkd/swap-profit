@@ -13,30 +13,6 @@ from datetime import datetime, timedelta
 from methods import player_methods, public_methods, sample_methods, admin_methods
 
 def attach(app):
-
-    @app.route('/users/token', methods=['POST'])
-    def login():
-
-        body = request.get_json()
-        check_params(body, 'email', 'password')
-
-        user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
-
-        if not user:
-            raise APIException('The log in information is incorrect', 401)
-
-        if not user.valid:
-            raise APIException('Email not validated', 405)
-
-        return jsonify({
-            'jwt': create_jwt({
-                'id': user.id,
-                'role': 'user',
-                'exp': body['exp'] if 'exp' in body else 15
-            })
-        }), 200
-
-    
     
     
     @app.route('/users/<id>/email', methods=['PUT'])
@@ -489,32 +465,40 @@ def attach(app):
 
         id = get_jwt()['sub']
 
+        p = Profiles.get_latest(id)
+        if p:
+            return jsonify(p.serialize())
+        return 'not user found'
+
         trmnt_id = request.args.get('tournament_id')
 
-        # trmnt = (Profiles.query.filter(Profiles.receiving_swaps.any(
-        #                 Swaps.recipient_user.has(id=7))))
-        trmnt = Profiles.query.filter(id == 0).first()
-        # # return str(isinstance(trmnt, list))
-        # # return jsonify([z.serialize() for z in trmnt])
-        # return str(not trmnt)
-        if not trmnt:
-            return 'not trmnt '
-        return 'yes trmnt ' + str(trmnt.count())
+        if trmnt_id:
+            trmnt = Tournaments.query.get(trmnt_id)
+        
+        else:
+            now = datetime.utcnow()
+            trmnt = (Tournaments.query
+                        .filter(Tournaments.start_at < now)
+                        .filter(Tournaments.end_at > now)
+                        .filter(Tournaments.flights.any(
+                            Flights.buy_ins.any( user_id = id )
+                        )))
+            if trmnt.count() > 1:
+                return jsonify({
+                    'multiple_tournaments': True,
+                    'tournaments': [x.serialize() for x in trmnt]
+                })
 
-        now = datetime.utcnow()
-        trmnt = (Tournaments.query
-                    .filter(Tournaments.start_at < now)
-                    .filter(Tournaments.end_at > now)
-                    .filter(Tournaments.flights.any(
-                        Flights.buy_ins.any(user_id=id)
-                    )))
         if not trmnt:
             raise APIException('You have not bought into any current tournaments', 404)
 
-        buyin = (Buy_ins.query.filter_by(user_id=id, tournament_id=trmnt.id)
-                    .order_by(Buy_ins.id.desc()).first())
-        if not buyin:
-            raise APIException('Buy_in not found', 404)
+        trmnt_buyins = (Buy_ins.query
+                            .filter(Buy_ins.flight
+                            .has( tournament_id = trmnt.id )))
+
+        my_buyin = trmnt_buyins.filter_by( user_id = id )
+        if not my_buyin:
+            raise APIException('Can not find buyin', 404)
 
         swaps = Swaps.query.filter_by(
             sender_id = id,
@@ -523,10 +507,16 @@ def attach(app):
         if not swaps:
             return jsonify({'message':'You have no live swaps in this tournament'})
 
+        # swaps = [{
+        #     'swap': swap.serialize(),
+        #     'buyin': trmnt_buyins.filter_by()
+        # } for swap in swaps]
+
         return jsonify({
+            'multiple_tournaments': False,
             'tournament': trmnt.serialize(),
-            'my_current_buy_in': buyin.serialize(),
-            'others_swaps': [x.serialize() for x in swaps]
+            'my_buy_in': my_buyin.serialize(),
+            'swaps': [x.serialize() for x in swaps]
         })
 
 

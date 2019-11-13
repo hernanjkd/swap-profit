@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc
 
 db = SQLAlchemy()
 
@@ -44,6 +45,10 @@ class Profiles(db.Model):
 
     def __repr__(self):
         return f'<Profiles {self.first_name} {self.last_name}>'
+
+    @staticmethod
+    def get_latest(user_id):
+        return Profiles.query.filter_by(id=user_id).order_by(Profiles.id.desc()).first()
 
     def available_percentage(self, tournament_id):
         total = 0
@@ -225,6 +230,9 @@ class Buy_ins(db.Model):
 
     def __repr__(self):
         return f'<Buy_ins id:{self.id} user:{self.user_id} flight:{self.flight_id}>'
+
+    def get_latest(self, user_id, tournament_id):
+        return Buy_ins.query.filter_by(user_id=user_id).order_by(Buy_ins.id.desc()).first()
 
     def serialize(self):
         u = self.user
