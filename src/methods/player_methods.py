@@ -489,33 +489,38 @@ def attach(app):
 
         id = get_jwt()['sub']
 
-        trmnt = Tournaments.query.filter(Tournaments.flights.any(day=1))
+        trmnt = (Profiles.query.filter(Profiles.receiving_swaps.any(
+                        Swaps.recipient_user.has(id=7))))
+        # return jsonify([z.serialize() for z in trmnt])
+        return str(isinstance(trmnt, list))
 
-        return jsonify([x.serialize() for x in trmnt])
+        now = datetime.utcnow()
+        trmnt = (Tournaments.query
+                    .filter(Tournaments.start_at < now)
+                    .filter(Tournaments.end_at > now)
+                    .filter(Tournaments.flights.any(
+                        Flights.buy_ins.any(user_id=id)
+                    ))
+                )
+        if not trmnt:
+            raise APIException('You have not bought into any current tournaments', 404)
 
-    #     buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
-    #     if not buyin:
-    #         raise APIException('Buy_in not found', 404)
+        buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
+        if not buyin:
+            raise APIException('Buy_in not found', 404)
 
-    #     swaps = Swaps.query.filter_by(
-    #         sender_id = id,
-    #         tournament_id = buyin.flight.tournament_id
-    #     )
-    #     if not swaps:
-    #         return jsonify({'message':'You have no live swaps in this tournament'})
+        swaps = Swaps.query.filter_by(
+            sender_id = id,
+            tournament_id = trmnt.id
+        )
+        if not swaps:
+            return jsonify({'message':'You have no live swaps in this tournament'})
 
-    #     now = datetime.utcnow()
-    #     trmnt = (Tournaments.query.filter(Tournaments.start_at < now)
-    #             .filter(Tournaments.end_at > now).filter_by(flight.))
-    #     if not trmnt:
-    #         return jsonify({'message':'No current tournaments'})
-
-
-    #     return jsonify({
-    #         'tournament': trmnt.serialize(),
-    #         'my_current_buy_in': buyin.serialize(),
-    #         'others_swaps': [x.serialize() for x in swaps]
-    #     })
+        return jsonify({
+            'tournament': trmnt.serialize(),
+            'my_current_buy_in': buyin.serialize(),
+            'others_swaps': [x.serialize() for x in swaps]
+        })
 
 
 

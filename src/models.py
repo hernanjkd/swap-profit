@@ -93,6 +93,57 @@ class Profiles(db.Model):
 
 
 
+class Swaps(db.Model):
+    __tablename__ = 'swaps'
+    sender_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), primary_key=True)
+    percentage = db.Column(db.Integer, nullable=False)
+    winning_chips = db.Column(db.Integer, default=None)
+    due_at = db.Column(db.DateTime, default=None)
+    paid = db.Column(db.Boolean, default=False)
+    status = db.Column(db.String(20), default='pending')
+
+    tournament = db.relationship('Tournaments', back_populates='swaps')
+    sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
+    recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='receiving_swaps')
+
+    def __repr__(self):
+        return f'<Swaps email:{self.user.email} recipient_user:{self.recipient_id} tournament:{self.tournament.name}>'
+
+    def serialize(self, long=False, sender=False, percentage=False):
+        # Being used in Profiles method
+        if percentage:
+            return {"percentage": self.percentage}
+        if sender:
+            return {
+                "recipient_id": self.recipient_id,
+                "tournament_id": self.tournament_id,
+                "due_at": self.due_at,
+                "winning_chips": self.winning_chips,
+                "status": self.status,
+                "paid": self.paid
+            }
+        json = {
+            "tournament_id": self.tournament_id,
+            "percentage": self.percentage,
+            "winning_chips": self.winning_chips,
+            "due_at": self.due_at,
+            "status": self.status,
+            "sender_user": self.sender_user.serialize(),
+            "recipient_user": self.recipient_user.serialize()
+        }
+        if long:
+            return {
+                **json,
+                "paid": self.paid,
+                "created_at": "",
+                "updated_at": ""
+            }
+        return json
+
+
+
 class Tournaments(db.Model):
     __tablename__ = 'tournaments'
     id = db.Column(db.Integer, primary_key=True)
@@ -151,57 +202,6 @@ class Flights(db.Model):
         if long:
             return {
                 **json,
-                "created_at": "",
-                "updated_at": ""
-            }
-        return json
-
-
-
-class Swaps(db.Model):
-    __tablename__ = 'swaps'
-    sender_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
-    recipient_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
-    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), primary_key=True)
-    percentage = db.Column(db.Integer, nullable=False)
-    winning_chips = db.Column(db.Integer, default=None)
-    due_at = db.Column(db.DateTime, default=None)
-    paid = db.Column(db.Boolean, default=False)
-    status = db.Column(db.String(20), default='pending')
-
-    tournament = db.relationship('Tournaments', back_populates='swaps')
-    sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
-    recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='receiving_swaps')
-
-    def __repr__(self):
-        return f'<Swaps email:{self.user.email} recipient_user:{self.recipient_id} tournament:{self.tournament.name}>'
-
-    def serialize(self, long=False, sender=False, percentage=False):
-        # Being used in Profiles method
-        if percentage:
-            return {"percentage": self.percentage}
-        if sender:
-            return {
-                "recipient_id": self.recipient_id,
-                "tournament_id": self.tournament_id,
-                "due_at": self.due_at,
-                "winning_chips": self.winning_chips,
-                "status": self.status,
-                "paid": self.paid
-            }
-        json = {
-            "tournament_id": self.tournament_id,
-            "percentage": self.percentage,
-            "winning_chips": self.winning_chips,
-            "due_at": self.due_at,
-            "status": self.status,
-            "sender_user": self.sender_user.serialize(),
-            "recipient_user": self.recipient_user.serialize()
-        }
-        if long:
-            return {
-                **json,
-                "paid": self.paid,
                 "created_at": "",
                 "updated_at": ""
             }
