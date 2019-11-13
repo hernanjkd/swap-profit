@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc
 
 db = SQLAlchemy()
 
@@ -45,6 +46,10 @@ class Profiles(db.Model):
     def __repr__(self):
         return f'<Profiles {self.first_name} {self.last_name}>'
 
+    @staticmethod
+    def get_latest(user_id):
+        return Profiles.query.filter_by(id=user_id).order_by(Profiles.id.desc()).first()
+
     def available_percentage(self, tournament_id):
         total = 0
         for swap in self.sending_swaps:
@@ -88,72 +93,6 @@ class Profiles(db.Model):
                 "updated_at": "",
                 "receiving_swaps": [x.serialize() for x in self.receiving_swaps],
                 "buy_ins": [x.serialize() for x in self.buy_ins] 
-            }
-        return json
-
-
-
-class Tournaments(db.Model):
-    __tablename__ = 'tournaments'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(500), nullable=False)
-    address = db.Column(db.String(250))
-    start_at = db.Column(db.DateTime)
-    end_at = db.Column(db.DateTime)
-    longitude = db.Column(db.Float)
-    latitude = db.Column(db.Float)
-
-    flights = db.relationship('Flights', back_populates='tournament')
-    swaps = db.relationship('Swaps', back_populates='tournament')
-
-    def __repr__(self):
-        return f'<Tournament {self.name}>'
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "address": self.address,
-            "start_at": self.start_at,
-            "end_at": self.end_at,
-            "longitude": self.longitude,
-            "latitude": self.latitude,
-            "created_at": "",
-            "updated_at": "",
-            "flights": [x.serialize() for x in self.flights]
-        }
-
-
-
-class Flights(db.Model):
-    __tablename__ = 'flights'
-    id = db.Column(db.Integer, primary_key=True)
-    start_at = db.Column(db.DateTime)
-    end_at = db.Column(db.DateTime)
-    day = db.Column(db.Integer)
-    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
-
-    tournament = db.relationship('Tournaments', back_populates='flights')
-    buy_ins = db.relationship('Buy_ins', back_populates='flight')
-
-    def __repr__(self):
-        return f'<Flights tournament:{self.tournament.name} {self.start_at} - {self.end_at}>'
-
-    def serialize(self, long=False):
-        json = {
-            "id": self.id,
-            "tournament": self.tournament.name,
-            "start_at": self.start_at,
-            "end_at": self.end_at,
-            "day": self.day,
-            "buy_ins": [x.serialize() for x in self.buy_ins]
-        }
-        if long:
-            return {
-                **json,
-                "tournament_id": self.tournament_id,
-                "created_at": "",
-                "updated_at": ""
             }
         return json
 
@@ -210,6 +149,71 @@ class Swaps(db.Model):
 
 
 
+class Tournaments(db.Model):
+    __tablename__ = 'tournaments'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(500), nullable=False)
+    address = db.Column(db.String(250))
+    start_at = db.Column(db.DateTime)
+    end_at = db.Column(db.DateTime)
+    longitude = db.Column(db.Float)
+    latitude = db.Column(db.Float)
+
+    flights = db.relationship('Flights', back_populates='tournament')
+    swaps = db.relationship('Swaps', back_populates='tournament')
+
+    def __repr__(self):
+        return f'<Tournament {self.name}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "address": self.address,
+            "start_at": self.start_at,
+            "end_at": self.end_at,
+            "longitude": self.longitude,
+            "latitude": self.latitude,
+            "created_at": "",
+            "updated_at": "",
+            "flights": [x.serialize() for x in self.flights]
+        }
+
+
+
+class Flights(db.Model):
+    __tablename__ = 'flights'
+    id = db.Column(db.Integer, primary_key=True)
+    start_at = db.Column(db.DateTime)
+    end_at = db.Column(db.DateTime)
+    day = db.Column(db.Integer)
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
+
+    tournament = db.relationship('Tournaments', back_populates='flights')
+    buy_ins = db.relationship('Buy_ins', back_populates='flight')
+
+    def __repr__(self):
+        return f'<Flights tournament:{self.tournament.name} {self.start_at} - {self.end_at}>'
+
+    def serialize(self, long=False):
+        json = {
+            "id": self.id,
+            "tournament_id": self.tournament_id,
+            "tournament": self.tournament.name,
+            "start_at": self.start_at,
+            "end_at": self.end_at,
+            "day": self.day
+        }
+        if long:
+            return {
+                **json,
+                "created_at": "",
+                "updated_at": ""
+            }
+        return json
+
+
+
 class Buy_ins(db.Model):
     __tablename__ = 'buy_ins'
     id = db.Column(db.Integer, primary_key=True)
@@ -226,6 +230,9 @@ class Buy_ins(db.Model):
 
     def __repr__(self):
         return f'<Buy_ins id:{self.id} user:{self.user_id} flight:{self.flight_id}>'
+
+    def get_latest(self, user_id, tournament_id):
+        return Buy_ins.query.filter_by(user_id=user_id).order_by(Buy_ins.id.desc()).first()
 
     def serialize(self):
         u = self.user
@@ -284,13 +291,3 @@ class Tokens(db.Model):
             "token": self.token,
             "expires_at": self.expires_at
         }
-
-'''
-on swap update.. should it swap both swaps w the same json? or do 2 fetches to swap
-each swap.. out of the 2 that are created
-
-in the swap tracker, since both swaps could have different values, maybe show both?
-
-in swap tracker, I can get the latest buyin if it is currently live?
-'''
-

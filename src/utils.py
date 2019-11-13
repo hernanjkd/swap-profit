@@ -2,7 +2,7 @@ import os
 import re
 import hashlib
 from flask import jsonify, url_for
-from flask_jwt_simple import create_jwt
+from flask_jwt_simple import create_jwt, jwt_required, get_jwt
 from datetime import datetime
 
 class APIException(Exception):
@@ -52,6 +52,31 @@ def sha256(string):
     m = hashlib.sha256()
     m.update(string.encode('utf-8'))
     return m.hexdigest()
+
+# Notes: 'admin' will have access even if arg not passed
+def role_jwt_required(valid_roles=['invalid']):
+    def decorator(func):
+
+        @jwt_required
+        def wrapper(*args, **kwargs):
+
+            jwt_role = get_jwt()['role']
+            valid = True if jwt_role == 'admin' else False
+
+            for role in valid_roles:
+                if role == jwt_role:
+                    valid = True
+
+            if not valid:
+                raise APIException('Access denied', 401)
+
+            return func(*args, **kwargs)
+
+        # change wrapper name so it can be used for more than one function
+        wrapper.__name__ = func.__name__
+
+        return wrapper
+    return decorator
 
 def generate_sitemap(app):
     links = []
