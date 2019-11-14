@@ -9,9 +9,9 @@ def fill_database():
     lou = Profiles(
         first_name='Luiz', 
         last_name='Stadler',
-        username='Lou',
+        nickname='Lou',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=207424',
-        profile_picture_url='https://pokerdb.thehendonmob.com/pictures/Lou_Stadler_Winner.JPG',
+        profile_pic_url='https://pokerdb.thehendonmob.com/pictures/Lou_Stadler_Winner.JPG',
         user=lou
     )
     db.session.add(lou)
@@ -24,9 +24,9 @@ def fill_database():
     cary = Profiles(
         first_name='Cary', 
         last_name='Katz',
-        username='',
+        nickname='',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=26721',
-        profile_picture_url='https://pokerdb.thehendonmob.com/pictures/carykatzpic.png',
+        profile_pic_url='https://pokerdb.thehendonmob.com/pictures/carykatzpic.png',
         user=cary
     )
     db.session.add(cary)
@@ -39,12 +39,12 @@ def fill_database():
     kate = Profiles(
         first_name='Kate', 
         last_name='Hoang',
-        username='',
+        nickname='',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=421758',
-        profile_picture_url='https://pokerdb.thehendonmob.com/pictures/Hoang_2.jpg',
+        profile_pic_url='https://pokerdb.thehendonmob.com/pictures/Hoang_2.jpg',
         user=kate
     )
-    db.session(kate)
+    db.session.add(kate)
 
     nikita = Users(
         email='mikitapoker@gmail.com',
@@ -54,9 +54,9 @@ def fill_database():
     nikita = Profiles(
         first_name='Nikita', 
         last_name='Bodyakovskiy',
-        username='Mikita',
+        nickname='Mikita',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=159100',
-        profile_picture_url='https://pokerdb.thehendonmob.com/pictures/NikitaBadz18FRh.jpg',
+        profile_pic_url='https://pokerdb.thehendonmob.com/pictures/NikitaBadz18FRh.jpg',
         user=nikita
     )
     db.session.add(nikita)
