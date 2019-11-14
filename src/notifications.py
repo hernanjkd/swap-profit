@@ -1,6 +1,6 @@
 import os
 import requests
-from pyfcm import FCMNotification
+# from pyfcm import FCMNotification
 from flask import Flask, request, jsonify, url_for, redirect, render_template
 
 push_service = None
@@ -12,15 +12,16 @@ EMAIL_NOTIFICATIONS_ENABLED = os.environ.get('EMAIL_NOTIFICATIONS_ENABLED')
 def send_email_message(slug, to, data={}):
     if EMAIL_NOTIFICATIONS_ENABLED == 'TRUE':
         template = get_template_content(slug, data, ["email"])
+
         # print('Email notification '+slug+' sent')
         return requests.post(
-            "https://api.mailgun.net/v3/mailgun.jobcore.co/messages",
+            "https://api.mailgun.net/v3/"+os.environ.get('MAILGUN_DOMAIN')+"/messages",
             auth=(
                 "api",
                 os.environ.get('MAILGUN_API_KEY')),
             data={
-                "from": os.environ.get('MAILGUN_FROM') +
-                " <mailgun@mailgun.jobcore.co>",
+                "from": os.environ.get('MAILGUN_DOMAIN') +
+                " <mailgun@mailgun.pokerswap.co>",
                 "to": to,
                 "subject": template['subject'],
                 "text": template['text'],
@@ -83,7 +84,9 @@ def send_fcm_notification(slug, user_id, data={}):
 
 
 def get_template_content(slug, data={}, formats=None):
-    info = get_template_info(slug)
+    subjects = {
+        "test": "Welcome to PokerSwap"
+    }
 
     #d = Context({ 'username': username })
     con = {
@@ -92,44 +95,19 @@ def get_template_content(slug, data={}, formats=None):
         'COMPANY_LEGAL_NAME': 'Swap App LLC',
         'COMPANY_ADDRESS': '2323 Hello, Coral Gables, 33134'
     }
-    z = con.copy()   # start with x's keys and values
-    z.update(data)
-
+    template_data = con.copy()   # start with x's keys and values
+    template_data.update(data)
+    
     templates = {
-        "subject": info['subject']
+        "subject": subjects[slug]
     }
 
     if formats is None or "email" in formats:
-        plaintext = get_template(info['type'] + '/' + slug + '.txt')
-        html = get_template(info['type'] + '/' + slug + '.html')
-        templates["text"] = plaintext.render(z)
-        templates["html"] = html.render(z)
+        templates["text"] = render_template(slug + '.txt',**template_data)
+        templates["html"] = render_template(slug + '.html',**template_data)
 
     if formats is not None and "fms" in formats:
-        fms = get_template(info['type'] + '/' + slug + '.fms')
-        templates["fms"] = fms.render(z)
+        templates["fms"] = render_template(slug + '.fms',**template_data)
 
+    
     return templates
-
-
-def get_template_info(slug):
-    subjects = {
-        "general": {"type": "utils", "subject": "Important message from JobCore"},
-        "email_validated": {"type": "views", "subject": "Your email has been validated"},
-        "reset_password_form": {"type": "views", "subject": "Reset your password"},
-        "registration": {"type": "registration", "subject": "Welcome to JobCore"},
-        "password_reset_link": {"type": "registration", "subject": "About your password reset"},
-        "password_reset": {"type": "registration", "subject": "You password has been reset"},
-
-        "update_chips": {
-            "type": "tournament",
-            "subject": "Remember to update your chipts"
-        },
-    }
-    if slug in subjects:
-        return subjects[slug]
-    else:
-        raise ValueError(
-            'Invalid template slug: "' +
-            slug +
-            "' no subject found")
