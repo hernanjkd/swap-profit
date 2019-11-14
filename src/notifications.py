@@ -97,16 +97,17 @@ def get_template_content(slug, data={}, formats=None):
     }
     template_data = con.copy()   # start with x's keys and values
     template_data.update(data)
-
+    
     templates = {
         "subject": subjects[slug]
     }
 
     if formats is None or "email" in formats:
-        templates["text"] = render_template(slug + '.txt',data=template_data)
-        templates["html"] = render_template(slug + '.html',data=template_data)
+        templates["text"] = render_template(slug + '.txt',**template_data)
+        templates["html"] = render_template(slug + '.html',**template_data)
 
     if formats is not None and "fms" in formats:
-        templates["fms"] = render_template(slug + '.fms',data=template_data)
+        templates["fms"] = render_template(slug + '.fms',**template_data)
 
+    
     return templates
