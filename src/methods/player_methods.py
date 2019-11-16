@@ -465,29 +465,18 @@ def attach(app):
 
         id = get_jwt()['sub']
 
-        p = Profiles.get_latest(id)
-        if p:
-            return jsonify(p.serialize())
-        return 'not user found'
-
-        trmnt_id = request.args.get('tournament_id')
-
-        if trmnt_id:
-            trmnt = Tournaments.query.get(trmnt_id)
-        
-        else:
-            now = datetime.utcnow()
-            trmnt = (Tournaments.query
-                        .filter(Tournaments.start_at < now)
-                        .filter(Tournaments.end_at > now)
-                        .filter(Tournaments.flights.any(
-                            Flights.buy_ins.any( user_id = id )
-                        )))
-            if trmnt.count() > 1:
-                return jsonify({
-                    'multiple_tournaments': True,
-                    'tournaments': [x.serialize() for x in trmnt]
-                })
+        now = datetime.utcnow()
+        trmnt = (Tournaments.query
+                    .filter(Tournaments.start_at < now)
+                    .filter(Tournaments.end_at > now)
+                    .filter(Tournaments.flights.any(
+                        Flights.buy_ins.any( user_id = id )
+                    )))
+        if trmnt.count() > 1:
+            return jsonify({
+                'multiple_tournaments': True,
+                'tournaments': [x.serialize() for x in trmnt]
+            })
 
         if not trmnt:
             raise APIException('You have not bought into any current tournaments', 404)

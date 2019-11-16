@@ -16,7 +16,23 @@ def fill_database():
     )
     db.session.add(lou)
 
-    buyin_lou = 
+    buyin1_lou = Buy_ins(
+        chips=20000,
+        table=1,
+        seat=2,
+        user=lou,
+        flight=flight1_heartland
+    )
+    db.session.add(buyin1_lou)
+
+    buyin2_lou = Buy_ins(
+        chips=20000,
+        table=1,
+        seat=4,
+        user=lou,
+        flight=flight2_heartland
+    )
+    db.session.add(buyin2_lou)
 
     cary = Users(
         email='katz234@gmail.com',
