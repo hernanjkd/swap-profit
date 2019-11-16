@@ -526,30 +526,32 @@ def attach(app):
         id = get_jwt()['sub']
 
         now = datetime.utcnow()
-        trmnt = (Tournaments.query
-                    .filter(Tournaments.start_at < now)
-                    .filter(Tournaments.end_at > now)
-                    .filter(Tournaments.flights.any(
+        trmnts = (Tournaments.query
+                    .filter( Tournaments.start_at < now )
+                    .filter( Tournaments.end_at > now )
+                    .filter( Tournaments.flights.any(
                         Flights.buy_ins.any( user_id = id )
                     )))
         
         if not trmnt:
             raise APIException('You have not bought into any current tournaments', 404)
 
-        trmnt_buyins = (Buy_ins.query
-                            .filter(Buy_ins.flight
-                            .has( tournament_id = trmnt.id )))
 
-        my_buyin = trmnt_buyins.filter_by( user_id = id )
-        if not my_buyin:
-            raise APIException('Can not find buyin', 404)
+        list_of_swap_trackers = []
 
-        swaps = Swaps.query.filter_by(
-            sender_id = id,
-            tournament_id = trmnt.id
-        )
-        if not swaps:
-            return jsonify({'message':'You have no live swaps in this tournament'})
+        for trmnt in trmnts:
+
+            my_buyin = (Buy_ins.filter( Buy_ins.flight.has( tournament_id = trmnt.id ))
+                                .filter( Buy_ins.user_id == id ))
+            if not my_buyin:
+                raise APIException('Can not find buyin', 404)
+
+            swaps = Swaps.query.filter_by(
+                sender_id = id,
+                tournament_id = trmnt.id
+            )
+            if not swaps:
+                return jsonify({'message':'You have no live swaps in this tournament'})
 
         # swaps = [{
         #     'swap': swap.serialize(),
