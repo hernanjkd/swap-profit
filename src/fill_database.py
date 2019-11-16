@@ -16,6 +16,8 @@ def fill_database():
     )
     db.session.add(lou)
 
+    buyin_lou = 
+
     cary = Users(
         email='katz234@gmail.com',
         password=hash('carykatz')
@@ -85,44 +87,53 @@ def fill_database():
     )
     db.session.add(wpt)
 
-    db.session.add(Flights(
+    flight1_heartland = Flights(
         start_at = datetime(2019,10,11,12),
         end_at = datetime(2019,10,11,16),
         tournament = heartland,
         day = 1
-    ))
-    db.session.add(Flights(
+    )
+    db.session.add(flight1_heartland)
+
+    flight2_heartland = Flights(
         start_at = datetime(2019,10,11,16),
         end_at = datetime(2019,10,11,21),
         tournament = heartland,
         day = 1
-    ))
+    )
+    db.session.add(flight2_heartland)
 
-    db.session.add(Flights(
+    flight1_stones = Flights(
         start_at = datetime(2019,9,30,12),
         end_at = datetime(2019,9,30,15),
         tournament = stones,
         day = 1
-    ))
-    db.session.add(Flights(
+    )
+    db.session.add(flight1_stones)
+
+    flight2_stones = Flights(
         start_at = datetime(2019,9,30,15),
         end_at = datetime(2019,9,30,21),
         tournament = stones,
         day = 1
-    ))
-    db.session.add(Flights(
+    )
+    db.session.add(flight2_stones)
+
+    flight3_stones = Flights(
         start_at = datetime(2019,10,1,12),
         end_at = datetime(2019,10,1,21),
         tournament = stones,
         day = 2
     ))
+    db.session.add(flight3_stones)
 
-    db.session.add(Flights(
+    flight1_wpt = Flights(
         start_at = datetime(2019,10,2,12),
         end_at = datetime(2019,10,2,22),
         tournament = wpt,
         day = 1
-    ))
+    )
+    db.session.add(flight1_wpt)
 
     db.session.add(Swaps(
         tournament=heartland,

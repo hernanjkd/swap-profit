@@ -220,10 +220,10 @@ class Buy_ins(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
     flight_id = db.Column(db.Integer, db.ForeignKey('flights.id'))
     receipt_img_url = db.Column(db.String(250))
-    place = db.Column(db.Integer)
     chips = db.Column(db.Integer)
     table = db.Column(db.Integer)
     seat = db.Column(db.Integer)
+    place = db.Column(db.Integer)
 
     user = db.relationship('Profiles', back_populates='buy_ins')
     flight = db.relationship('Flights', back_populates='buy_ins')

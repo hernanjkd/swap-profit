@@ -53,10 +53,10 @@ def attach(app):
             raise APIException('Access denied', 401)
 
         if request.method == 'GET':
-            return render_template('reset_password.html', data={
-                'host': os.environ.get('API_HOST'),
-                'token': token
-            })
+            return render_template('reset_password.html',
+                host = os.environ.get('API_HOST'),
+                token = token
+            )
 
         # request.method == 'PUT'
         body = request.get_json()
