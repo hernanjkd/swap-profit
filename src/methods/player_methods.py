@@ -331,7 +331,7 @@ def attach(app):
         if id.isnumeric():
             trmnt = Tournaments.query.get(int(id))
         else:
-            trmnt = Tournaments.query.filter(Tournaments.name.ilike(f'%{id}%')).all()
+            trmnt = Tournaments.query.filter( Tournaments.name.ilike(f'%{id}%') ).all()
 
         if not trmnt:
             raise APIException('Tournament not found', 404)
@@ -547,14 +547,19 @@ def attach(app):
 
             swaps = [{
                 'swap': swap.serialize(),
-                'buyin': Buy_ins.get_latest( user_id=swap.recipient_id, tournament_id=trmnt.id )
+                'buyin': (Buy_ins.get_latest(
+                                user_id = swap.recipient_id,
+                                tournament_id=trmnt.id
+                            ).serialize())
             } for swap in swaps]
 
-        return jsonify({
-            'tournament': trmnt.serialize(),
-            'my_buy_in': my_buyin.serialize(),
-            'swaps': [x.serialize() for x in swaps]
-        })
+            list_of_swap_trackers.append({
+                'tournament': trmnt.serialize(),
+                'my_buyin': my_buyin.serialize(),
+                'swaps': swaps
+            })
+
+        return jsonify(list_of_swap_trackers)
 
 
 
