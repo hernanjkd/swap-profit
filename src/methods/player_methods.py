@@ -188,13 +188,37 @@ def attach(app):
 
 
 
-    @app.route('/profiles/me/image', methods=['PUT'])
+    @app.route('/profiles/image', methods=['PUT'])
     @role_jwt_required(['user'])
-    def upload_prof_pic():
+    def update_profile_image():
 
-        id = get_jwt()['sub']
+        user = Users.query.get(get_jwt()['sub'])
+        if not user:
+            raise APIException('User not found', 404)
 
-        return 'ok'
+        if 'image' not in request.files:
+            raise APIException('Image property missing on the files array', 404)
+
+        result = cloudinary.uploader.upload(
+            request.files['image'],
+            public_id='profile' + str(user.id),
+            crop='limit',
+            width=450,
+            height=450,
+            eager=[{
+                'width': 200, 'height': 200,
+                'crop': 'thumb', 'gravity': 'face',
+                'radius': 100
+            },
+            ],
+            tags=['profile_picture']
+        )
+
+        user.profile.profile_pic_url = result['secure_url']
+
+        db.session.commit()
+
+        return jsonify({'message':'ok'}), 200
 
 
 
@@ -256,6 +280,42 @@ def attach(app):
         db.session.commit()
 
         return jsonify(Buy_ins.query.get(id).serialize())
+
+
+
+
+    @app.route('/me/buy_ins/<int:id>/image', methods=['PUT'])
+    @role_jwt_required(['user'])
+    def update_buyin_image(id):
+
+        buyin = Buy_ins.query.get(id)
+
+        if not buyin:
+            raise APIException('Buy_in not found', 404)
+
+        if 'image' not in request.files:
+            raise APIException('Image property missing on the files array', 404)
+
+        result = cloudinary.uploader.upload(
+            request.files['image'],
+            public_id='buyin' + str(buyin.id),
+            crop='limit',
+            width=450,
+            height=450,
+            eager=[{
+                'width': 200, 'height': 200,
+                'crop': 'thumb', 'gravity': 'face',
+                'radius': 100
+            },
+            ],
+            tags=['buyin_picture','user_'+str(buyin.user_id),'buyin_'+str(buyin.id)]
+        )
+
+        buyin.receipt_img_url = result['secure_url']
+
+        db.session.commit()
+
+        return jsonify({'message':'ok'}), 200
 
 
 
@@ -472,12 +532,7 @@ def attach(app):
                     .filter(Tournaments.flights.any(
                         Flights.buy_ins.any( user_id = id )
                     )))
-        if trmnt.count() > 1:
-            return jsonify({
-                'multiple_tournaments': True,
-                'tournaments': [x.serialize() for x in trmnt]
-            })
-
+        
         if not trmnt:
             raise APIException('You have not bought into any current tournaments', 404)
 
@@ -502,7 +557,6 @@ def attach(app):
         # } for swap in swaps]
 
         return jsonify({
-            'multiple_tournaments': False,
             'tournament': trmnt.serialize(),
             'my_buy_in': my_buyin.serialize(),
             'swaps': [x.serialize() for x in swaps]
