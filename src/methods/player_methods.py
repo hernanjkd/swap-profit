@@ -282,8 +282,9 @@ def attach(app):
     @role_jwt_required(['user'])
     def update_buyin_image(id):
 
-        buyin = Buy_ins.query.get(id)
+        user_id = get_jwt()['sub']
 
+        buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
         if not buyin:
             raise APIException('Buy_in not found', 404)
 
