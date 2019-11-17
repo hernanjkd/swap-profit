@@ -20,11 +20,6 @@ class APIException(Exception):
         rv['message'] = self.message
         return rv
 
-def has_no_empty_params(rule):
-    defaults = rule.defaults if rule.defaults is not None else ()
-    arguments = rule.arguments if rule.arguments is not None else ()
-    return len(defaults) >= len(arguments)
-
 # Raises an exception if required params not in body
 def check_params(body, *args):
     msg = ''
@@ -42,7 +37,7 @@ def update_table(table, body, ignore=[]):
     for attr, value in body.items():
         if attr not in ignore:
             if not hasattr(table, attr):
-                raise APIException(f'Incorrect parameter in body: {attr}', 400)
+                raise Exception(f'Incorrect parameter in body: {attr}', 400)
             setattr(table, attr, value)
 
 def validation_link(id):
@@ -68,7 +63,7 @@ def role_jwt_required(valid_roles=['invalid']):
                     valid = True
 
             if not valid:
-                raise APIException('Access denied', 401)
+                raise Exception('Access denied', 401)
 
             return func(*args, **kwargs)
 
@@ -77,19 +72,3 @@ def role_jwt_required(valid_roles=['invalid']):
 
         return wrapper
     return decorator
-
-def generate_sitemap(app):
-    links = []
-    for rule in app.url_map.iter_rules():
-        # Filter out rules we can't navigate to in a browser
-        # and rules that require parameters
-        if "GET" in rule.methods and has_no_empty_params(rule):
-            url = url_for(rule.endpoint, **(rule.defaults or {}))
-            links.append(url)
-
-    links_html = "".join(["<li>" + y + "</li>" for y in links])
-    return """
-        <div style="text-align: center;">
-        <img src='https://assets.breatheco.de/apis/img/4geeks/rigo-baby.jpg' />
-        <h1>Hello Rigo!!</h1>
-        This is your api home, remember to specify a real endpoint path like: <ul style="text-align: left;">"""+links_html+"</ul></div>"
