@@ -1,7 +1,7 @@
 import os
 import requests
-# from pyfcm import FCMNotification
 from flask import Flask, request, jsonify, url_for, redirect, render_template
+# from pyfcm import FCMNotification
 
 push_service = None
 FIREBASE_KEY = os.environ.get('FIREBASE_KEY')

@@ -1,16 +1,10 @@
 
-import os
-from flask import Flask, request, jsonify, url_for, redirect, render_template
-from flask_migrate import Migrate
-from admin import SetupAdmin
-from flask_swagger import swagger
-from flask_cors import CORS
-from flask_jwt_simple import JWTManager, create_jwt, decode_jwt, get_jwt
+from flask import request, jsonify
+from flask_jwt_simple import JWTManager, create_jwt, get_jwt
 from sqlalchemy import desc
-from utils import APIException, generate_sitemap, check_params, validation_link, update_table, sha256, role_jwt_required
+from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
-from datetime import datetime, timedelta
-from methods import player_methods, public_methods, sample_methods, admin_methods
+from datetime import datetime
 
 def attach(app):
 

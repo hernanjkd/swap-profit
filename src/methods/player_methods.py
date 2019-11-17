@@ -1,6 +1,6 @@
 
 import os
-from flask import Flask, request, jsonify, render_template
+from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
