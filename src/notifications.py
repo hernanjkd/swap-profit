@@ -35,9 +35,9 @@ def send_sms(slug, phone_number, data={}):
     template = get_template_content(slug, data, ["email", "fms"])
     # Your Account Sid and Auth Token from twilio.com/console
     # DANGER! This is insecure. See http://twil.io/secure
-    TWILLIO_SID = os.environ.get('TWILLIO_SID')
-    TWILLIO_SECRET = os.environ.get('TWILLIO_SECRET')
-    client = Client(TWILLIO_SID, TWILLIO_SECRET)
+    TWILIO_SID = os.environ.get('TWILIO_SID')
+    TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
+    client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
 
     message = client.messages \
                     .create(
