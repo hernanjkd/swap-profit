@@ -1,4 +1,4 @@
-
+import requests
 from flask import request, jsonify
 from flask_jwt_simple import JWTManager, create_jwt, get_jwt
 from sqlalchemy import desc
@@ -13,6 +13,12 @@ def attach(app):
     def sendemailtest():
         msg = {'message':'Hello Hernan'}
         send_email(type='test',to='hernanjkd@gmail.com',data=msg)
+        l = 'testinggg'
+        return requests.get(f'http://127.0.0.1:3000/{l}').json()
+
+    @app.route('/testinggg')
+    def somestuff():
+        return jsonify({'msg':'made it here'})
 
     @app.route('/create/token', methods=['POST'])
     def create_token():

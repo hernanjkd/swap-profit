@@ -8,6 +8,7 @@ from flask_jwt_simple import JWTManager
 from utils import APIException
 from datetime import datetime, timedelta
 from methods import player_methods, public_methods, sample_methods, admin_methods
+from models import db
 
 def create_app(testing=False):
     app = Flask(__name__)

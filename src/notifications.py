@@ -13,20 +13,20 @@ EMAIL_NOTIFICATIONS_ENABLED = os.environ.get('EMAIL_NOTIFICATIONS_ENABLED')
 def send_email(type, to, data={}):
     
     if EMAIL_NOTIFICATIONS_ENABLED == 'TRUE':
-        template = get_template_content(type, data, ["email"])
+        
+        template = get_template_content(type, data, ['email'])
+        domain = os.environ.get('MAILGUN_DOMAIN')
 
-        r = requests.post(
-            f'https://api.mailgun.net/v3/{os.environ.get('MAILGUN_DOMAIN')}/messages',
+        r = requests.post(f'https://api.mailgun.net/v3/{domain}/messages',
             auth=(
-                "api",
+                'api',
                 os.environ.get('MAILGUN_API_KEY')),
             data={
-                "from": os.environ.get('MAILGUN_DOMAIN') +
-                " <mailgun@mailgun.pokerswap.co>",
-                "to": to,
-                "subject": template['subject'],
-                "text": template['text'],
-                "html": template['html']})
+                'from': f'{domain} <mailgun@mailgun.pokerswap.co>',
+                'to': to,
+                'subject': template['subject'],
+                'text': template['text'],
+                'html': template['html']})
         
         return r.status_code == 200
         
@@ -34,7 +34,7 @@ def send_email(type, to, data={}):
 
 def send_sms(type, phone_number, data={}):
 
-    template = get_template_content(type, data, ["email", "fms"])
+    template = get_template_content(type, data, ['email', 'fms'])
     
     TWILIO_SID = os.environ.get('TWILIO_SID')
     TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
@@ -50,18 +50,16 @@ def send_sms(type, phone_number, data={}):
 
 def send_fcm(type, registration_ids, data={}):
     if(len(registration_ids) > 0 and push_service):
-        template = get_template_content(type, data, ["email", "fms"])
+        template = get_template_content(type, data, ['email', 'fms'])
 
         if 'fms' not in template:
             raise APIException(
-                "The template " +
-                type +
-                " does not seem to have a valid FMS version")
+                f'The template {type} does not seem to have a valid FMS version')
 
         message_title = template['subject']
         message_body = template['fms']
         if 'DATA' not in data:
-            raise Exception("There is no data for the notification")
+            raise Exception('There is no data for the notification')
         message_data = data['DATA']
 
         result = push_service.notify_multiple_devices(
@@ -70,8 +68,8 @@ def send_fcm(type, registration_ids, data={}):
             message_body=message_body,
             data_message=message_data)
 
-        # if(result["failure"] or not result["success"]):
-        #     raise APIException("Problem sending the notification")
+        # if(result['failure'] or not result['success']):
+        #     raise APIException('Problem sending the notification')
 
         return result
     else:
@@ -86,7 +84,7 @@ def send_fcm_notification(type, user_id, data={}):
 
 def get_template_content(type, data={}, formats=None):
     subjects = {
-        "test": "Welcome to Swap Profit"
+        'test': 'Welcome to Swap Profit'
     }
 
     #d = Context({ 'username': username })
@@ -101,15 +99,15 @@ def get_template_content(type, data={}, formats=None):
     # template_data.update(data)
     
     templates = {
-        "subject": subjects[type]
+        'subject': subjects[type]
     }
 
-    if formats is None or "email" in formats:
-        templates["text"] = render_template( type +'.txt', **template_data)
-        templates["html"] = render_template( type +'.html', **template_data)
+    if formats is None or 'email' in formats:
+        templates['text'] = render_template( type +'.txt', **template_data)
+        templates['html'] = render_template( type +'.html', **template_data)
 
-    if formats is not None and "fms" in formats:
-        templates["fms"] = render_template( type +'.fms', **template_data)
+    if formats is not None and 'fms' in formats:
+        templates['fms'] = render_template( type +'.fms', **template_data)
 
     
     return templates
