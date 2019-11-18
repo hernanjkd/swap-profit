@@ -23,7 +23,7 @@ def attach(app):
         check_params(body, 'email', 'password', 'new_email')
 
         user = Users.query.filter_by( id=int(id), email=body['email'], password=sha256(body['password']) ).first()
-        if not user:
+        if user is None:
             raise APIException('Invalid parameters', 400)
 
         user.valid = False
@@ -57,7 +57,7 @@ def attach(app):
         check_params(body, 'email', 'password')
 
         user = Users.query.filter_by(id = jwt_data['sub'], email = body['email']).first()
-        if not user:
+        if user is None:
             raise APIException('User not found', 404)
 
         user.password = sha256(body['password'])
@@ -91,7 +91,7 @@ def attach(app):
         check_params(body, 'email', 'password', 'new_password')
 
         user = Users.query.filter_by( id=int(id), email=body['email'], password=sha256(body['password']) ).first()
-        if not user:
+        if user is None:
             raise APIException('Invalid parameters', 400)
 
         user.password = sha256(body['new_password'])
@@ -123,7 +123,7 @@ def attach(app):
             raise APIException('Invalid id: ' + id, 400)
 
         user = Profiles.query.get(int(id))
-        if not user:
+        if user is None:
             raise APIException('User not found', 404)
 
         return jsonify(user.serialize(long=True)), 200
@@ -136,7 +136,7 @@ def attach(app):
     def register_profile():
 
         user = Users.query.get(get_jwt()['sub'])
-        if not user:
+        if user is None:
             raise APIException('User not found', 404)
 
         body = request.get_json()
@@ -167,7 +167,7 @@ def attach(app):
             raise APIException('Invalid id: ' + id, 400)
 
         prof = Profiles.query.get(int(id))
-        if not prof:
+        if prof is None:
             raise APIException('User not found', 404)
 
         body = request.get_json()
@@ -187,7 +187,7 @@ def attach(app):
     def update_profile_image():
 
         user = Users.query.get(get_jwt()['sub'])
-        if not user:
+        if user is None:
             raise APIException('User not found', 404)
 
         if 'image' not in request.files:
@@ -227,7 +227,7 @@ def attach(app):
         id = int(get_jwt()['sub'])
 
         prof = Profiles.query.get(id)
-        if not prof:
+        if prof is None:
             raise APIException('User not found', 404)
 
         buyin = Buy_ins(
@@ -266,7 +266,7 @@ def attach(app):
 
         buyin = Buy_ins.query.get(id)
 
-        if not buyin:
+        if buyin is None:
             raise APIException('Buy_in not found', 404)
 
         update_table(buyin, body, ignore=['user_id','flight_id','receipt_img_url'])
@@ -285,7 +285,7 @@ def attach(app):
         user_id = get_jwt()['sub']
 
         buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
-        if not buyin:
+        if buyin is None:
             raise APIException('Buy_in not found', 404)
 
         if 'image' not in request.files:
@@ -328,7 +328,7 @@ def attach(app):
         else:
             trmnt = Tournaments.query.filter( Tournaments.name.ilike(f'%{id}%') ).all()
 
-        if not trmnt:
+        if trmnt is None:
             raise APIException('Tournament not found', 404)
 
         if isinstance(trmnt, list):
@@ -360,7 +360,7 @@ def attach(app):
 
         # get sender user
         sender = Profiles.query.get(id)
-        if not sender:
+        if sender is None:
             raise APIException('User not found', 404)
 
         body = request.get_json()
@@ -368,7 +368,7 @@ def attach(app):
 
         # get recipient user
         recipient = Profiles.query.get(body['recipient_id'])
-        if not recipient:
+        if recipient is None:
             raise APIException('Recipient user not found', 404)
 
         if Swaps.query.get((id, body['recipient_id'], body['tournament_id'])):
@@ -412,7 +412,7 @@ def attach(app):
 
         # get sender user
         sender = Profiles.query.get(id)
-        if not sender:
+        if sender is None:
             raise APIException('User not found', 404)
 
         body = request.get_json()
@@ -420,13 +420,13 @@ def attach(app):
 
         # get recipient user
         recipient = Profiles.query.get(body['recipient_id'])
-        if not recipient:
+        if recipient is None:
             raise APIException('Recipient user not found', 404)
 
         # get swap
         swap = Swaps.query.get((id, recipient.id, body['tournament_id']))
         counter_swap = Swaps.query.get((recipient.id, id, body['tournament_id']))
-        if not swap or not counter_swap:
+        if swap is None or counter_swap is None:
             raise APIException('Swap not found', 404)
 
         if 'percentage' in body:
@@ -464,7 +464,7 @@ def attach(app):
         user_id = get_jwt()['sub']
 
         prof = Profiles.query.get(user_id)
-        if not prof:
+        if prof is None:
             raise APIException('User not found', 404)
 
         return jsonify(prof.get_swaps_actions(id))
@@ -482,7 +482,7 @@ def attach(app):
 
         # get sender user
         sender = Profiles.query.get(id)
-        if not sender:
+        if sender is None:
             raise APIException('User not found', 404)
 
         body = request.get_json()
@@ -506,7 +506,7 @@ def attach(app):
         id = get_jwt()['sub']
 
         buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
-        if not buyin:
+        if buyin is None:
             raise APIException('Buy_in not found', 404)
 
         return jsonify(buyin.serialize()), 200
@@ -521,7 +521,7 @@ def attach(app):
         id = get_jwt()['sub']
 
         trmnts = Tournaments.get_live(user_id=id)
-        if not trmnts:
+        if trmnts is None:
             raise APIException('You have not bought into any current tournaments', 404)
 
 
@@ -530,14 +530,14 @@ def attach(app):
         for trmnt in trmnts:
 
             my_buyin = Buy_ins.get_latest( user_id=id, tournament_id=trmnt.id )
-            if not my_buyin:
+            if my_buyin is None:
                 raise APIException('Can not find buyin', 404)
 
             swaps = Swaps.query.filter_by(
                 sender_id = id,
                 tournament_id = trmnt.id
             )
-            if not swaps:
+            if swaps is None:
                 return jsonify({'message':'You have no live swaps in this tournament'})
 
             swaps = [{
