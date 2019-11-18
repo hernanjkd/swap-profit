@@ -5,12 +5,19 @@ from sqlalchemy import desc
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 from datetime import datetime
+from notifications import send_email
 
 def attach(app):
+
+    @app.route('/sendemail')
+    def sendemailtest():
+        msg = {'message':'Hello Hernan'}
+        send_email(type='test',to='hernanjkd@gmail.com',data=msg)
 
     @app.route('/create/token', methods=['POST'])
     def create_token():
         return jsonify( create_jwt(request.get_json()) ), 200
+
 
 
 
