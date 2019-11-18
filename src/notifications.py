@@ -9,13 +9,13 @@ if(FIREBASE_KEY and FIREBASE_KEY!=''):
     push_service = FCMNotification(api_key=FIREBASE_KEY)
 EMAIL_NOTIFICATIONS_ENABLED = os.environ.get('EMAIL_NOTIFICATIONS_ENABLED')
 
-def send_email_message(slug, to, data={}):
+def send_email_message(template_name, to, data={}):
     if EMAIL_NOTIFICATIONS_ENABLED == 'TRUE':
-        template = get_template_content(slug, data, ["email"])
+        template = get_template_content(template_name, data, ["email"])
 
-        # print('Email notification '+slug+' sent')
+        # print('Email notification '+template_name+' sent')
         return requests.post(
-            "https://api.mailgun.net/v3/"+os.environ.get('MAILGUN_DOMAIN')+"/messages",
+            f'https://api.mailgun.net/v3/{os.environ.get('MAILGUN_DOMAIN')}/messages',
             auth=(
                 "api",
                 os.environ.get('MAILGUN_API_KEY')),
@@ -30,11 +30,10 @@ def send_email_message(slug, to, data={}):
         # print('Email not sent because notifications are not enabled')
         return True
 
-def send_sms(slug, phone_number, data={}):
+def send_sms(template_name, phone_number, data={}):
 
-    template = get_template_content(slug, data, ["email", "fms"])
-    # Your Account Sid and Auth Token from twilio.com/console
-    # DANGER! This is insecure. See http://twil.io/secure
+    template = get_template_content(template_name, data, ["email", "fms"])
+    
     TWILIO_SID = os.environ.get('TWILIO_SID')
     TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
     client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
@@ -47,14 +46,14 @@ def send_sms(slug, phone_number, data={}):
                     )
 
 
-def send_fcm(slug, registration_ids, data={}):
+def send_fcm(template_name, registration_ids, data={}):
     if(len(registration_ids) > 0 and push_service):
-        template = get_template_content(slug, data, ["email", "fms"])
+        template = get_template_content(template_name, data, ["email", "fms"])
 
         if 'fms' not in template:
             raise APIException(
                 "The template " +
-                slug +
+                template_name +
                 " does not seem to have a valid FMS version")
 
         message_title = template['subject']
@@ -77,10 +76,10 @@ def send_fcm(slug, registration_ids, data={}):
         return False
 
 
-def send_fcm_notification(slug, user_id, data={}):
+def send_fcm_notification(template_name, user_id, data={}):
     device_set = FCMDevice.objects.filter(user=user_id)
     registration_ids = [device.registration_id for device in device_set]
-    send_fcm(slug, registration_ids, data)
+    send_fcm(template_name, registration_ids, data)
 
 
 def get_template_content(slug, data={}, formats=None):
@@ -91,12 +90,13 @@ def get_template_content(slug, data={}, formats=None):
     #d = Context({ 'username': username })
     con = {
         'API_URL': os.environ.get('API_URL'),
-        'COMPANY_NAME': 'Swap App',
-        'COMPANY_LEGAL_NAME': 'Swap App LLC',
+        'COMPANY_NAME': 'Swap Profit',
+        'COMPANY_LEGAL_NAME': 'Swap Profit LLC',
         'COMPANY_ADDRESS': '2323 Hello, Coral Gables, 33134'
     }
-    template_data = con.copy()   # start with x's keys and values
-    template_data.update(data)
+    template_data = {**con, **data}
+    # template_data = con.copy()   # start with x's keys and values
+    # template_data.update(data)
     
     templates = {
         "subject": subjects[slug]
