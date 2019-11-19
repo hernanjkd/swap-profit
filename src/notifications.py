@@ -84,10 +84,10 @@ def send_fcm_notification(type, user_id, data={}):
 
 def get_template_content(type, data={}, formats=None):
     subjects = {
-        'test': 'Welcome to Swap Profit'
+        'test': 'Welcome to Swap Profit',
+        'email_validation': 'Swap Profit: Email Validation'
     }
 
-    #d = Context({ 'username': username })
     con = {
         'API_URL': os.environ.get('API_URL'),
         'COMPANY_NAME': 'Swap Profit',
@@ -95,8 +95,6 @@ def get_template_content(type, data={}, formats=None):
         'COMPANY_ADDRESS': '2323 Hello, Coral Gables, 33134'
     }
     template_data = {**con, **data}
-    # template_data = con.copy()   # start with x's keys and values
-    # template_data.update(data)
     
     templates = {
         'subject': subjects[type]

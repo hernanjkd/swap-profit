@@ -15,11 +15,16 @@ def attach(app):
         check_params(body, 'email', 'password')
 
         # If user exists and failed to validate his account
-        user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
-        if user not None and user.valid == False:
-            send_email(type='email_validation', to=)
+        user = (Users.query
+                .filter_by( email=body['email'], password=sha256(body['password']) )
+                .first())
+
+        if user and user.valid == False:
+            
+            data = {'validation_link': validation_link(user.id)}
+            send_email( type='email_validation', to=user.email, data=data)
+            
             return jsonify({'message':'Another email has been sent for email validation'})
-            return jsonify({'validation_link': validation_link(user.id)}), 200
 
         elif user and user.valid:
             raise APIException('User already exists', 405)
@@ -32,10 +37,10 @@ def attach(app):
 
         user = Users.query.filter_by(email=body['email']).first()
 
-        return jsonify({
-            'message': 'Please verify your email',
-            'validation_link': validation_link(user.id)
-        }), 200
+        data = {'validation_link': validation_link(user.id)}
+        send_email( type='email_validation', to=user.email, data=data)
+
+        return jsonify({'message': 'Please verify your email'}), 200
 
 
 
