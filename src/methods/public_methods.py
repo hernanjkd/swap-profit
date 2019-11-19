@@ -4,6 +4,7 @@ from flask_cors import CORS
 from flask_jwt_simple import JWTManager, create_jwt, decode_jwt, get_jwt
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
+from notifications import send_email
 
 def attach(app):
 
@@ -15,7 +16,9 @@ def attach(app):
 
         # If user exists and failed to validate his account
         user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
-        if user and not user.valid:
+        if user not None and user.valid == False:
+            send_email(type='email_validation', to=)
+            return jsonify({'message':'Another email has been sent for email validation'})
             return jsonify({'validation_link': validation_link(user.id)}), 200
 
         elif user and user.valid:
