@@ -140,7 +140,7 @@ def fill_database():
         end_at = datetime(2019,10,1,21),
         tournament = stones,
         day = 2
-    ))
+    )
     db.session.add(flight3_stones)
 
     flight1_wpt = Flights(
