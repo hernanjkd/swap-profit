@@ -157,9 +157,6 @@ def attach(app):
 
         return jsonify({'message':'ok'}), 200
 
-
-
-
     @app.route('/profiles/<id>', methods=['PUT'])
     @role_jwt_required(['user'])
     def update_profile(id):
