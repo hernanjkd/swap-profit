@@ -165,11 +165,12 @@ class Tournaments(db.Model):
     @staticmethod
     def get_live(user_id):
         now = datetime.utcnow()
-        return (Tournaments.query
+        trmnts = (Tournaments.query
                     .filter( Tournaments.start_at < now )
                     .filter( Tournaments.end_at > now )
                     .filter( Tournaments.flights.any( 
                         Flights.buy_ins.any( user_id = user_id )) ))
+        return trmnts if trmnts.count() > 0 else None
 
     def serialize(self):
         return {

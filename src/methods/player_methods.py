@@ -521,7 +521,7 @@ def attach(app):
         id = get_jwt()['sub']
 
         trmnts = Tournaments.get_live(user_id=id)
-        if trmnts is None:
+        if trmnts:
             raise APIException('You have not bought into any current tournaments', 404)
 
         print([x.serialize() for x in trmnts])
