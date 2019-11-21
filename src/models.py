@@ -111,7 +111,9 @@ class Swaps(db.Model):
     recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='receiving_swaps')
 
     def __repr__(self):
-        return f'<Swaps email:{self.sender_user.email} recipient_user:{self.recipient_id} tournament:{self.tournament.name}>'
+        return (f'<Swaps sender_email:{self.sender_user.user.email} ' 
+            + f'recipient_email:{self.recipient_user.user.email} '
+            + f'tournament:{self.tournament.name}>')
 
     def serialize(self, long=False, sender=False, percentage=False):
         # Being used in Profiles method

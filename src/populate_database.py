@@ -29,6 +29,7 @@ def run_seeds():
         nickname='Lou',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=207424',
         profile_pic_url='https://pokerdb.thehendonmob.com/pictures/Lou_Stadler_Winner.JPG',
+        valid=True,
         user=lou
     )
     db.session.add(lou)
@@ -44,6 +45,7 @@ def run_seeds():
         nickname='',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=26721',
         profile_pic_url='https://pokerdb.thehendonmob.com/pictures/carykatzpic.png',
+        valid=True,
         user=cary
     )
     db.session.add(cary)
@@ -59,6 +61,7 @@ def run_seeds():
         nickname='',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=421758',
         profile_pic_url='https://pokerdb.thehendonmob.com/pictures/Hoang_2.jpg',
+        valid=True,
         user=kate
     )
     db.session.add(kate)
@@ -74,6 +77,7 @@ def run_seeds():
         nickname='Mikita',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=159100',
         profile_pic_url='https://pokerdb.thehendonmob.com/pictures/NikitaBadz18FRh.jpg',
+        valid=True,
         user=nikita
     )
     db.session.add(nikita)
