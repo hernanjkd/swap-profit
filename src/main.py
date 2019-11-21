@@ -16,7 +16,7 @@ def create_app(testing=False):
 
     if testing:
         app.config['JWT_SECRET_KEY'] = 'dev_asdasd'
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sample.sqlite'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://sample.sqlite'
         app.config['TESTING'] = True
     else:
         app.secret_key = os.environ.get('FLASK_KEY')
