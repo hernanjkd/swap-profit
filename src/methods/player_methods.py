@@ -157,7 +157,6 @@ def attach(app):
 
         return jsonify({'message':'ok'}), 200
 
-
     @app.route('/profiles/<id>', methods=['PUT'])
     @role_jwt_required(['user'])
     def update_profile(id):
@@ -255,38 +254,6 @@ def attach(app):
         return jsonify({ **buyin.serialize(), "name": name }), 200
 
 
-    @app.route('/me/buy_ins/<int:id>/image', methods=['PUT'])
-    @role_jwt_required(['user'])
-    def update_buyin_image(id):
-
-        buyin = Buy_ins.query.get(id)
-
-        if not buyin:
-            raise APIException('Buy_in not found', 404)
-
-        if 'image' not in request.files:
-            raise APIException('Image property missing on the files array', 404)
-
-        result = cloudinary.uploader.upload(
-            request.files['image'],
-            public_id='buyin' + str(buyin.id),
-            crop='limit',
-            width=450,
-            height=450,
-            eager=[{
-                'width': 200, 'height': 200,
-                'crop': 'thumb', 'gravity': 'face',
-                'radius': 100
-            },
-            ],
-            tags=['buyin_picture','user_'+str(buyin.user_id),'buyin_'+str(buyin.id)]
-        )
-
-        buyin.receipt_img_url = result['secure_url']
-
-        db.session.commit()
-
-        return jsonify({'message':'ok'}), 200
 
 
     @app.route('/me/buy_ins/<int:id>', methods=['PUT'])
@@ -555,10 +522,9 @@ def attach(app):
         id = get_jwt()['sub']
 
         trmnts = Tournaments.get_live(user_id=id)
-        if trmnts:
+        if trmnts is None:
             raise APIException('You have not bought into any current tournaments', 404)
 
-        print([x.serialize() for x in trmnts])
         list_of_swap_trackers = []
 
         for trmnt in trmnts:
@@ -587,7 +553,7 @@ def attach(app):
                 'my_buyin': my_buyin.serialize(),
                 'swaps': swaps
             })
-        print(list_of_swap_trackers)
+        
         return jsonify(list_of_swap_trackers)
 
 
