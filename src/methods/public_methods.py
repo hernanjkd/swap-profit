@@ -1,16 +1,10 @@
 
-import os
-from flask import Flask, request, jsonify, url_for, redirect, render_template
-from flask_migrate import Migrate
-from admin import SetupAdmin
-from flask_swagger import swagger
+from flask import request, jsonify, render_template
 from flask_cors import CORS
 from flask_jwt_simple import JWTManager, create_jwt, decode_jwt, get_jwt
-from sqlalchemy import desc
-from utils import APIException, generate_sitemap, check_params, validation_link, update_table, sha256, role_jwt_required
+from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
-from datetime import datetime, timedelta
-from methods import player_methods, public_methods, sample_methods, admin_methods
+from notifications import send_email
 
 def attach(app):
 
@@ -21,9 +15,16 @@ def attach(app):
         check_params(body, 'email', 'password')
 
         # If user exists and failed to validate his account
-        user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
-        if user and not user.valid:
-            return jsonify({'validation_link': validation_link(user.id)}), 200
+        user = (Users.query
+                .filter_by( email=body['email'], password=sha256(body['password']) )
+                .first())
+
+        if user and user.valid == False:
+            
+            data = {'validation_link': validation_link(user.id)}
+            send_email( type='email_validation', to=user.email, data=data)
+            
+            return jsonify({'message':'Another email has been sent for email validation'})
 
         elif user and user.valid:
             raise APIException('User already exists', 405)
@@ -36,9 +37,34 @@ def attach(app):
 
         user = Users.query.filter_by(email=body['email']).first()
 
+        data = {'validation_link': validation_link(user.id)}
+        send_email( type='email_validation', to=user.email, data=data)
+
+        return jsonify({'message': 'Please verify your email'}), 200
+
+
+
+
+    @app.route('/users/token', methods=['POST'])
+    def login():
+
+        body = request.get_json()
+        check_params(body, 'email', 'password')
+
+        user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
+
+        if not user:
+            raise APIException('The log in information is incorrect', 401)
+
+        if not user.valid:
+            raise APIException('Email not validated', 405)
+
         return jsonify({
-            'message': 'Please verify your email',
-            'validation_link': validation_link(user.id)
+            'jwt': create_jwt({
+                'id': user.id,
+                'role': 'user',
+                'exp': body['exp'] if 'exp' in body else 15
+            })
         }), 200
 
 

@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 70756e3f5d98
+Revision ID: 2ebbce1fda8b
 Revises: 
-Create Date: 2019-10-04 20:06:08.437077
+Create Date: 2019-11-19 20:33:09.362813
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '70756e3f5d98'
+revision = '2ebbce1fda8b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,21 +24,23 @@ def upgrade():
     sa.Column('address', sa.String(length=250), nullable=True),
     sa.Column('start_at', sa.DateTime(), nullable=True),
     sa.Column('end_at', sa.DateTime(), nullable=True),
+    sa.Column('longitude', sa.Float(), nullable=True),
+    sa.Column('latitude', sa.Float(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=100), nullable=False),
     sa.Column('password', sa.String(length=256), nullable=False),
-    sa.Column('validated', sa.Boolean(), nullable=True),
+    sa.Column('valid', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email'),
-    sa.UniqueConstraint('password')
+    sa.UniqueConstraint('email')
     )
     op.create_table('flights',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('start_at', sa.DateTime(), nullable=True),
     sa.Column('end_at', sa.DateTime(), nullable=True),
+    sa.Column('day', sa.Integer(), nullable=True),
     sa.Column('tournament_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['tournament_id'], ['tournaments.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -47,9 +49,10 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('first_name', sa.String(length=100), nullable=False),
     sa.Column('last_name', sa.String(length=100), nullable=False),
-    sa.Column('username', sa.String(length=100), nullable=True),
+    sa.Column('nickname', sa.String(length=100), nullable=True),
     sa.Column('hendon_url', sa.String(length=200), nullable=True),
-    sa.Column('profile_picture_url', sa.String(length=250), nullable=True),
+    sa.Column('profile_pic_url', sa.String(length=250), nullable=True),
+    sa.Column('roi', sa.Float(), nullable=True),
     sa.ForeignKeyConstraint(['id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -73,22 +76,28 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('flight_id', sa.Integer(), nullable=True),
-    sa.Column('receipt_image_url', sa.String(length=250), nullable=True),
+    sa.Column('receipt_img_url', sa.String(length=250), nullable=True),
+    sa.Column('chips', sa.Integer(), nullable=True),
+    sa.Column('table', sa.Integer(), nullable=True),
+    sa.Column('seat', sa.Integer(), nullable=True),
+    sa.Column('place', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['flight_id'], ['flights.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['profiles.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('swaps',
-    sa.Column('tournament_id', sa.Integer(), nullable=False),
-    sa.Column('recipient_id', sa.Integer(), nullable=False),
     sa.Column('sender_id', sa.Integer(), nullable=False),
+    sa.Column('recipient_id', sa.Integer(), nullable=False),
+    sa.Column('tournament_id', sa.Integer(), nullable=False),
     sa.Column('percentage', sa.Integer(), nullable=False),
     sa.Column('winning_chips', sa.Integer(), nullable=True),
     sa.Column('due_at', sa.DateTime(), nullable=True),
+    sa.Column('paid', sa.Boolean(), nullable=True),
+    sa.Column('status', sa.String(length=20), nullable=True),
     sa.ForeignKeyConstraint(['recipient_id'], ['profiles.id'], ),
     sa.ForeignKeyConstraint(['sender_id'], ['profiles.id'], ),
     sa.ForeignKeyConstraint(['tournament_id'], ['tournaments.id'], ),
-    sa.PrimaryKeyConstraint('tournament_id', 'recipient_id', 'sender_id')
+    sa.PrimaryKeyConstraint('sender_id', 'recipient_id', 'tournament_id')
     )
     # ### end Alembic commands ###
 
