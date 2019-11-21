@@ -18,7 +18,6 @@ def attach(app):
 
 
 
-
     @app.route('/create/token', methods=['POST'])
     def create_token():
         return jsonify( create_jwt(request.get_json()) ), 200

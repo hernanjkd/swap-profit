@@ -524,7 +524,7 @@ def attach(app):
         if trmnts is None:
             raise APIException('You have not bought into any current tournaments', 404)
 
-
+        print([x.serialize() for x in trmnts])
         list_of_swap_trackers = []
 
         for trmnt in trmnts:
@@ -553,7 +553,7 @@ def attach(app):
                 'my_buyin': my_buyin.serialize(),
                 'swaps': swaps
             })
-
+        print(list_of_swap_trackers)
         return jsonify(list_of_swap_trackers)
 
 

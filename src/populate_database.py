@@ -106,7 +106,7 @@ def run_seeds():
     live = Tournaments(
         name='Live Tournament at Vegas Casino',
         address='Thunder Valley Casino Resort, 1200 Athens Ave, Lincoln, CA 95648',
-        start_at=now,
+        start_at=now - timedelta(days=2),
         end_at=now + timedelta(days=600)
     )
     db.session.add(live)
@@ -337,66 +337,60 @@ def run_seeds():
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
-    buyin1_lou = Buy_ins(
-        chips=20000,
+    db.session.add(Buy_ins(
+        chips=1200,
         table=1,
         seat=2,
         user=lou,
         flight=flight1_live
-    )
-    db.session.add(buyin1_lou)
+    ))
 
-    buyin2_lou = Buy_ins(
-        chips=20000,
+    db.session.add(Buy_ins(
+        chips=1200,
         table=1,
         seat=4,
         user=lou,
         flight=flight1_live
-    )
-    db.session.add(buyin2_lou)
+    ))
 
-    buyin1_cary = Buy_ins(
+    db.session.add(Buy_ins(
         chips=500,
         table=7,
         seat=1,
         user=cary,
         flight=flight1_live
-    )
-    db.session.add(buyin1_cary)
+    ))
 
-    buyin2_cary = Buy_ins(
+    db.session.add(Buy_ins(
         chips=500,
         table=3,
         seat=2,
         user=cary,
         flight=flight2_live
-    )
-    db.session.add(buyin2_cary)
+    ))
 
-    buyin1_kate = Buy_ins(
+    db.session.add(Buy_ins(
         chips=1000,
         table=2,
         seat=2,
         user=kate,
         flight=flight2_live
-    )
-    db.session.add(buyin1_kate)
+    ))
 
-    buyin2_kate = Buy_ins(
+    db.session.add(Buy_ins(
         chips=300,
         table=2,
         seat=2,
         user=kate,
         flight=flight2_live
-    )
+    ))
     
-    buyin1_nikita = Buy_ins(
+    db.session.add(Buy_ins(
         chips=700,
         table=3,
         seat=1,
         user=nikita,
         flight=flight2_live
-    )
-    db.session.add(buyin1_nikita)
+    ))
 
     db.session.commit()
