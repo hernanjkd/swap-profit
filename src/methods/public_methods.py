@@ -37,8 +37,8 @@ def attach(app):
 
         user = Users.query.filter_by(email=body['email']).first()
 
-        data = {'validation_link': validation_link(user.id)}
-        send_email( type='email_validation', to=user.email, data=data)
+        send_email( type='email_validation', to=user.email, 
+            data={'validation_link': validation_link(user.id)} )
 
         return jsonify({'message': 'Please verify your email'}), 200
 
@@ -53,10 +53,10 @@ def attach(app):
 
         user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
 
-        if not user:
+        if user is None:
             raise APIException('The log in information is incorrect', 401)
 
-        if not user.valid:
+        if user.valid == False:
             raise APIException('Email not validated', 405)
 
         return jsonify({

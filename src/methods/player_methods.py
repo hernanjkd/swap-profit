@@ -28,12 +28,15 @@ def attach(app):
 
         user = Users.query.filter_by( id=int(id), email=body['email'], password=sha256(body['password']) ).first()
         if user is None:
-            raise APIException('Invalid parameters', 400)
+            raise APIException('User not found', 404)
 
         user.valid = False
         user.email = body['new_email']
 
         db.session.commit()
+
+        send_email( type='email_validation', to=user.email, 
+            data={'validation_link': validation_link(user.id)} )
 
         return jsonify({
             'message': 'Please verify your new email',
