@@ -158,42 +158,6 @@ def attach(app):
         return jsonify({'message':'ok'}), 200
 
 
-
-    @app.route('/profiles/image', methods=['PUT'])
-    @role_jwt_required(['user'])
-    def update_profile_image():
-
-        user = Users.query.get(get_jwt()['sub'])
-        if not user:
-            raise APIException('User not found', 404)
-
-        if 'image' not in request.files:
-            raise APIException('Image property missing on the files array', 404)
-
-        result = cloudinary.uploader.upload(
-            request.files['image'],
-            public_id='profile' + str(user.id),
-            crop='limit',
-            width=450,
-            height=450,
-            eager=[{
-                'width': 200, 'height': 200,
-                'crop': 'thumb', 'gravity': 'face',
-                'radius': 100
-            },
-            ],
-            tags=['profile_picture']
-        )
-
-        user.profile.profile_pic_url = result['secure_url']
-
-        db.session.commit()
-
-        return jsonify({'message':'ok'}), 200
-
-
-
-
     @app.route('/profiles/<id>', methods=['PUT'])
     @role_jwt_required(['user'])
     def update_profile(id):
