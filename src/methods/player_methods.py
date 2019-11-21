@@ -6,9 +6,9 @@ from sqlalchemy import desc
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 
-# import cloudinary
-# import cloudinary.uploader
-# import cloudinary.api
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 def attach(app):
     
