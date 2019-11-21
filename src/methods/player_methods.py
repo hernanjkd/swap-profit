@@ -1,16 +1,14 @@
 
 import os
-from flask import Flask, request, jsonify, url_for, redirect, render_template
-from flask_migrate import Migrate
-from admin import SetupAdmin
-from flask_swagger import swagger
-from flask_cors import CORS
-from flask_jwt_simple import JWTManager, create_jwt, decode_jwt, get_jwt
+from flask import request, jsonify, render_template
+from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc
-from utils import APIException, generate_sitemap, check_params, validation_link, update_table, sha256, role_jwt_required
+from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
-from datetime import datetime, timedelta
-from methods import player_methods, public_methods, sample_methods, admin_methods
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 def attach(app):
     
@@ -29,7 +27,7 @@ def attach(app):
         check_params(body, 'email', 'password', 'new_email')
 
         user = Users.query.filter_by( id=int(id), email=body['email'], password=sha256(body['password']) ).first()
-        if not user:
+        if user is None:
             raise APIException('Invalid parameters', 400)
 
         user.valid = False
@@ -53,17 +51,17 @@ def attach(app):
             raise APIException('Access denied', 401)
 
         if request.method == 'GET':
-            return render_template('reset_password.html', data={
-                'host': os.environ.get('API_HOST'),
-                'token': token
-            })
+            return render_template('reset_password.html',
+                host = os.environ.get('API_HOST'),
+                token = token
+            )
 
         # request.method == 'PUT'
         body = request.get_json()
         check_params(body, 'email', 'password')
 
         user = Users.query.filter_by(id = jwt_data['sub'], email = body['email']).first()
-        if not user:
+        if user is None:
             raise APIException('User not found', 404)
 
         user.password = sha256(body['password'])
@@ -97,7 +95,7 @@ def attach(app):
         check_params(body, 'email', 'password', 'new_password')
 
         user = Users.query.filter_by( id=int(id), email=body['email'], password=sha256(body['password']) ).first()
-        if not user:
+        if user is None:
             raise APIException('Invalid parameters', 400)
 
         user.password = sha256(body['new_password'])
@@ -129,7 +127,7 @@ def attach(app):
             raise APIException('Invalid id: ' + id, 400)
 
         user = Profiles.query.get(int(id))
-        if not user:
+        if user is None:
             raise APIException('User not found', 404)
 
         return jsonify(user.serialize(long=True)), 200
@@ -142,7 +140,7 @@ def attach(app):
     def register_profile():
 
         user = Users.query.get(get_jwt()['sub'])
-        if not user:
+        if user is None:
             raise APIException('User not found', 404)
 
         body = request.get_json()
@@ -161,6 +159,40 @@ def attach(app):
 
 
 
+    @app.route('/profiles/image', methods=['PUT'])
+    @role_jwt_required(['user'])
+    def update_profile_image():
+
+        user = Users.query.get(get_jwt()['sub'])
+        if not user:
+            raise APIException('User not found', 404)
+
+        if 'image' not in request.files:
+            raise APIException('Image property missing on the files array', 404)
+
+        result = cloudinary.uploader.upload(
+            request.files['image'],
+            public_id='profile' + str(user.id),
+            crop='limit',
+            width=450,
+            height=450,
+            eager=[{
+                'width': 200, 'height': 200,
+                'crop': 'thumb', 'gravity': 'face',
+                'radius': 100
+            },
+            ],
+            tags=['profile_picture']
+        )
+
+        user.profile.profile_pic_url = result['secure_url']
+
+        db.session.commit()
+
+        return jsonify({'message':'ok'}), 200
+
+
+
 
     @app.route('/profiles/<id>', methods=['PUT'])
     @role_jwt_required(['user'])
@@ -173,7 +205,7 @@ def attach(app):
             raise APIException('Invalid id: ' + id, 400)
 
         prof = Profiles.query.get(int(id))
-        if not prof:
+        if prof is None:
             raise APIException('User not found', 404)
 
         body = request.get_json()
@@ -188,13 +220,37 @@ def attach(app):
 
 
 
-    @app.route('/profiles/me/image', methods=['PUT'])
+    @app.route('/profiles/image', methods=['PUT'])
     @role_jwt_required(['user'])
-    def upload_prof_pic():
+    def update_profile_image():
 
-        id = get_jwt()['sub']
+        user = Users.query.get(get_jwt()['sub'])
+        if user is None:
+            raise APIException('User not found', 404)
 
-        return 'ok'
+        if 'image' not in request.files:
+            raise APIException('Image property missing on the files array', 404)
+
+        result = cloudinary.uploader.upload(
+            request.files['image'],
+            public_id='profile' + str(user.id),
+            crop='limit',
+            width=450,
+            height=450,
+            eager=[{
+                'width': 200, 'height': 200,
+                'crop': 'thumb', 'gravity': 'face',
+                'radius': 100
+            },
+            ],
+            tags=['profile_picture']
+        )
+
+        user.profile.profile_pic_url = result['secure_url']
+
+        db.session.commit()
+
+        return jsonify({'message':'ok'}), 200
 
 
 
@@ -209,7 +265,7 @@ def attach(app):
         id = int(get_jwt()['sub'])
 
         prof = Profiles.query.get(id)
-        if not prof:
+        if prof is None:
             raise APIException('User not found', 404)
 
         buyin = Buy_ins(
@@ -235,6 +291,38 @@ def attach(app):
         return jsonify({ **buyin.serialize(), "name": name }), 200
 
 
+    @app.route('/me/buy_ins/<int:id>/image', methods=['PUT'])
+    @role_jwt_required(['user'])
+    def update_buyin_image(id):
+
+        buyin = Buy_ins.query.get(id)
+
+        if not buyin:
+            raise APIException('Buy_in not found', 404)
+
+        if 'image' not in request.files:
+            raise APIException('Image property missing on the files array', 404)
+
+        result = cloudinary.uploader.upload(
+            request.files['image'],
+            public_id='buyin' + str(buyin.id),
+            crop='limit',
+            width=450,
+            height=450,
+            eager=[{
+                'width': 200, 'height': 200,
+                'crop': 'thumb', 'gravity': 'face',
+                'radius': 100
+            },
+            ],
+            tags=['buyin_picture','user_'+str(buyin.user_id),'buyin_'+str(buyin.id)]
+        )
+
+        buyin.receipt_img_url = result['secure_url']
+
+        db.session.commit()
+
+        return jsonify({'message':'ok'}), 200
 
 
     @app.route('/me/buy_ins/<int:id>', methods=['PUT'])
@@ -248,7 +336,7 @@ def attach(app):
 
         buyin = Buy_ins.query.get(id)
 
-        if not buyin:
+        if buyin is None:
             raise APIException('Buy_in not found', 404)
 
         update_table(buyin, body, ignore=['user_id','flight_id','receipt_img_url'])
@@ -256,6 +344,43 @@ def attach(app):
         db.session.commit()
 
         return jsonify(Buy_ins.query.get(id).serialize())
+
+
+
+
+    @app.route('/me/buy_ins/<int:id>/image', methods=['PUT'])
+    @role_jwt_required(['user'])
+    def update_buyin_image(id):
+
+        user_id = get_jwt()['sub']
+
+        buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
+        if buyin is None:
+            raise APIException('Buy_in not found', 404)
+
+        if 'image' not in request.files:
+            raise APIException('Image property missing on the files array', 404)
+
+        result = cloudinary.uploader.upload(
+            request.files['image'],
+            public_id='buyin' + str(buyin.id),
+            crop='limit',
+            width=450,
+            height=450,
+            eager=[{
+                'width': 200, 'height': 200,
+                'crop': 'thumb', 'gravity': 'face',
+                'radius': 100
+            },
+            ],
+            tags=['buyin_picture','user_'+str(buyin.user_id),'buyin_'+str(buyin.id)]
+        )
+
+        buyin.receipt_img_url = result['secure_url']
+
+        db.session.commit()
+
+        return jsonify({'message':'ok'}), 200
 
 
 
@@ -271,9 +396,9 @@ def attach(app):
         if id.isnumeric():
             trmnt = Tournaments.query.get(int(id))
         else:
-            trmnt = Tournaments.query.filter(Tournaments.name.ilike(f'%{id}%')).all()
+            trmnt = Tournaments.query.filter( Tournaments.name.ilike(f'%{id}%') ).all()
 
-        if not trmnt:
+        if trmnt is None:
             raise APIException('Tournament not found', 404)
 
         if isinstance(trmnt, list):
@@ -305,7 +430,7 @@ def attach(app):
 
         # get sender user
         sender = Profiles.query.get(id)
-        if not sender:
+        if sender is None:
             raise APIException('User not found', 404)
 
         body = request.get_json()
@@ -313,7 +438,7 @@ def attach(app):
 
         # get recipient user
         recipient = Profiles.query.get(body['recipient_id'])
-        if not recipient:
+        if recipient is None:
             raise APIException('Recipient user not found', 404)
 
         if Swaps.query.get((id, body['recipient_id'], body['tournament_id'])):
@@ -357,7 +482,7 @@ def attach(app):
 
         # get sender user
         sender = Profiles.query.get(id)
-        if not sender:
+        if sender is None:
             raise APIException('User not found', 404)
 
         body = request.get_json()
@@ -365,13 +490,13 @@ def attach(app):
 
         # get recipient user
         recipient = Profiles.query.get(body['recipient_id'])
-        if not recipient:
+        if recipient is None:
             raise APIException('Recipient user not found', 404)
 
         # get swap
         swap = Swaps.query.get((id, recipient.id, body['tournament_id']))
         counter_swap = Swaps.query.get((recipient.id, id, body['tournament_id']))
-        if not swap or not counter_swap:
+        if swap is None or counter_swap is None:
             raise APIException('Swap not found', 404)
 
         if 'percentage' in body:
@@ -409,7 +534,7 @@ def attach(app):
         user_id = get_jwt()['sub']
 
         prof = Profiles.query.get(user_id)
-        if not prof:
+        if prof is None:
             raise APIException('User not found', 404)
 
         return jsonify(prof.get_swaps_actions(id))
@@ -427,7 +552,7 @@ def attach(app):
 
         # get sender user
         sender = Profiles.query.get(id)
-        if not sender:
+        if sender is None:
             raise APIException('User not found', 404)
 
         body = request.get_json()
@@ -451,7 +576,7 @@ def attach(app):
         id = get_jwt()['sub']
 
         buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
-        if not buyin:
+        if buyin is None:
             raise APIException('Buy_in not found', 404)
 
         return jsonify(buyin.serialize()), 200
@@ -465,59 +590,41 @@ def attach(app):
 
         id = get_jwt()['sub']
 
-        p = Profiles.get_latest(id)
-        if p:
-            return jsonify(p.serialize())
-        return 'not user found'
-
-        trmnt_id = request.args.get('tournament_id')
-
-        if trmnt_id:
-            trmnt = Tournaments.query.get(trmnt_id)
-        
-        else:
-            now = datetime.utcnow()
-            trmnt = (Tournaments.query
-                        .filter(Tournaments.start_at < now)
-                        .filter(Tournaments.end_at > now)
-                        .filter(Tournaments.flights.any(
-                            Flights.buy_ins.any( user_id = id )
-                        )))
-            if trmnt.count() > 1:
-                return jsonify({
-                    'multiple_tournaments': True,
-                    'tournaments': [x.serialize() for x in trmnt]
-                })
-
-        if not trmnt:
+        trmnts = Tournaments.get_live(user_id=id)
+        if trmnts:
             raise APIException('You have not bought into any current tournaments', 404)
 
-        trmnt_buyins = (Buy_ins.query
-                            .filter(Buy_ins.flight
-                            .has( tournament_id = trmnt.id )))
+        print([x.serialize() for x in trmnts])
+        list_of_swap_trackers = []
 
-        my_buyin = trmnt_buyins.filter_by( user_id = id )
-        if not my_buyin:
-            raise APIException('Can not find buyin', 404)
+        for trmnt in trmnts:
 
-        swaps = Swaps.query.filter_by(
-            sender_id = id,
-            tournament_id = trmnt.id
-        )
-        if not swaps:
-            return jsonify({'message':'You have no live swaps in this tournament'})
+            my_buyin = Buy_ins.get_latest( user_id=id, tournament_id=trmnt.id )
+            if my_buyin is None:
+                raise APIException('Can not find buyin', 404)
 
-        # swaps = [{
-        #     'swap': swap.serialize(),
-        #     'buyin': trmnt_buyins.filter_by()
-        # } for swap in swaps]
+            swaps = Swaps.query.filter_by(
+                sender_id = id,
+                tournament_id = trmnt.id
+            )
+            if swaps is None:
+                return jsonify({'message':'You have no live swaps in this tournament'})
 
-        return jsonify({
-            'multiple_tournaments': False,
-            'tournament': trmnt.serialize(),
-            'my_buy_in': my_buyin.serialize(),
-            'swaps': [x.serialize() for x in swaps]
-        })
+            swaps = [{
+                'swap': swap.serialize(),
+                'buyin': (Buy_ins.get_latest(
+                                user_id = swap.recipient_id,
+                                tournament_id=trmnt.id
+                            ).serialize())
+            } for swap in swaps]
+
+            list_of_swap_trackers.append({
+                'tournament': trmnt.serialize(),
+                'my_buyin': my_buyin.serialize(),
+                'swaps': swaps
+            })
+        print(list_of_swap_trackers)
+        return jsonify(list_of_swap_trackers)
 
 
 

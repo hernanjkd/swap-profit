@@ -1,0 +1,5 @@
+Welcome to Swap Profit,
+
+Click on the link below to validate your email. Happy swapping!
+
+{{ validation_link }}

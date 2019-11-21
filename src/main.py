@@ -1,16 +1,14 @@
 
 import os
-from flask import Flask, request, jsonify, url_for, redirect, render_template
+from flask import Flask, request, jsonify
 from flask_migrate import Migrate
 from admin import SetupAdmin
-from flask_swagger import swagger
 from flask_cors import CORS
-from flask_jwt_simple import JWTManager, create_jwt, decode_jwt, get_jwt
-from sqlalchemy import desc
-from utils import APIException, generate_sitemap, check_params, validation_link, update_table, sha256, role_jwt_required
-from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
+from flask_jwt_simple import JWTManager
+from utils import APIException
 from datetime import datetime, timedelta
 from methods import player_methods, public_methods, sample_methods, admin_methods
+from models import db
 
 def create_app(testing=False):
     app = Flask(__name__)
@@ -18,12 +16,12 @@ def create_app(testing=False):
 
     if testing:
         app.config['JWT_SECRET_KEY'] = 'dev_asdasd'
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sample.sqlite'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://sample.sqlite'
         app.config['TESTING'] = True
     else:
         app.secret_key = os.environ.get('FLASK_KEY')
         app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     MIGRATE = Migrate(app, db)

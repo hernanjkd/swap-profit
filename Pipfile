@@ -24,6 +24,7 @@ pytest = "*"
 flask-admin = "*"
 pytest-flask = "*"
 pytest-flask-sqlalchemy = "*"
+cloudinary = "*"
 
 [requires]
 python_version = "3.7"

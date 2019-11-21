@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -45,10 +46,6 @@ class Profiles(db.Model):
 
     def __repr__(self):
         return f'<Profiles {self.first_name} {self.last_name}>'
-
-    @staticmethod
-    def get_latest(user_id):
-        return Profiles.query.filter_by(id=user_id).order_by(Profiles.id.desc()).first()
 
     def available_percentage(self, tournament_id):
         total = 0
@@ -165,6 +162,16 @@ class Tournaments(db.Model):
     def __repr__(self):
         return f'<Tournament {self.name}>'
 
+    @staticmethod
+    def get_live(user_id):
+        now = datetime.utcnow()
+        trmnts = (Tournaments.query
+                    .filter( Tournaments.start_at < now )
+                    .filter( Tournaments.end_at > now )
+                    .filter( Tournaments.flights.any( 
+                        Flights.buy_ins.any( user_id = user_id )) ))
+        return trmnts if trmnts.count() > 0 else None
+
     def serialize(self):
         return {
             "id": self.id,
@@ -220,10 +227,10 @@ class Buy_ins(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
     flight_id = db.Column(db.Integer, db.ForeignKey('flights.id'))
     receipt_img_url = db.Column(db.String(250))
-    place = db.Column(db.Integer)
     chips = db.Column(db.Integer)
     table = db.Column(db.Integer)
     seat = db.Column(db.Integer)
+    place = db.Column(db.Integer)
 
     user = db.relationship('Profiles', back_populates='buy_ins')
     flight = db.relationship('Flights', back_populates='buy_ins')
@@ -231,8 +238,12 @@ class Buy_ins(db.Model):
     def __repr__(self):
         return f'<Buy_ins id:{self.id} user:{self.user_id} flight:{self.flight_id}>'
 
-    def get_latest(self, user_id, tournament_id):
-        return Buy_ins.query.filter_by(user_id=user_id).order_by(Buy_ins.id.desc()).first()
+    @staticmethod
+    def get_latest(user_id, tournament_id):
+        return (Buy_ins.query
+                        .filter( Buy_ins.flight.has( tournament_id=tournament_id ))
+                        .filter_by( user_id=user_id )
+                        .order_by( Buy_ins.id.desc() ).first())
 
     def serialize(self):
         u = self.user
