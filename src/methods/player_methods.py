@@ -6,6 +6,10 @@ from sqlalchemy import desc
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 def attach(app):
     
     
@@ -155,6 +159,40 @@ def attach(app):
 
 
 
+    @app.route('/profiles/image', methods=['PUT'])
+    @role_jwt_required(['user'])
+    def update_profile_image():
+
+        user = Users.query.get(get_jwt()['sub'])
+        if not user:
+            raise APIException('User not found', 404)
+
+        if 'image' not in request.files:
+            raise APIException('Image property missing on the files array', 404)
+
+        result = cloudinary.uploader.upload(
+            request.files['image'],
+            public_id='profile' + str(user.id),
+            crop='limit',
+            width=450,
+            height=450,
+            eager=[{
+                'width': 200, 'height': 200,
+                'crop': 'thumb', 'gravity': 'face',
+                'radius': 100
+            },
+            ],
+            tags=['profile_picture']
+        )
+
+        user.profile.profile_pic_url = result['secure_url']
+
+        db.session.commit()
+
+        return jsonify({'message':'ok'}), 200
+
+
+
 
     @app.route('/profiles/<id>', methods=['PUT'])
     @role_jwt_required(['user'])
@@ -253,6 +291,38 @@ def attach(app):
         return jsonify({ **buyin.serialize(), "name": name }), 200
 
 
+    @app.route('/me/buy_ins/<int:id>/image', methods=['PUT'])
+    @role_jwt_required(['user'])
+    def update_buyin_image(id):
+
+        buyin = Buy_ins.query.get(id)
+
+        if not buyin:
+            raise APIException('Buy_in not found', 404)
+
+        if 'image' not in request.files:
+            raise APIException('Image property missing on the files array', 404)
+
+        result = cloudinary.uploader.upload(
+            request.files['image'],
+            public_id='buyin' + str(buyin.id),
+            crop='limit',
+            width=450,
+            height=450,
+            eager=[{
+                'width': 200, 'height': 200,
+                'crop': 'thumb', 'gravity': 'face',
+                'radius': 100
+            },
+            ],
+            tags=['buyin_picture','user_'+str(buyin.user_id),'buyin_'+str(buyin.id)]
+        )
+
+        buyin.receipt_img_url = result['secure_url']
+
+        db.session.commit()
+
+        return jsonify({'message':'ok'}), 200
 
 
     @app.route('/me/buy_ins/<int:id>', methods=['PUT'])
