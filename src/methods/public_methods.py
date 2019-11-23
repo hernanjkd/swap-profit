@@ -73,27 +73,20 @@ def attach(app):
     @app.route('/users/validate/<token>', methods=['GET'])
     def validate(token):
 
-        jwt_data = decode_jwt(token)
+        # jwt_data = decode_jwt(token)
 
-        if jwt_data['role'] != 'validating':
-            raise APIException('Incorrect token', 400)
+        # if jwt_data['role'] != 'validating':
+        #     raise APIException('Incorrect token', 400)
 
-        user = Users.query.filter_by(id = jwt_data['sub']).first()
-        if not user:
-            raise APIException('Invalid key payload', 400)
+        # user = Users.query.filter_by(id = jwt_data['sub']).first()
+        # if not user:
+        #     raise APIException('Invalid key payload', 400)
 
-        if not user.valid:
-            user.valid = True
-            db.session.commit()
+        # if not user.valid:
+        #     user.valid = True
+        #     db.session.commit()
 
-        return jsonify({
-            'message': 'Your email has been validated',
-            'jwt': create_jwt({
-                'id': jwt_data['sub'],
-                'role': 'user',
-                'exp': 600000
-            })
-        }), 200
+        return render_template('email_validated_success.html')
 
 
 
