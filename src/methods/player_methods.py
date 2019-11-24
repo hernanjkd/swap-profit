@@ -402,6 +402,17 @@ def attach(app):
         ))
         db.session.commit()
 
+        trmnt = Tournaments.query.get(body['tournament_id'])
+
+        send_email( type='swap_created', to=sender.user.email,
+            data={
+                'amount': body['percentage'],
+            }
+        )
+        send_email( type='swap_created', to=recipient.user.email,
+            data={}
+        )
+
         return jsonify({'message':'ok'}), 200
 
 
@@ -547,7 +558,7 @@ def attach(app):
                 'swap': swap.serialize(),
                 'buyin': (Buy_ins.get_latest(
                                 user_id = swap.recipient_id,
-                                tournament_id=trmnt.id
+                                tournament_id = trmnt.id
                             ).serialize())
             } for swap in swaps]
 
