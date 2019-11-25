@@ -370,6 +370,8 @@ def attach(app):
         body = request.get_json()
         check_params(body, 'tournament_id', 'recipient_id', 'percentage')
 
+        percentage = abs(body['percentage'])
+
         # get recipient user
         recipient = Profiles.query.get(body['recipient_id'])
         if recipient is None:
@@ -379,12 +381,12 @@ def attach(app):
             raise APIException('Swap already exists, can not duplicate', 400)
 
         sender_availability = sender.available_percentage( body['tournament_id'] )
-        if body['percentage'] > sender_availability:
+        if percentage > sender_availability:
             raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
                                 f'You have available: {sender_availability}%'), 400)
 
         recipient_availability = recipient.available_percentage( body['tournament_id'] )
-        if body['percentage'] > recipient_availability:
+        if percentage > recipient_availability:
             raise APIException(('Swap percentage too large for recipient. '
                                 f'He has available to swap: {recipient_availability}%'), 400)
 
@@ -392,13 +394,13 @@ def attach(app):
             sender_id = id,
             tournament_id = body['tournament_id'],
             recipient_id = body['recipient_id'],
-            percentage = body['percentage']
+            percentage = percentage
         ))
         db.session.add(Swaps(
             sender_id = body['recipient_id'],
             tournament_id = body['tournament_id'],
             recipient_id = id,
-            percentage = body['percentage']
+            percentage = percentage
         ))
         db.session.commit()
 
@@ -406,7 +408,7 @@ def attach(app):
 
         send_email( type='swap_created', to=sender.user.email,
             data={
-                'percentage': body['percentage'],
+                'percentage': percentage,
                 'recipient_firstname': recipient.first_name,
                 'recipient_lastname': recipient.last_name,
                 'recipient_email': recipient.user.email,
@@ -414,7 +416,7 @@ def attach(app):
         )
         send_email( type='swap_created', to=recipient.user.email,
             data={
-                'percentage': body['precentage'],
+                'percentage': percentage,
                 'recipient_firstname': sender.first_name,
                 'recipient_lastname': sender.last_name,
                 'recipient_email': sender.user.email,
@@ -469,7 +471,26 @@ def attach(app):
 
             # So it can be updated correctly with the update_table funcion
             body['percentage'] = swap.percentage + percentage
-            update_table(counter_swap, {'percentage': counter_swap.percentage + counter})
+            update_table(counter_swap, {
+                'percentage': counter_swap.percentage + counter
+            })
+
+            send_email( type='swap_created', to=sender.user.email,
+                data={
+                    'percentage': swap.percentage + percentage,
+                    'recipient_firstname': recipient.first_name,
+                    'recipient_lastname': recipient.last_name,
+                    'recipient_email': recipient.user.email,
+                }
+            )
+            send_email( type='swap_created', to=recipient.user.email,
+                data={
+                    'percentage': counter_swap.percentage + counter,
+                    'recipient_firstname': sender.first_name,
+                    'recipient_lastname': sender.last_name,
+                    'recipient_email': sender.user.email,
+                }
+            )
 
         update_table(swap, body, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
 
@@ -491,8 +512,6 @@ def attach(app):
             raise APIException('User not found', 404)
 
         return jsonify(prof.get_swaps_actions(id))
-
-
 
 
 

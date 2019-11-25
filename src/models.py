@@ -87,9 +87,7 @@ class Profiles(db.Model):
                 **json,
                 "valid": self.user.valid,
                 "created_at": "",
-                "updated_at": "",
-                "receiving_swaps": [x.serialize() for x in self.receiving_swaps],
-                "buy_ins": [x.serialize() for x in self.buy_ins] 
+                "updated_at": ""
             }
         return json
 
