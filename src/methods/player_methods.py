@@ -406,14 +406,22 @@ def attach(app):
 
         send_email( type='swap_created', to=sender.user.email,
             data={
-                'amount': body['percentage'],
+                'percentage': body['percentage'],
+                'recipient_firstname': recipient.first_name,
+                'recipient_lastname': recipient.last_name,
+                'recipient_email': recipient.user.email,
             }
         )
         send_email( type='swap_created', to=recipient.user.email,
-            data={}
+            data={
+                'percentage': body['precentage'],
+                'recipient_firstname': sender.first_name,
+                'recipient_lastname': sender.last_name,
+                'recipient_email': sender.user.email,
+            }
         )
 
-        return jsonify({'message':'ok'}), 200
+        return jsonify({'message':'Swap created successfully.'}), 200
 
 
 

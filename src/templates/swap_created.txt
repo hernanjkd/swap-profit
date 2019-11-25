@@ -1,1 +1,6 @@
-{{ message }}
+You have a new Swap!
+With:
+
+Name: {{ recipient_firstname }} {{recipient_lastname }}
+Email: {{ recipient_email }}
+Amount: {{ percentage }}
