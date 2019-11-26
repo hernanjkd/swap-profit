@@ -84,8 +84,9 @@ def send_fcm_notification(type, user_id, data={}):
 
 def get_template_content(type, data={}, formats=None):
     subjects = {
+        'email_validation': 'Swap Profit: Email Validation',
         'swap_created': 'Swap Profit: You Have A New Swap',
-        'email_validation': 'Swap Profit: Email Validation'
+        'buyin_receipt': 'Swap Profit: Your Buy In Receipt'
     }
 
     con = {

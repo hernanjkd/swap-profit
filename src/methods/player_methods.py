@@ -1,5 +1,8 @@
 
 import os
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc
@@ -7,9 +10,6 @@ from utils import APIException, check_params, validation_link, update_table, sha
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
 from notifications import send_email
 
-# import cloudinary
-# import cloudinary.uploader
-# import cloudinary.api
 
 def attach(app):
     
@@ -294,7 +294,7 @@ def attach(app):
             raise APIException('Buy_in not found', 404)
 
         if 'image' not in request.files:
-            raise APIException('Image property missing on the files array', 404)
+            raise APIException('Image property missing in the files array', 404)
 
         result = cloudinary.uploader.upload(
             request.files['image'],
@@ -314,6 +314,8 @@ def attach(app):
         buyin.receipt_img_url = result['secure_url']
 
         db.session.commit()
+
+        send_email(type='buyin_receipt', to=buyin.user.user.email)
 
         return jsonify({'message':'ok'}), 200
 
@@ -407,20 +409,20 @@ def attach(app):
 
         trmnt = Tournaments.query.get(body['tournament_id'])
 
-        send_email( type='swap_created', to='hernanjkd@gmail.com',#to=sender.user.email,
+        send_email( type='swap_created', to=sender.user.email,
             data={
                 'percentage': percentage,
                 'recipient_firstname': recipient.first_name,
                 'recipient_lastname': recipient.last_name,
-                'recipient_email': recipient.user.email,
+                'recipient_email': recipient.user.email
             }
         )
-        send_email( type='swap_created', to='hernanjkd@gmail.com',#to=recipient.user.email,
+        send_email( type='swap_created', to=recipient.user.email,
             data={
                 'percentage': percentage,
                 'recipient_firstname': sender.first_name,
                 'recipient_lastname': sender.last_name,
-                'recipient_email': sender.user.email,
+                'recipient_email': sender.user.email
             }
         )
 
@@ -475,32 +477,32 @@ def attach(app):
 
             # So it can be updated correctly with the update_table funcion
             body['percentage'] = new_percentage
-            # update_table(counter_swap, {
-            #     'percentage': new_counter_percentage
-            # })
+            update_table(counter_swap, {
+                'percentage': new_counter_percentage
+            })
 
-            send_email( type='swap_created', to='hernanjkd@gmail.com',#to=sender.user.email,
+            send_email( type='swap_created', to=sender.user.email,
                 data={
                     'percentage': new_percentage,
                     'counter_percentage': new_counter_percentage,
                     'recipient_firstname': recipient.first_name,
                     'recipient_lastname': recipient.last_name,
-                    'recipient_email': recipient.user.email,
+                    'recipient_email': recipient.user.email
                 }
             )
-            send_email( type='swap_created', to='hernanjkd@gmail.com',#to=recipient.user.email,
+            send_email( type='swap_created', to=recipient.user.email,
                 data={
                     'percentage': new_counter_percentage,
                     'counter_percentage': new_percentage,
                     'recipient_firstname': sender.first_name,
                     'recipient_lastname': sender.last_name,
-                    'recipient_email': sender.user.email,
+                    'recipient_email': sender.user.email
                 }
             )
 
-        # update_table(swap, body, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
+        update_table(swap, body, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
 
-        # db.session.commit()
+        db.session.commit()
 
         return jsonify([
             swap.serialize(),
