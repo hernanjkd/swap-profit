@@ -306,9 +306,12 @@ def attach(app):
                 'width': 200, 'height': 200,
                 'crop': 'thumb', 'gravity': 'face',
                 'radius': 100
-            },
-            ],
-            tags=['buyin_picture','user_'+str(buyin.user_id),'buyin_'+str(buyin.id)]
+            }],
+            tags=[
+                'buyin_receipt',
+                f'user_{str(buyin.user_id)}',
+                f'buyin_{str(buyin.id)}'
+            ]
         )
 
         buyin.receipt_img_url = result['secure_url']
