@@ -321,7 +321,11 @@ def attach(app):
         send_email(type='buyin_receipt', to='hernanjkd@gmail.com',#to=buyin.user.user.email,
             data={
                 'receipt_url': buyin.receipt_img_url,
-                'email': buyin.user.user.email
+                'tournament_name': buyin.flight.tournament.name,
+                'start_date': buyin.flight.tournament.start_at,
+                'chips': buyin.chips,
+                'seat': buyin.seat,
+                'table': buyin.table
             }
         )
 
