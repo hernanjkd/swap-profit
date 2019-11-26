@@ -269,7 +269,7 @@ def attach(app):
 
         user_id = get_jwt()['sub']
 
-        buyin = Buy_ins.query.get(id)
+        buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
 
         if buyin is None:
             raise APIException('Buy_in not found', 404)
@@ -277,7 +277,7 @@ def attach(app):
         update_table(buyin, body, ignore=['user_id','flight_id','receipt_img_url'])
 
         db.session.commit()
-
+        
         return jsonify(Buy_ins.query.get(id).serialize())
 
 
@@ -315,9 +315,14 @@ def attach(app):
 
         db.session.commit()
 
-        send_email(type='buyin_receipt', to=buyin.user.user.email)
+        send_email(type='buyin_receipt', to='hernanjkd@gmail.com',#to=buyin.user.user.email,
+            data={
+                'receipt_url': buyin.receipt_img_url,
+                'email': buyin.user.user.email
+            }
+        )
 
-        return jsonify({'message':'ok'}), 200
+        return jsonify({'message':'Image uploaded successfully'}), 200
 
 
 
