@@ -5,6 +5,7 @@ from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
+from notifications import send_email
 
 # import cloudinary
 # import cloudinary.uploader
@@ -406,7 +407,7 @@ def attach(app):
 
         trmnt = Tournaments.query.get(body['tournament_id'])
 
-        send_email( type='swap_created', to=sender.user.email,
+        send_email( type='swap_created', to='hernanjkd@gmail.com',#to=sender.user.email,
             data={
                 'percentage': percentage,
                 'recipient_firstname': recipient.first_name,
@@ -414,7 +415,7 @@ def attach(app):
                 'recipient_email': recipient.user.email,
             }
         )
-        send_email( type='swap_created', to=recipient.user.email,
+        send_email( type='swap_created', to='hernanjkd@gmail.com',#to=recipient.user.email,
             data={
                 'percentage': percentage,
                 'recipient_firstname': sender.first_name,
@@ -469,34 +470,42 @@ def attach(app):
                 raise APIException(('Swap percentage too large for recipient. '
                                     f'He has available to swap: {recipient_availability}%'), 400)
 
-            # So it can be updated correctly with the update_table funcion
-            body['percentage'] = swap.percentage + percentage
-            update_table(counter_swap, {
-                'percentage': counter_swap.percentage + counter
-            })
+            new_percentage = swap.percentage + percentage
+            new_counter_percentage = counter_swap.percentage + counter
 
-            send_email( type='swap_created', to=sender.user.email,
+            # So it can be updated correctly with the update_table funcion
+            body['percentage'] = new_percentage
+            # update_table(counter_swap, {
+            #     'percentage': new_counter_percentage
+            # })
+
+            send_email( type='swap_created', to='hernanjkd@gmail.com',#to=sender.user.email,
                 data={
-                    'percentage': swap.percentage + percentage,
+                    'percentage': new_percentage,
+                    'counter_percentage': new_counter_percentage,
                     'recipient_firstname': recipient.first_name,
                     'recipient_lastname': recipient.last_name,
                     'recipient_email': recipient.user.email,
                 }
             )
-            send_email( type='swap_created', to=recipient.user.email,
+            send_email( type='swap_created', to='hernanjkd@gmail.com',#to=recipient.user.email,
                 data={
-                    'percentage': counter_swap.percentage + counter,
+                    'percentage': new_counter_percentage,
+                    'counter_percentage': new_percentage,
                     'recipient_firstname': sender.first_name,
                     'recipient_lastname': sender.last_name,
                     'recipient_email': sender.user.email,
                 }
             )
 
-        update_table(swap, body, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
+        # update_table(swap, body, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
 
-        db.session.commit()
+        # db.session.commit()
 
-        return jsonify(swap.serialize())
+        return jsonify([
+            swap.serialize(),
+            counter_swap.serialize()
+        ])
 
 
 
