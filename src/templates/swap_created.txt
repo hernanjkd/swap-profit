@@ -3,4 +3,7 @@ With:
 
 Name: {{ recipient_firstname }} {{recipient_lastname }}
 Email: {{ recipient_email }}
-Amount: {{ percentage }}
+
+You are paying {{ percentage }}% to {{ recipient_firstname }}.<br />
+{{ recipient_firstname }} is paying {{ counter_percentage }}% to you.
+
