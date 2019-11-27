@@ -79,12 +79,14 @@ def attach(app):
             raise APIException('Incorrect token', 400)
 
         user = Users.query.filter_by(id = jwt_data['sub']).first()
-        if not user:
+        if user is None:
             raise APIException('Invalid key payload', 400)
 
-        if not user.valid:
+        if user.valid == False:
             user.valid = True
             db.session.commit()
+
+        send_email(type='account_created', to=user.email)
 
         return render_template('email_validated_success.html')
 

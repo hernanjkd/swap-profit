@@ -100,7 +100,6 @@ class Swaps(db.Model):
     recipient_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), primary_key=True)
     percentage = db.Column(db.Integer, nullable=False)
-    winning_chips = db.Column(db.Integer, default=None)
     due_at = db.Column(db.DateTime, default=None)
     paid = db.Column(db.Boolean, default=False)
     status = db.Column(db.String(20), default='pending')
