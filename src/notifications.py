@@ -86,7 +86,8 @@ def get_template_content(type, data={}, formats=None):
     subjects = {
         'email_validation': 'Swap Profit: Email Validation',
         'swap_created': 'Swap Profit: You Have A New Swap',
-        'buyin_receipt': 'Swap Profit: Your Buy In Receipt'
+        'buyin_receipt': 'Swap Profit: Your Buy In Receipt',
+        'account_created': 'Swap Profit: Welcome to Swap Profit'
     }
 
     con = {

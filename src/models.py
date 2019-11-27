@@ -14,6 +14,7 @@ class Users(db.Model):
     profile = db.relationship('Profiles', back_populates='user', uselist=False)
     transactions = db.relationship('Transactions', back_populates='user')
     tokens = db.relationship('Tokens', back_populates='user')
+    devices = db.relationship('Devices', back_populates='user')
 
     def __repr__(self):
         return f'<Users {self.email}>'
@@ -304,3 +305,31 @@ class Tokens(db.Model):
             "token": self.token,
             "expires_at": self.expires_at
         }
+
+
+
+class Devices(db.Model):
+    __tablename__ = 'devices'
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(256), nullable=False)
+
+    user = db.relationship('Users', back_populates='devices')
+
+    def __repr__(self):
+        return f'<Devices id:{self.id} user_email:{self.user.email}>'
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'token': self.token,
+            'user_id': self.user.id
+        }
+
+
+
+# class Zip_Codes(db.Model):
+#     __tablename__ = 'zip_codes'
+#     id = db.Column(db.Integer, primary_key=True)
+#     zip_code = db.Column(db.String(14))
+#     longitude = db.Column(db.Float)
+#     latitude = db.Column(db.Float)
