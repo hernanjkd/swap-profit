@@ -311,6 +311,7 @@ class Tokens(db.Model):
 class Devices(db.Model):
     __tablename__ = 'devices'
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     token = db.Column(db.String(256), nullable=False)
 
     user = db.relationship('Users', back_populates='devices')
@@ -322,7 +323,7 @@ class Devices(db.Model):
         return {
             'id': self.id,
             'token': self.token,
-            'user_id': self.user.id
+            'user_id': self.user_id
         }
 
 
