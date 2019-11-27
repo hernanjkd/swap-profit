@@ -327,9 +327,20 @@ class Devices(db.Model):
 
 
 
-# class Zip_Codes(db.Model):
-#     __tablename__ = 'zip_codes'
-#     id = db.Column(db.Integer, primary_key=True)
-#     zip_code = db.Column(db.String(14))
-#     longitude = db.Column(db.Float)
-#     latitude = db.Column(db.Float)
+class Zip_Codes(db.Model):
+    __tablename__ = 'zip_codes'
+    id = db.Column(db.Integer, primary_key=True)
+    zip_code = db.Column(db.String(14))
+    longitude = db.Column(db.Float)
+    latitude = db.Column(db.Float)
+
+    def __repr__(self):
+        return f'<Zip_Codes {self.zip_code}>'
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'zip_code': self.zip_code,
+            'longitude': self.longitude,
+            'latitude': self.latitude
+        }
