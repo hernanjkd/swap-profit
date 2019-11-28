@@ -243,9 +243,9 @@ class Buy_ins(db.Model):
     @staticmethod
     def get_latest(user_id, tournament_id):
         return (Buy_ins.query
-                        .filter( Buy_ins.flight.has( tournament_id=tournament_id ))
-                        .filter_by( user_id=user_id )
-                        .order_by( Buy_ins.id.desc() ).first())
+            .filter( Buy_ins.flight.has( tournament_id=tournament_id ))
+            .filter_by( user_id=user_id )
+            .order_by( Buy_ins.id.desc() ).first())
 
     def serialize(self):
         u = self.user
