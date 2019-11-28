@@ -1,7 +1,7 @@
 import os
 import requests
 from flask import Flask, request, jsonify, url_for, redirect, render_template
-from Models import Devices
+from models import Devices
 # from pyfcm import FCMNotification
 
 push_service = None

@@ -151,6 +151,7 @@ class Tournaments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(500), nullable=False)
     address = db.Column(db.String(200))
+    city = db.Column(db.String(50))
     state = db.Column(db.String(20))
     zip_code = db.Column(db.String(14))
     start_at = db.Column(db.DateTime)
