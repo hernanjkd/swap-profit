@@ -29,7 +29,8 @@ def send_email(type, to, data={}):
                 'to': to,
                 'subject': template['subject'],
                 'text': template['text'],
-                'html': template['html']})
+                'html': template['html']
+            })
         
         return r.status_code == 200
         
@@ -89,6 +90,7 @@ def send_fcm(type, user_id, data={}):
 
 
 def get_template_content(type, data={}, formats=None):
+    
     subjects = {
         'email_validation': 'Swap Profit: Email Validation',
         'swap_created': 'Swap Profit: You Have A New Swap',
