@@ -12,15 +12,14 @@ def attach(app):
     def register_user():
 
         body = request.get_json()
-        check_params(body, 'email', 'password')
+        check_params(body, 'email', 'password', 'device_token')
 
         # If user exists and failed to validate his account
         user = (Users.query
                 .filter_by( email=body['email'], password=sha256(body['password']) )
                 .first())
 
-        if user and user.valid == False:
-            
+        if user and user.valid == False:     
             data = {'validation_link': validation_link(user.id)}
             send_email( type='email_validation', to=user.email, data=data)
             
@@ -29,9 +28,14 @@ def attach(app):
         elif user and user.valid:
             raise APIException('User already exists', 405)
 
-        db.session.add(Users(
+        user = Users(
             email = body['email'],
             password = sha256(body['password'])
+        )
+        db.session.add(user)
+        db.session.add( Devices(
+            token = body['device_token'],
+            user = user
         ))
         db.session.commit()
 
