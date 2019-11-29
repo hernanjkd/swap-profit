@@ -11,6 +11,7 @@ def attach(app):
 
 
     @app.route('/populate_database')
+    @role_jwt_required(['admin'])
     def populate():
         run_seeds()
         return 'Seeds ran!'
