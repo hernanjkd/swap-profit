@@ -65,6 +65,11 @@ def role_jwt_required(valid_roles=['invalid']):
             if not valid:
                 raise Exception('Access denied', 401)
 
+            kwargs = {
+                **kwargs,
+                'user_id': get_jwt()['sub']
+            }
+
             return func(*args, **kwargs)
 
         # change wrapper name so it can be used for more than one function

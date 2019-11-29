@@ -623,4 +623,15 @@ def attach(app):
 
 
 
+    @app.route('/users/me/devices', methods=['POST'])
+    @role_jwt_required(['user'])
+    def add_device(user_id):
+
+        return str(user_id)
+
+
+
+
+
+
     return app
