@@ -14,20 +14,19 @@ from notifications import send_email
 def attach(app):
     
     
-    @app.route('/users/<id>/email', methods=['PUT'])
+    @app.route('/users/me/email', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_email(id):
-
-        if id == 'me':
-            id = str(get_jwt()['sub'])
-
-        if not id.isnumeric():
-            raise APIException('Invalid id: ' + id, 400)
+    def update_email(user_id):
 
         body = request.get_json()
         check_params(body, 'email', 'password', 'new_email')
 
-        user = Users.query.filter_by( id=int(id), email=body['email'], password=sha256(body['password']) ).first()
+        user = Users.query.filter_by( 
+            id=user_id, 
+            email=body['email'], 
+            password=sha256(body['password']) 
+        ).first()
+        
         if user is None:
             raise APIException('User not found', 404)
 
