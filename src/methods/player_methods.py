@@ -108,7 +108,7 @@ def attach(app):
     # id can be the user id, 'me' or 'all'
     @app.route('/profiles/<id>', methods=['GET'])
     @role_jwt_required(['user'])
-    def get_profiles(id, user_id):
+    def get_profiles(user_id, id):
         
         jwt_data = get_jwt()
 
@@ -251,7 +251,7 @@ def attach(app):
 
     @app.route('/me/buy_ins/<int:id>', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_buy_in(id, user_id):
+    def update_buy_in(user_id, id):
 
         body = request.get_json()
         check_params(body)
@@ -272,7 +272,7 @@ def attach(app):
 
     @app.route('/me/buy_ins/<int:id>/image', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_buyin_image(id, user_id):
+    def update_buyin_image(user_id, id):
 
         buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
         if buyin is None:
@@ -345,12 +345,10 @@ def attach(app):
 
     @app.route('/me/swaps', methods=['POST'])
     @role_jwt_required(['user'])
-    def create_swap():
-
-        id = get_jwt()['sub']
+    def create_swap(user_id):
 
         # get sender user
-        sender = Profiles.query.get(id)
+        sender = Profiles.query.get(user_id)
         if sender is None:
             raise APIException('User not found', 404)
 
@@ -364,7 +362,7 @@ def attach(app):
         if recipient is None:
             raise APIException('Recipient user not found', 404)
 
-        if Swaps.query.get((id, body['recipient_id'], body['tournament_id'])):
+        if Swaps.query.get((user_id, body['recipient_id'], body['tournament_id'])):
             raise APIException('Swap already exists, can not duplicate', 400)
 
         sender_availability = sender.available_percentage( body['tournament_id'] )
@@ -378,7 +376,7 @@ def attach(app):
                                 f'He has available to swap: {recipient_availability}%'), 400)
 
         db.session.add(Swaps(
-            sender_id = id,
+            sender_id = user_id,
             tournament_id = body['tournament_id'],
             recipient_id = body['recipient_id'],
             percentage = percentage
@@ -386,7 +384,7 @@ def attach(app):
         db.session.add(Swaps(
             sender_id = body['recipient_id'],
             tournament_id = body['tournament_id'],
-            recipient_id = id,
+            recipient_id = user_id,
             percentage = percentage
         ))
         db.session.commit()
@@ -418,12 +416,10 @@ def attach(app):
     # JSON receives a counter_percentage to update the swap of the recipient
     @app.route('/me/swaps', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_swap():
-
-        id = get_jwt()['sub']
+    def update_swap(user_id):
 
         # get sender user
-        sender = Profiles.query.get(id)
+        sender = Profiles.query.get(user_id)
         if sender is None:
             raise APIException('User not found', 404)
 
@@ -436,8 +432,8 @@ def attach(app):
             raise APIException('Recipient user not found', 404)
 
         # get swap
-        swap = Swaps.query.get((id, recipient.id, body['tournament_id']))
-        counter_swap = Swaps.query.get((recipient.id, id, body['tournament_id']))
+        swap = Swaps.query.get((user_id, recipient.id, body['tournament_id']))
+        counter_swap = Swaps.query.get((recipient.id, user_id, body['tournament_id']))
         if swap is None or counter_swap is None:
             raise APIException('Swap not found', 404)
 
@@ -498,9 +494,7 @@ def attach(app):
 
     @app.route('/swaps/me/tournament/<int:id>', methods=['GET'])
     @role_jwt_required(['user'])
-    def get_swaps_actions(id):
-
-        user_id = get_jwt()['sub']
+    def get_swaps_actions(user_id, id):
 
         prof = Profiles.query.get(user_id)
         if prof is None:
@@ -511,21 +505,19 @@ def attach(app):
 
 
 
-    @app.route('/users/me/swaps/<id>/done', methods=['PUT'])
+    @app.route('/users/me/swaps/done', methods=['PUT'])
     @role_jwt_required(['user'])
-    def set_swap_paid(id):
-
-        id = get_jwt()['sub']
+    def set_swap_paid(user_id):
 
         # get sender user
-        sender = Profiles.query.get(id)
+        sender = Profiles.query.get(user_id)
         if sender is None:
             raise APIException('User not found', 404)
 
         body = request.get_json()
         check_params(body, 'tournament_id', 'recipient_id')
 
-        swap = Swaps.query.get(id, body['recipient_id'], body['tournament_id'])
+        swap = Swaps.query.get(user_id, body['recipient_id'], body['tournament_id'])
 
         swap.paid = True
 
@@ -538,11 +530,9 @@ def attach(app):
 
     @app.route('/me/buy_ins', methods=['GET'])
     @role_jwt_required(['user'])
-    def get_buy_in():
+    def get_buy_in(user_id):
         
-        id = get_jwt()['sub']
-
-        buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
+        buyin = Buy_ins.query.filter_by(user_id=user_id).order_by(Buy_ins.id.desc()).first()
         if buyin is None:
             raise APIException('Buy_in not found', 404)
 
@@ -553,11 +543,9 @@ def attach(app):
 
     @app.route('/me/swap_tracker', methods=['GET'])
     @role_jwt_required(['user'])
-    def swap_tracker():
+    def swap_tracker(user_id):
 
-        id = get_jwt()['sub']
-
-        trmnts = Tournaments.get_live(user_id=id)
+        trmnts = Tournaments.get_live(user_id=user_id)
         if trmnts is None:
             raise APIException('You have not bought into any current tournaments', 404)
 
@@ -565,12 +553,12 @@ def attach(app):
 
         for trmnt in trmnts:
 
-            my_buyin = Buy_ins.get_latest( user_id=id, tournament_id=trmnt.id )
+            my_buyin = Buy_ins.get_latest( user_id=user_id, tournament_id=trmnt.id )
             if my_buyin is None:
                 raise APIException('Can not find buyin', 404)
 
             swaps = Swaps.query.filter_by(
-                sender_id = id,
+                sender_id = user_id,
                 tournament_id = trmnt.id
             )
             if swaps is None:
