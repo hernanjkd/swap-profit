@@ -109,7 +109,7 @@ def attach(app):
     @app.route('/profiles/<id>', methods=['GET'])
     @role_jwt_required(['user'])
     def get_profiles(id, user_id):
-        return str(id) + ' - ' + str(user_id)
+        
         jwt_data = get_jwt()
 
         if id == 'all':
@@ -135,9 +135,9 @@ def attach(app):
 
     @app.route('/profiles', methods=['POST'])
     @role_jwt_required(['user'])
-    def register_profile():
+    def register_profile(user_id):
 
-        user = Users.query.get(get_jwt()['sub'])
+        user = Users.query.get(user_id)
         if user is None:
             raise APIException('User not found', 404)
 
@@ -169,7 +169,7 @@ def attach(app):
         body = request.get_json()
         check_params(body)
 
-        update_table(prof, body, ignore=['profile_pic_url'], action=actions.update_user)
+        update_table(prof, body, ignore=['profile_pic_url'])
 
         db.session.commit()
 
@@ -180,9 +180,9 @@ def attach(app):
 
     @app.route('/profiles/image', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_profile_image():
+    def update_profile_image(user_id):
 
-        user = Users.query.get(get_jwt()['sub'])
+        user = Users.query.get(user_id)
         if user is None:
             raise APIException('User not found', 404)
 
@@ -215,19 +215,17 @@ def attach(app):
 
     @app.route('/me/buy_ins', methods=['POST'])
     @role_jwt_required(['user'])
-    def create_buy_in():
+    def create_buy_in(user_id):
 
         body = request.get_json()
         check_params(body, 'flight_id', 'chips', 'table', 'seat')
 
-        id = int(get_jwt()['sub'])
-
-        prof = Profiles.query.get(id)
+        prof = Profiles.query.get(user_id)
         if prof is None:
             raise APIException('User not found', 404)
 
         buyin = Buy_ins(
-            user_id = id,
+            user_id = user_id,
             flight_id = body['flight_id'],
             chips = body['chips'],
             table = body['table'],
@@ -239,7 +237,7 @@ def attach(app):
         name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
 
         buyin = Buy_ins.query.filter_by(
-            user_id = id,
+            user_id = user_id,
             flight_id = body['flight_id'],
             chips = body['chips'],
             table = body['table'],
@@ -253,12 +251,10 @@ def attach(app):
 
     @app.route('/me/buy_ins/<int:id>', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_buy_in(id):
+    def update_buy_in(id, user_id):
 
         body = request.get_json()
         check_params(body)
-
-        user_id = get_jwt()['sub']
 
         buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
 
@@ -276,9 +272,7 @@ def attach(app):
 
     @app.route('/me/buy_ins/<int:id>/image', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_buyin_image(id):
-
-        user_id = get_jwt()['sub']
+    def update_buyin_image(id, user_id):
 
         buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
         if buyin is None:
@@ -309,7 +303,7 @@ def attach(app):
 
         db.session.commit()
 
-        send_email(type='buyin_receipt', to='hernanjkd@gmail.com',#to=buyin.user.user.email,
+        send_email(type='buyin_receipt', to=buyin.user.user.email,
             data={
                 'receipt_url': buyin.receipt_img_url,
                 'tournament_name': buyin.flight.tournament.name,
@@ -345,19 +339,6 @@ def attach(app):
             return jsonify([x.serialize() for x in trmnt]), 200
 
         return jsonify(trmnt.serialize()), 200
-
-
-
-
-    @app.route('/swaps/<id>', methods=['GET'])
-    def get_swaps(id):
-
-        if id == 'all':
-            return jsonify([x.serialize() for x in Swaps.query.all()])
-
-        prof = Profiles.query.get(7)
-        return str(prof.available_percentage(1))
-        # return jsonify( [x.serialize() for x in Swaps.query.all()] )
 
 
 
