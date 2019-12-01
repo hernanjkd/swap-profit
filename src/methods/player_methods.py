@@ -17,7 +17,7 @@ def attach(app):
     @app.route('/users/me/email', methods=['PUT'])
     @role_jwt_required(['user'])
     def update_email(user_id):
-
+        
         body = request.get_json()
         check_params(body, 'email', 'password', 'new_email')
 
@@ -73,28 +73,26 @@ def attach(app):
 
 
 
-    @app.route('/users/<id>/password', methods=['PUT'])
+    @app.route('/users/me/password', methods=['PUT'])
     @role_jwt_required(['user'])
-    def reset_password(id):
-
-        if id == 'me':
-            id = str(get_jwt())['sub']
-
-        if not id.isnumeric():
-            raise APIException('Invalid id: ' + id, 400)
-
+    def reset_password(user_id):
 
         if request.args.get('forgot') == 'true':
             return jsonify({
                 'message': 'A link has been sent to your email to reset the password',
-                'link': os.environ.get('API_HOST') + '/users/reset_password/' + create_jwt({'id':id, 'role':'password'})
+                'link': os.environ.get('API_HOST') + '/users/reset_password/' + create_jwt({'id':user_id, 'role':'password'})
             }), 200
 
 
         body = request.get_json()
         check_params(body, 'email', 'password', 'new_password')
 
-        user = Users.query.filter_by( id=int(id), email=body['email'], password=sha256(body['password']) ).first()
+        user = Users.query.filter_by( 
+            id=user_id, 
+            email=body['email'], 
+            password=sha256(body['password'])
+        ).first()
+        
         if user is None:
             raise APIException('Invalid parameters', 400)
 
@@ -110,8 +108,8 @@ def attach(app):
     # id can be the user id, 'me' or 'all'
     @app.route('/profiles/<id>', methods=['GET'])
     @role_jwt_required(['user'])
-    def get_profiles(id):
-
+    def get_profiles(id, user_id):
+        return str(id) + ' - ' + str(user_id)
         jwt_data = get_jwt()
 
         if id == 'all':
@@ -121,7 +119,7 @@ def attach(app):
             return jsonify([x.serialize(long=True) for x in Profiles.query.all()]), 200
 
         if id == 'me':
-            id = str(jwt_data['sub'])
+            id = str(user_id)
 
         if not id.isnumeric():
             raise APIException('Invalid id: ' + id, 400)
@@ -160,17 +158,11 @@ def attach(app):
 
 
 
-    @app.route('/profiles/<id>', methods=['PUT'])
+    @app.route('/profiles/me', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_profile(id):
+    def update_profile(user_id):
 
-        if id == 'me':
-            id = str(get_jwt())['sub']
-
-        if not id.isnumeric():
-            raise APIException('Invalid id: ' + id, 400)
-
-        prof = Profiles.query.get(int(id))
+        prof = Profiles.query.get(user_id)
         if prof is None:
             raise APIException('User not found', 404)
 
