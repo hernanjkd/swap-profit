@@ -122,15 +122,10 @@ def attach(app):
 
 
 
-    @app.route('/swaps/<id>', methods=['GET'])
-    def get_swaps(id):
+    @app.route('/swaps/all', methods=['GET'])
+    def get_swaps():
 
-        if id == 'all':
-            return jsonify([x.serialize() for x in Swaps.query.all()])
-
-        prof = Profiles.query.get(int(id))
-        return str(prof.available_percentage(1))
-        # return jsonify( [x.serialize() for x in Swaps.query.all()] )
+        return jsonify([x.serialize() for x in Swaps.query.all()])
 
 
 
