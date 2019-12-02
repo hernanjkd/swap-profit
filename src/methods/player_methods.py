@@ -7,7 +7,7 @@ from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
-from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
+from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens, Devices
 from notifications import send_email
 
 
@@ -571,9 +571,16 @@ def attach(app):
     @role_jwt_required(['user'])
     def add_device(user_id):
 
-        session.add()
+        body = request.get_json()
+        check_params(body, 'token')
 
-        return str(user_id)
+        db.session.add(Devices(
+            user_id = user_id,
+            token = body['token']
+        ))
+        db.session.commit()
+
+        return jsonify({'message':'Device added successfully'})
 
 
 
