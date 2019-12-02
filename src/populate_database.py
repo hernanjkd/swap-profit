@@ -1,5 +1,5 @@
 # from flask_sqlalchemy import SQLAlchemy
-from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
+from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Coins
 from datetime import datetime, timedelta
 from utils import sha256
 

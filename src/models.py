@@ -13,7 +13,7 @@ class Users(db.Model):
 
     profile = db.relationship('Profiles', back_populates='user', uselist=False)
     transactions = db.relationship('Transactions', back_populates='user')
-    tokens = db.relationship('Tokens', back_populates='user')
+    coins = db.relationship('Coins', back_populates='user')
     devices = db.relationship('Devices', back_populates='user')
 
     def __repr__(self):
@@ -21,11 +21,11 @@ class Users(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id,
-            "email": self.email,
-            "valid": self.valid,
-            "created_at": "",
-            "updated_at": ""
+            'id': self.id,
+            'email': self.email,
+            'valid': self.valid,
+            'created_at': '',
+            'updated_at': ''
         }
 
 
@@ -74,21 +74,21 @@ class Profiles(db.Model):
 
     def serialize(self, long=False):
         json = {
-            "id": self.id,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "nickname": self.nickname,
-            "email": self.user.email,
-            "profile_pic_url": self.profile_pic_url,
-            "hendon_url": self.hendon_url,
-            "roi": self.roi
+            'id': self.id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'nickname': self.nickname,
+            'email': self.user.email,
+            'profile_pic_url': self.profile_pic_url,
+            'hendon_url': self.hendon_url,
+            'roi': self.roi
         }
         if long:
             return {
                 **json,
-                "valid": self.user.valid,
-                "created_at": "",
-                "updated_at": ""
+                'valid': self.user.valid,
+                'created_at': '',
+                'updated_at': ''
             }
         return json
 
@@ -116,31 +116,31 @@ class Swaps(db.Model):
     def serialize(self, long=False, sender=False, percentage=False):
         # Being used in Profiles method
         if percentage:
-            return {"percentage": self.percentage}
+            return {'percentage': self.percentage}
         if sender:
             return {
-                "recipient_id": self.recipient_id,
-                "tournament_id": self.tournament_id,
-                "due_at": self.due_at,
-                "winning_chips": self.winning_chips,
-                "status": self.status,
-                "paid": self.paid
+                'recipient_id': self.recipient_id,
+                'tournament_id': self.tournament_id,
+                'due_at': self.due_at,
+                'winning_chips': self.winning_chips,
+                'status': self.status,
+                'paid': self.paid
             }
         json = {
-            "tournament_id": self.tournament_id,
-            "percentage": self.percentage,
-            "winning_chips": self.winning_chips,
-            "due_at": self.due_at,
-            "status": self.status,
-            "sender_user": self.sender_user.serialize(),
-            "recipient_user": self.recipient_user.serialize()
+            'tournament_id': self.tournament_id,
+            'percentage': self.percentage,
+            'winning_chips': self.winning_chips,
+            'due_at': self.due_at,
+            'status': self.status,
+            'sender_user': self.sender_user.serialize(),
+            'recipient_user': self.recipient_user.serialize()
         }
         if long:
             return {
                 **json,
-                "paid": self.paid,
-                "created_at": "",
-                "updated_at": ""
+                'paid': self.paid,
+                'created_at': '',
+                'updated_at': ''
             }
         return json
 
@@ -177,16 +177,16 @@ class Tournaments(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id,
-            "name": self.name,
-            "address": self.address,
-            "start_at": self.start_at,
-            "end_at": self.end_at,
-            "longitude": self.longitude,
-            "latitude": self.latitude,
-            "created_at": "",
-            "updated_at": "",
-            "flights": [x.serialize() for x in self.flights]
+            'id': self.id,
+            'name': self.name,
+            'address': self.address,
+            'start_at': self.start_at,
+            'end_at': self.end_at,
+            'longitude': self.longitude,
+            'latitude': self.latitude,
+            'created_at': '',
+            'updated_at': '',
+            'flights': [x.serialize() for x in self.flights]
         }
 
 
@@ -207,18 +207,18 @@ class Flights(db.Model):
 
     def serialize(self, long=False):
         json = {
-            "id": self.id,
-            "tournament_id": self.tournament_id,
-            "tournament": self.tournament.name,
-            "start_at": self.start_at,
-            "end_at": self.end_at,
-            "day": self.day
+            'id': self.id,
+            'tournament_id': self.tournament_id,
+            'tournament': self.tournament.name,
+            'start_at': self.start_at,
+            'end_at': self.end_at,
+            'day': self.day
         }
         if long:
             return {
                 **json,
-                "created_at": "",
-                "updated_at": ""
+                'created_at': '',
+                'updated_at': ''
             }
         return json
 
@@ -251,16 +251,16 @@ class Buy_ins(db.Model):
     def serialize(self):
         u = self.user
         return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "flight_id": self.flight_id,
-            "tournament_id": self.flight.tournament_id,
-            "place": self.place,
-            "chips": self.chips,
-            "table": self.table,
-            "seat": self.seat,
-            "receipt_img_url": self.receipt_img_url,
-            "user_name": u.nickname if u.nickname else f'{u.first_name} {u.last_name}'
+            'id': self.id,
+            'user_id': self.user_id,
+            'flight_id': self.flight_id,
+            'tournament_id': self.flight.tournament_id,
+            'place': self.place,
+            'chips': self.chips,
+            'table': self.table,
+            'seat': self.seat,
+            'receipt_img_url': self.receipt_img_url,
+            'user_name': u.nickname if u.nickname else f'{u.first_name} {u.last_name}'
         }
 
 
@@ -279,31 +279,31 @@ class Transactions(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "amount_in_coins": self.amount_in_coins,
-            "amount_in_dollars": self.amount_in_dollars
+            'id': self.id,
+            'user_id': self.user_id,
+            'amount_in_coins': self.amount_in_coins,
+            'amount_in_dollars': self.amount_in_dollars
         }
 
 
 
-class Tokens(db.Model):
-    __tablename__ = 'tokens'
+class Coins(db.Model):
+    __tablename__ = 'coins'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     token = db.Column(db.String(256))
     expires_at = db.Column(db.DateTime)
 
-    user = db.relationship('Users', back_populates='tokens')
+    user = db.relationship('Users', back_populates='coins')
 
     def __repr__(self):
-        return f'<Tokens id:{self.id} user:{self.user_id}>'
+        return f'<Coins id:{self.id} user:{self.user_id}>'
 
     def serialize(self):
         return {
-            "user_id": self.user_id,
-            "token": self.token,
-            "expires_at": self.expires_at
+            'user_id': self.user_id,
+            'token': self.token,
+            'expires_at': self.expires_at
         }
 
 

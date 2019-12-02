@@ -1,7 +1,7 @@
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import Admin
 from models import (db, Users, Profiles, Tournaments, Flights, Swaps, Buy_ins,
-    Transactions, Tournaments, Tokens)
+    Transactions, Tournaments, Coins)
 # Flask and Flask-SQLAlchemy initialization here
 
 def SetupAdmin(app):
@@ -13,7 +13,7 @@ def SetupAdmin(app):
     admin.add_view(ModelView(Swaps, db.session))
     admin.add_view(ModelView(Buy_ins, db.session))
     admin.add_view(ModelView(Transactions, db.session))
-    admin.add_view(ModelView(Tokens, db.session))
+    admin.add_view(ModelView(Coins, db.session))
 
 
 
