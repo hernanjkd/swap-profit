@@ -138,8 +138,6 @@ def attach(app):
     def register_profile(user_id):
 
         user = Users.query.get(user_id)
-        if user is None:
-            raise APIException('User not found', 404)
 
         body = request.get_json()
         check_params(body, 'first_name', 'last_name')
@@ -163,8 +161,6 @@ def attach(app):
     def update_profile(user_id):
 
         prof = Profiles.query.get(user_id)
-        if prof is None:
-            raise APIException('User not found', 404)
 
         body = request.get_json()
         check_params(body)
@@ -183,8 +179,6 @@ def attach(app):
     def update_profile_image(user_id):
 
         user = Users.query.get(user_id)
-        if user is None:
-            raise APIException('User not found', 404)
 
         if 'image' not in request.files:
             raise APIException('Image property missing on the files array', 404)
@@ -221,8 +215,6 @@ def attach(app):
         check_params(body, 'flight_id', 'chips', 'table', 'seat')
 
         prof = Profiles.query.get(user_id)
-        if prof is None:
-            raise APIException('User not found', 404)
 
         buyin = Buy_ins(
             user_id = user_id,
@@ -349,8 +341,6 @@ def attach(app):
 
         # get sender user
         sender = Profiles.query.get(user_id)
-        if sender is None:
-            raise APIException('User not found', 404)
 
         body = request.get_json()
         check_params(body, 'tournament_id', 'recipient_id', 'percentage')
@@ -420,8 +410,6 @@ def attach(app):
 
         # get sender user
         sender = Profiles.query.get(user_id)
-        if sender is None:
-            raise APIException('User not found', 404)
 
         body = request.get_json()
         check_params(body, 'tournament_id', 'recipient_id')
@@ -497,8 +485,6 @@ def attach(app):
     def get_swaps_actions(user_id, id):
 
         prof = Profiles.query.get(user_id)
-        if prof is None:
-            raise APIException('User not found', 404)
 
         return jsonify(prof.get_swaps_actions(id))
 
@@ -511,8 +497,6 @@ def attach(app):
 
         # get sender user
         sender = Profiles.query.get(user_id)
-        if sender is None:
-            raise APIException('User not found', 404)
 
         body = request.get_json()
         check_params(body, 'tournament_id', 'recipient_id')
@@ -586,6 +570,8 @@ def attach(app):
     @app.route('/users/me/devices', methods=['POST'])
     @role_jwt_required(['user'])
     def add_device(user_id):
+
+        session.add()
 
         return str(user_id)
 

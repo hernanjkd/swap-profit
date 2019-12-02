@@ -65,9 +65,13 @@ def role_jwt_required(valid_roles=['invalid']):
             if not valid:
                 raise Exception('Access denied', 401)
 
+            user_id = get_jwt()['sub']
+            if not Users.query.get(user_id):
+                raise Exception('User not found', 404)
+
             kwargs = {
                 **kwargs,
-                'user_id': get_jwt()['sub']
+                'user_id': user_id
             }
 
             return func(*args, **kwargs)
