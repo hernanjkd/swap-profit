@@ -1,0 +1,16 @@
+<p>Your buy in receipt,</p>
+
+<ul>
+	<li>Tournament Name: {{ tournament_name }}</li>
+	<li>Date: {{ start_date }}</li>
+	<li>Chips: {{ chips }}</li>
+	<li>Seat: {{ seat }}</li>
+	<li>Table: {{ table }}</li>
+</ul>
+
+<img src="{{ receipt_url }}" />
+
+<p>
+	Click this link to see your receipt:<br />
+	{{ receipt_url }}
+</p>

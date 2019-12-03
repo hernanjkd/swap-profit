@@ -1,44 +1,44 @@
 
 import os
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
-from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
+from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Coins, Devices
+from notifications import send_email
 
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 
 def attach(app):
     
     
-    @app.route('/users/<id>/email', methods=['PUT'])
+    @app.route('/users/me/email', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_email(id):
-
-        if id == 'me':
-            id = str(get_jwt()['sub'])
-
-        if not id.isnumeric():
-            raise APIException('Invalid id: ' + id, 400)
-
+    def update_email(user_id):
+        
         body = request.get_json()
         check_params(body, 'email', 'password', 'new_email')
 
-        user = Users.query.filter_by( id=int(id), email=body['email'], password=sha256(body['password']) ).first()
+        user = Users.query.filter_by( 
+            id=user_id, 
+            email=body['email'], 
+            password=sha256(body['password']) 
+        ).first()
+        
         if user is None:
-            raise APIException('Invalid parameters', 400)
+            raise APIException('User not found', 404)
 
         user.valid = False
         user.email = body['new_email']
 
         db.session.commit()
 
-        return jsonify({
-            'message': 'Please verify your new email',
-            'validation_link': validation_link(user.id)
-        }), 200
+        send_email( type='email_validation', to=user.email, 
+            data={'validation_link': validation_link(user.id)} )
+
+        return jsonify({'message': 'Please verify your new email'}), 200
 
 
 
@@ -73,28 +73,26 @@ def attach(app):
 
 
 
-    @app.route('/users/<id>/password', methods=['PUT'])
+    @app.route('/users/me/password', methods=['PUT'])
     @role_jwt_required(['user'])
-    def reset_password(id):
-
-        if id == 'me':
-            id = str(get_jwt())['sub']
-
-        if not id.isnumeric():
-            raise APIException('Invalid id: ' + id, 400)
-
+    def reset_password(user_id):
 
         if request.args.get('forgot') == 'true':
             return jsonify({
                 'message': 'A link has been sent to your email to reset the password',
-                'link': os.environ.get('API_HOST') + '/users/reset_password/' + create_jwt({'id':id, 'role':'password'})
+                'link': os.environ.get('API_HOST') + '/users/reset_password/' + create_jwt({'id':user_id, 'role':'password'})
             }), 200
 
 
         body = request.get_json()
         check_params(body, 'email', 'password', 'new_password')
 
-        user = Users.query.filter_by( id=int(id), email=body['email'], password=sha256(body['password']) ).first()
+        user = Users.query.filter_by( 
+            id=user_id, 
+            email=body['email'], 
+            password=sha256(body['password'])
+        ).first()
+        
         if user is None:
             raise APIException('Invalid parameters', 400)
 
@@ -110,8 +108,8 @@ def attach(app):
     # id can be the user id, 'me' or 'all'
     @app.route('/profiles/<id>', methods=['GET'])
     @role_jwt_required(['user'])
-    def get_profiles(id):
-
+    def get_profiles(user_id, id):
+        
         jwt_data = get_jwt()
 
         if id == 'all':
@@ -121,7 +119,7 @@ def attach(app):
             return jsonify([x.serialize(long=True) for x in Profiles.query.all()]), 200
 
         if id == 'me':
-            id = str(jwt_data['sub'])
+            id = str(user_id)
 
         if not id.isnumeric():
             raise APIException('Invalid id: ' + id, 400)
@@ -137,11 +135,9 @@ def attach(app):
 
     @app.route('/profiles', methods=['POST'])
     @role_jwt_required(['user'])
-    def register_profile():
+    def register_profile(user_id):
 
-        user = Users.query.get(get_jwt()['sub'])
-        if user is None:
-            raise APIException('User not found', 404)
+        user = Users.query.get(user_id)
 
         body = request.get_json()
         check_params(body, 'first_name', 'last_name')
@@ -157,24 +153,19 @@ def attach(app):
 
         return jsonify({'message':'ok'}), 200
 
-    @app.route('/profiles/<id>', methods=['PUT'])
+      
+      
+      
+    @app.route('/profiles/me', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_profile(id):
+    def update_profile(user_id):
 
-        if id == 'me':
-            id = str(get_jwt())['sub']
-
-        if not id.isnumeric():
-            raise APIException('Invalid id: ' + id, 400)
-
-        prof = Profiles.query.get(int(id))
-        if prof is None:
-            raise APIException('User not found', 404)
+        prof = Profiles.query.get(user_id)
 
         body = request.get_json()
         check_params(body)
 
-        update_table(prof, body, ignore=['profile_pic_url'], action=actions.update_user)
+        update_table(prof, body, ignore=['profile_pic_url'])
 
         db.session.commit()
 
@@ -185,11 +176,9 @@ def attach(app):
 
     @app.route('/profiles/image', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_profile_image():
+    def update_profile_image(user_id):
 
-        user = Users.query.get(get_jwt()['sub'])
-        if user is None:
-            raise APIException('User not found', 404)
+        user = Users.query.get(user_id)
 
         if 'image' not in request.files:
             raise APIException('Image property missing on the files array', 404)
@@ -220,19 +209,15 @@ def attach(app):
 
     @app.route('/me/buy_ins', methods=['POST'])
     @role_jwt_required(['user'])
-    def create_buy_in():
+    def create_buy_in(user_id):
 
         body = request.get_json()
         check_params(body, 'flight_id', 'chips', 'table', 'seat')
 
-        id = int(get_jwt()['sub'])
-
-        prof = Profiles.query.get(id)
-        if prof is None:
-            raise APIException('User not found', 404)
+        prof = Profiles.query.get(user_id)
 
         buyin = Buy_ins(
-            user_id = id,
+            user_id = user_id,
             flight_id = body['flight_id'],
             chips = body['chips'],
             table = body['table'],
@@ -244,7 +229,7 @@ def attach(app):
         name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
 
         buyin = Buy_ins.query.filter_by(
-            user_id = id,
+            user_id = user_id,
             flight_id = body['flight_id'],
             chips = body['chips'],
             table = body['table'],
@@ -258,14 +243,12 @@ def attach(app):
 
     @app.route('/me/buy_ins/<int:id>', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_buy_in(id):
+    def update_buy_in(user_id, id):
 
         body = request.get_json()
         check_params(body)
 
-        user_id = get_jwt()['sub']
-
-        buyin = Buy_ins.query.get(id)
+        buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
 
         if buyin is None:
             raise APIException('Buy_in not found', 404)
@@ -273,7 +256,7 @@ def attach(app):
         update_table(buyin, body, ignore=['user_id','flight_id','receipt_img_url'])
 
         db.session.commit()
-
+        
         return jsonify(Buy_ins.query.get(id).serialize())
 
 
@@ -281,16 +264,14 @@ def attach(app):
 
     @app.route('/me/buy_ins/<int:id>/image', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_buyin_image(id):
-
-        user_id = get_jwt()['sub']
+    def update_buyin_image(user_id, id):
 
         buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
         if buyin is None:
             raise APIException('Buy_in not found', 404)
 
         if 'image' not in request.files:
-            raise APIException('Image property missing on the files array', 404)
+            raise APIException('Image property missing in the files array', 404)
 
         result = cloudinary.uploader.upload(
             request.files['image'],
@@ -302,16 +283,30 @@ def attach(app):
                 'width': 200, 'height': 200,
                 'crop': 'thumb', 'gravity': 'face',
                 'radius': 100
-            },
-            ],
-            tags=['buyin_picture','user_'+str(buyin.user_id),'buyin_'+str(buyin.id)]
+            }],
+            tags=[
+                'buyin_receipt',
+                f'user_{str(buyin.user_id)}',
+                f'buyin_{str(buyin.id)}'
+            ]
         )
 
         buyin.receipt_img_url = result['secure_url']
 
         db.session.commit()
 
-        return jsonify({'message':'ok'}), 200
+        send_email(type='buyin_receipt', to=buyin.user.user.email,
+            data={
+                'receipt_url': buyin.receipt_img_url,
+                'tournament_name': buyin.flight.tournament.name,
+                'start_date': buyin.flight.tournament.start_at,
+                'chips': buyin.chips,
+                'seat': buyin.seat,
+                'table': buyin.table
+            }
+        )
+
+        return jsonify({'message':'Image uploaded successfully'}), 200
 
 
 
@@ -340,66 +335,70 @@ def attach(app):
 
 
 
-    @app.route('/swaps/<id>', methods=['GET'])
-    def get_swaps(id):
-
-        if id == 'all':
-            return jsonify([x.serialize() for x in Swaps.query.all()])
-
-        prof = Profiles.query.get(7)
-        return str(prof.available_percentage(1))
-        # return jsonify( [x.serialize() for x in Swaps.query.all()] )
-
-
-
-
     @app.route('/me/swaps', methods=['POST'])
     @role_jwt_required(['user'])
-    def create_swap():
-
-        id = get_jwt()['sub']
+    def create_swap(user_id):
 
         # get sender user
-        sender = Profiles.query.get(id)
-        if sender is None:
-            raise APIException('User not found', 404)
+        sender = Profiles.query.get(user_id)
 
         body = request.get_json()
         check_params(body, 'tournament_id', 'recipient_id', 'percentage')
+
+        percentage = abs(body['percentage'])
 
         # get recipient user
         recipient = Profiles.query.get(body['recipient_id'])
         if recipient is None:
             raise APIException('Recipient user not found', 404)
 
-        if Swaps.query.get((id, body['recipient_id'], body['tournament_id'])):
+        if Swaps.query.get((user_id, body['recipient_id'], body['tournament_id'])):
             raise APIException('Swap already exists, can not duplicate', 400)
 
         sender_availability = sender.available_percentage( body['tournament_id'] )
-        if body['percentage'] > sender_availability:
+        if percentage > sender_availability:
             raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
                                 f'You have available: {sender_availability}%'), 400)
 
         recipient_availability = recipient.available_percentage( body['tournament_id'] )
-        if body['percentage'] > recipient_availability:
+        if percentage > recipient_availability:
             raise APIException(('Swap percentage too large for recipient. '
                                 f'He has available to swap: {recipient_availability}%'), 400)
 
         db.session.add(Swaps(
-            sender_id = id,
+            sender_id = user_id,
             tournament_id = body['tournament_id'],
             recipient_id = body['recipient_id'],
-            percentage = body['percentage']
+            percentage = percentage
         ))
         db.session.add(Swaps(
             sender_id = body['recipient_id'],
             tournament_id = body['tournament_id'],
-            recipient_id = id,
-            percentage = body['percentage']
+            recipient_id = user_id,
+            percentage = percentage
         ))
         db.session.commit()
 
-        return jsonify({'message':'ok'}), 200
+        trmnt = Tournaments.query.get(body['tournament_id'])
+
+        send_email( type='swap_created', to=sender.user.email,
+            data={
+                'percentage': percentage,
+                'recipient_firstname': recipient.first_name,
+                'recipient_lastname': recipient.last_name,
+                'recipient_email': recipient.user.email
+            }
+        )
+        send_email( type='swap_created', to=recipient.user.email,
+            data={
+                'percentage': percentage,
+                'recipient_firstname': sender.first_name,
+                'recipient_lastname': sender.last_name,
+                'recipient_email': sender.user.email
+            }
+        )
+
+        return jsonify({'message':'Swap created successfully.'}), 200
 
 
 
@@ -407,14 +406,10 @@ def attach(app):
     # JSON receives a counter_percentage to update the swap of the recipient
     @app.route('/me/swaps', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_swap():
-
-        id = get_jwt()['sub']
+    def update_swap(user_id):
 
         # get sender user
-        sender = Profiles.query.get(id)
-        if sender is None:
-            raise APIException('User not found', 404)
+        sender = Profiles.query.get(user_id)
 
         body = request.get_json()
         check_params(body, 'tournament_id', 'recipient_id')
@@ -425,8 +420,8 @@ def attach(app):
             raise APIException('Recipient user not found', 404)
 
         # get swap
-        swap = Swaps.query.get((id, recipient.id, body['tournament_id']))
-        counter_swap = Swaps.query.get((recipient.id, id, body['tournament_id']))
+        swap = Swaps.query.get((user_id, recipient.id, body['tournament_id']))
+        counter_swap = Swaps.query.get((recipient.id, user_id, body['tournament_id']))
         if swap is None or counter_swap is None:
             raise APIException('Swap not found', 404)
 
@@ -445,51 +440,68 @@ def attach(app):
                 raise APIException(('Swap percentage too large for recipient. '
                                     f'He has available to swap: {recipient_availability}%'), 400)
 
+            new_percentage = swap.percentage + percentage
+            new_counter_percentage = counter_swap.percentage + counter
+
             # So it can be updated correctly with the update_table funcion
-            body['percentage'] = swap.percentage + percentage
-            update_table(counter_swap, {'percentage': counter_swap.percentage + counter})
+            body['percentage'] = new_percentage
+            update_table(counter_swap, {
+                'percentage': new_counter_percentage
+            })
+
+            send_email( type='swap_created', to=sender.user.email,
+                data={
+                    'percentage': new_percentage,
+                    'counter_percentage': new_counter_percentage,
+                    'recipient_firstname': recipient.first_name,
+                    'recipient_lastname': recipient.last_name,
+                    'recipient_email': recipient.user.email
+                }
+            )
+            send_email( type='swap_created', to=recipient.user.email,
+                data={
+                    'percentage': new_counter_percentage,
+                    'counter_percentage': new_percentage,
+                    'recipient_firstname': sender.first_name,
+                    'recipient_lastname': sender.last_name,
+                    'recipient_email': sender.user.email
+                }
+            )
 
         update_table(swap, body, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
 
         db.session.commit()
 
-        return jsonify(swap.serialize())
+        return jsonify([
+            swap.serialize(),
+            counter_swap.serialize()
+        ])
 
 
 
 
     @app.route('/swaps/me/tournament/<int:id>', methods=['GET'])
     @role_jwt_required(['user'])
-    def get_swaps_actions(id):
-
-        user_id = get_jwt()['sub']
+    def get_swaps_actions(user_id, id):
 
         prof = Profiles.query.get(user_id)
-        if prof is None:
-            raise APIException('User not found', 404)
 
         return jsonify(prof.get_swaps_actions(id))
 
 
 
 
-
-
-    @app.route('/users/me/swaps/<id>/done', methods=['PUT'])
+    @app.route('/users/me/swaps/done', methods=['PUT'])
     @role_jwt_required(['user'])
-    def set_swap_paid(id):
-
-        id = get_jwt()['sub']
+    def set_swap_paid(user_id):
 
         # get sender user
-        sender = Profiles.query.get(id)
-        if sender is None:
-            raise APIException('User not found', 404)
+        sender = Profiles.query.get(user_id)
 
         body = request.get_json()
         check_params(body, 'tournament_id', 'recipient_id')
 
-        swap = Swaps.query.get(id, body['recipient_id'], body['tournament_id'])
+        swap = Swaps.query.get(user_id, body['recipient_id'], body['tournament_id'])
 
         swap.paid = True
 
@@ -502,11 +514,9 @@ def attach(app):
 
     @app.route('/me/buy_ins', methods=['GET'])
     @role_jwt_required(['user'])
-    def get_buy_in():
+    def get_buy_in(user_id):
         
-        id = get_jwt()['sub']
-
-        buyin = Buy_ins.query.filter_by(user_id=id).order_by(Buy_ins.id.desc()).first()
+        buyin = Buy_ins.query.filter_by(user_id=user_id).order_by(Buy_ins.id.desc()).first()
         if buyin is None:
             raise APIException('Buy_in not found', 404)
 
@@ -517,11 +527,9 @@ def attach(app):
 
     @app.route('/me/swap_tracker', methods=['GET'])
     @role_jwt_required(['user'])
-    def swap_tracker():
+    def swap_tracker(user_id):
 
-        id = get_jwt()['sub']
-
-        trmnts = Tournaments.get_live(user_id=id)
+        trmnts = Tournaments.get_live(user_id=user_id)
         if trmnts is None:
             raise APIException('You have not bought into any current tournaments', 404)
 
@@ -529,12 +537,12 @@ def attach(app):
 
         for trmnt in trmnts:
 
-            my_buyin = Buy_ins.get_latest( user_id=id, tournament_id=trmnt.id )
+            my_buyin = Buy_ins.get_latest( user_id=user_id, tournament_id=trmnt.id )
             if my_buyin is None:
                 raise APIException('Can not find buyin', 404)
 
             swaps = Swaps.query.filter_by(
-                sender_id = id,
+                sender_id = user_id,
                 tournament_id = trmnt.id
             )
             if swaps is None:
@@ -544,7 +552,7 @@ def attach(app):
                 'swap': swap.serialize(),
                 'buyin': (Buy_ins.get_latest(
                                 user_id = swap.recipient_id,
-                                tournament_id=trmnt.id
+                                tournament_id = trmnt.id
                             ).serialize())
             } for swap in swaps]
 
@@ -555,6 +563,44 @@ def attach(app):
             })
         
         return jsonify(list_of_swap_trackers)
+
+
+
+
+    @app.route('/users/me/devices', methods=['POST'])
+    @role_jwt_required(['user'])
+    def add_device(user_id):
+
+        body = request.get_json()
+        check_params(body, 'token')
+
+        db.session.add(Devices(
+            user_id = user_id,
+            token = body['token']
+        ))
+        db.session.commit()
+
+        return jsonify({'message':'Device added successfully'})
+
+
+
+
+    # @app.route('/users/me/transaction', methods=['POST'])
+    # @role_jwt_required(['user'])
+    # def add_coins(user_id):
+
+    #     body = request.get_json()
+    #     check_params(body, 'amount', 'token')
+        
+    #     for x in body['amount']:
+    #         db.session.add( Coins(
+    #             user_id = user_id,
+    #             token = body['token'],
+    #             expires_at = ''
+    #         ))
+
+
+
 
 
 
