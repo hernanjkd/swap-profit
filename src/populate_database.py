@@ -8,7 +8,7 @@ from utils import sha256
 def run_seeds():
 
 
-    Tokens.query.delete()
+    Coins.query.delete()
     Transactions.query.delete()
     Buy_ins.query.delete()
     Swaps.query.delete()
