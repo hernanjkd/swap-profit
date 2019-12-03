@@ -1,0 +1,43 @@
+{
+  "addons": [
+    "heroku-postgresql"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "API_URL": {
+      "required": true
+    },
+    "DATABASE_URL": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "name": "api",
+  "scripts": {
+      "postdeploy": "pipenv run migrate"
+  },
+  "stack": "heroku-18",
+  "environments": {
+    "test": {
+        "addons": ["heroku-postgresql:in-dyno"],
+        "scripts": {
+            "test": "pipenv run tests"
+        }
+    },
+    "review": {
+        "addons": ["heroku-postgresql:in-dyno"],
+        "scripts": {
+            "test": "pipenv run tests",
+            "postdeploy": "pipenv run migrate && pipenv run seed"
+        }
+    }
+  }
+}
