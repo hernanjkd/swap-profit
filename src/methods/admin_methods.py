@@ -95,7 +95,7 @@ def attach(app):
 
     @app.route('/flights/<int:id>', methods=['DELETE'])
     @role_jwt_required(['admin'])
-    def delete_flight(id):
+    def delete_flight(user_id, id):
         db.session.delete( Flights.query.get(id) )
         db.session.commit()
         return jsonify({'message':'Flight deleted'}), 200
@@ -105,7 +105,7 @@ def attach(app):
 
     @app.route('/tournaments/<int:id>', methods=['DELETE'])
     @role_jwt_required(['admin'])
-    def delete_tournament(id):
+    def delete_tournament(user_id, id):
         db.session.delete( Tournaments.query.get(id) )
         db.session.commit()
         return jsonify({'message':'Tournament deleted'}), 200
@@ -115,7 +115,7 @@ def attach(app):
 
     @app.route('/buy_ins/<int:id>', methods=['DELETE'])
     @role_jwt_required(['admin'])
-    def delete_buy_in(id):
+    def delete_buy_in(user_id, id):
         db.session.delete( Buy_ins.query.get(id) )
         db.session.commit()
         return jsonify({'message':'Buy in deleted'}), 200
@@ -125,7 +125,7 @@ def attach(app):
 
     @app.route('/swaps', methods=['DELETE'])
     @role_jwt_required(['admin'])
-    def delete_swap():
+    def delete_swap(user_id):
         body = request.get_json()
         db.session.delete( Swaps.query.get(body['sender_id'], body['recipient_id'], body['tournament_id']) )
         db.session.commit()
@@ -136,7 +136,7 @@ def attach(app):
 
     @app.route('/devices/<int:id>', methods=['DELETE'])
     @role_jwt_required(['admin'])
-    def delete_device():
+    def delete_device(user_id, id):
         body = request.get_json()
         db.session.delete()
         db.session.commit()
