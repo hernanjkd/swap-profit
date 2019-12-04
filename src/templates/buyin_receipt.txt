@@ -1,0 +1,3 @@
+Your buy in receipt:
+
+{{ receipt_url }}

@@ -1,6 +1,7 @@
 import os
 import requests
 from flask import Flask, request, jsonify, url_for, redirect, render_template
+from models import Devices
 # from pyfcm import FCMNotification
 
 push_service = None
@@ -9,6 +10,8 @@ if(FIREBASE_KEY and FIREBASE_KEY != ''):
     push_service = FCMNotification(api_key=FIREBASE_KEY)
 
 EMAIL_NOTIFICATIONS_ENABLED = os.environ.get('EMAIL_NOTIFICATIONS_ENABLED')
+
+
 
 def send_email(type, to, data={}):
     
@@ -26,11 +29,14 @@ def send_email(type, to, data={}):
                 'to': to,
                 'subject': template['subject'],
                 'text': template['text'],
-                'html': template['html']})
+                'html': template['html']
+            })
         
         return r.status_code == 200
         
     return False
+
+
 
 def send_sms(type, phone_number, data={}):
 
@@ -48,44 +54,48 @@ def send_sms(type, phone_number, data={}):
                     )
 
 
-def send_fcm(type, registration_ids, data={}):
-    if(len(registration_ids) > 0 and push_service):
-        template = get_template_content(type, data, ['email', 'fms'])
 
-        if 'fms' not in template:
-            raise APIException(
-                f'The template {type} does not seem to have a valid FMS version')
+def send_fcm(type, user_id, data={}):
+    
+    devices = Devices.query.filter_by( user_id = user_id )
+    registration_ids = [device.token for device in devices]
 
-        message_title = template['subject']
-        message_body = template['fms']
-        if 'DATA' not in data:
-            raise Exception('There is no data for the notification')
-        message_data = data['DATA']
-
-        result = push_service.notify_multiple_devices(
-            registration_ids=registration_ids,
-            message_title=message_title,
-            message_body=message_body,
-            data_message=message_data)
-
-        # if(result['failure'] or not result['success']):
-        #     raise APIException('Problem sending the notification')
-
-        return result
-    else:
+    if(len(registration_ids) == 0 or push_service is None):
         return False
+    
+    template = get_template_content(type, data, ['fms'])
 
+    if 'fms' not in template:
+        raise APIException(
+            f'The template {type} does not seem to have a valid FMS version')
 
-def send_fcm_notification(type, user_id, data={}):
-    device_set = FCMDevice.objects.filter(user=user_id)
-    registration_ids = [device.registration_id for device in device_set]
-    send_fcm(type, registration_ids, data)
+    message_title = template['subject']
+    message_body = template['fms']
+    if 'data' not in data:
+        raise Exception('There is no data for the notification')
+    message_data = data['data']
+
+    result = push_service.notify_multiple_devices(
+        registration_ids=registration_ids,
+        message_title=message_title,
+        message_body=message_body,
+        data_message=message_data
+    )
+
+    if(result['failure'] or not result['success']):
+        raise Exception('Problem sending the notification')
+
+    return result
+    
 
 
 def get_template_content(type, data={}, formats=None):
+    
     subjects = {
-        'test': 'Welcome to Swap Profit',
-        'email_validation': 'Swap Profit: Email Validation'
+        'email_validation': 'Swap Profit: Email Validation',
+        'swap_created': 'Swap Profit: You Have A New Swap',
+        'buyin_receipt': 'Swap Profit: Your Buy In Receipt',
+        'account_created': 'Swap Profit: Welcome to Swap Profit'
     }
 
     con = {

@@ -3,7 +3,7 @@ from flask import request, jsonify, render_template
 from flask_cors import CORS
 from flask_jwt_simple import JWTManager, create_jwt, decode_jwt, get_jwt
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
-from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Tokens
+from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Coins
 from notifications import send_email
 
 def attach(app):
@@ -12,15 +12,14 @@ def attach(app):
     def register_user():
 
         body = request.get_json()
-        check_params(body, 'email', 'password')
+        check_params(body, 'email', 'password', 'device_token')
 
         # If user exists and failed to validate his account
         user = (Users.query
                 .filter_by( email=body['email'], password=sha256(body['password']) )
                 .first())
 
-        if user and user.valid == False:
-            
+        if user and user.valid == False:     
             data = {'validation_link': validation_link(user.id)}
             send_email( type='email_validation', to=user.email, data=data)
             
@@ -29,16 +28,21 @@ def attach(app):
         elif user and user.valid:
             raise APIException('User already exists', 405)
 
-        db.session.add(Users(
+        user = Users(
             email = body['email'],
             password = sha256(body['password'])
+        )
+        db.session.add(user)
+        db.session.add( Devices(
+            token = body['device_token'],
+            user = user
         ))
         db.session.commit()
 
         user = Users.query.filter_by(email=body['email']).first()
 
-        data = {'validation_link': validation_link(user.id)}
-        send_email( type='email_validation', to=user.email, data=data)
+        send_email( type='email_validation', to=user.email, 
+            data={'validation_link': validation_link(user.id)} )
 
         return jsonify({'message': 'Please verify your email'}), 200
 
@@ -53,10 +57,10 @@ def attach(app):
 
         user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
 
-        if not user:
+        if user is None:
             raise APIException('The log in information is incorrect', 401)
 
-        if not user.valid:
+        if user.valid == False:
             raise APIException('Email not validated', 405)
 
         return jsonify({
@@ -79,21 +83,16 @@ def attach(app):
             raise APIException('Incorrect token', 400)
 
         user = Users.query.filter_by(id = jwt_data['sub']).first()
-        if not user:
+        if user is None:
             raise APIException('Invalid key payload', 400)
 
-        if not user.valid:
+        if user.valid == False:
             user.valid = True
             db.session.commit()
 
-        return jsonify({
-            'message': 'Your email has been validated',
-            'jwt': create_jwt({
-                'id': jwt_data['sub'],
-                'role': 'user',
-                'exp': 600000
-            })
-        }), 200
+        send_email(type='account_created', to=user.email)
+
+        return render_template('email_validated_success.html')
 
 
 
