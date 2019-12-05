@@ -8,7 +8,7 @@ If you are using gitpod that project gets automatically configured.
 3. Apply the migrations: `$ pipenv run upgrade`.
 4. Run the project.
 
-# Runnin the application
+# Running the application
 
 WELCOME GEEK! 🐍 + 💻 = 🤓
 
