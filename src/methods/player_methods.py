@@ -314,7 +314,7 @@ def attach(app):
     # Can search by id, 'name' or 'all'
     @app.route('/tournaments/<id>', methods=['GET'])
     @role_jwt_required(['user'])
-    def get_tournaments(id):
+    def get_tournaments(user_id, id):
 
         if id == 'all':
             return jsonify([x.serialize() for x in Tournaments.query.all()]), 200
@@ -598,9 +598,6 @@ def attach(app):
     #             token = body['token'],
     #             expires_at = ''
     #         ))
-
-
-
 
 
 
