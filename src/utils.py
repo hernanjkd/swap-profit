@@ -68,7 +68,7 @@ def role_jwt_required(valid_roles=['invalid']):
 
             user_id = get_jwt()['sub']
             if not Users.query.get(user_id):
-                raise APIException('User not found with id: '+user_id, 404)
+                raise APIException('User not found with id: '+str(user_id), 404)
 
             kwargs = {
                 **kwargs,
