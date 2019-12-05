@@ -20,7 +20,8 @@ def run_seeds():
 
     lou = Users(
         email='lou@gmail.com',
-        password=sha256('loustadler')
+        password=sha256('loustadler'),
+        valid=True
     )
     db.session.add(lou)
     lou = Profiles(
@@ -29,14 +30,14 @@ def run_seeds():
         nickname='Lou',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=207424',
         profile_pic_url='https://pokerdb.thehendonmob.com/pictures/Lou_Stadler_Winner.JPG',
-        valid=True,
         user=lou
     )
     db.session.add(lou)
 
     cary = Users(
         email='katz234@gmail.com',
-        password=sha256('carykatz')
+        password=sha256('carykatz'),
+        valid=True
     )
     db.session.add(cary)
     cary = Profiles(
@@ -45,14 +46,14 @@ def run_seeds():
         nickname='',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=26721',
         profile_pic_url='https://pokerdb.thehendonmob.com/pictures/carykatzpic.png',
-        valid=True,
         user=cary
     )
     db.session.add(cary)
 
     kate = Users(
         email='hoang28974@gmail.com',
-        password=sha256('kateHoang')
+        password=sha256('kateHoang'),
+        valid=True
     )
     db.session.add(kate)
     kate = Profiles(
@@ -61,14 +62,14 @@ def run_seeds():
         nickname='',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=421758',
         profile_pic_url='https://pokerdb.thehendonmob.com/pictures/Hoang_2.jpg',
-        valid=True,
         user=kate
     )
     db.session.add(kate)
 
     nikita = Users(
         email='mikitapoker@gmail.com',
-        password=sha256('nikitapoker')
+        password=sha256('nikitapoker'),
+        valid=True
     )
     db.session.add(nikita)
     nikita = Profiles(
@@ -77,7 +78,6 @@ def run_seeds():
         nickname='Mikita',
         hendon_url='https://pokerdb.thehendonmob.com/player.php?a=r&n=159100',
         profile_pic_url='https://pokerdb.thehendonmob.com/pictures/NikitaBadz18FRh.jpg',
-        valid=True,
         user=nikita
     )
     db.session.add(nikita)
@@ -184,7 +184,6 @@ def run_seeds():
         sender_user=lou,
         recipient_user=cary,
         percentage=10,
-        winning_chips=None,
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -193,7 +192,6 @@ def run_seeds():
         sender_user=cary,
         recipient_user=lou,
         percentage=10,
-        winning_chips=None,
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -202,7 +200,6 @@ def run_seeds():
         sender_user=nikita,
         recipient_user=kate,
         percentage=15,
-        winning_chips=None,
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -211,7 +208,6 @@ def run_seeds():
         sender_user=kate,
         recipient_user=nikita,
         percentage=15,
-        winning_chips=None,
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -220,7 +216,6 @@ def run_seeds():
         sender_user=lou,
         recipient_user=kate,
         percentage=5,
-        winning_chips=None,
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -229,7 +224,6 @@ def run_seeds():
         sender_user=kate,
         recipient_user=lou,
         percentage=5,
-        winning_chips=None,
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -238,7 +232,6 @@ def run_seeds():
         sender_user=lou,
         recipient_user=cary,
         percentage=10,
-        winning_chips=None,
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -247,7 +240,6 @@ def run_seeds():
         sender_user=cary,
         recipient_user=lou,
         percentage=10,
-        winning_chips=None,
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -256,7 +248,6 @@ def run_seeds():
         sender_user=nikita,
         recipient_user=kate,
         percentage=15,
-        winning_chips=None,
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -265,7 +256,6 @@ def run_seeds():
         sender_user=kate,
         recipient_user=nikita,
         percentage=15,
-        winning_chips=None,
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -274,7 +264,6 @@ def run_seeds():
         sender_user=lou,
         recipient_user=kate,
         percentage=5,
-        winning_chips=None,
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -283,7 +272,6 @@ def run_seeds():
         sender_user=kate,
         recipient_user=lou,
         percentage=5,
-        winning_chips=None,
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -292,7 +280,6 @@ def run_seeds():
         sender_user=lou,
         recipient_user=cary,
         percentage=10,
-        winning_chips=10000,
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
@@ -301,7 +288,6 @@ def run_seeds():
         sender_user=cary,
         recipient_user=lou,
         percentage=10,
-        winning_chips=500,
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
@@ -310,7 +296,6 @@ def run_seeds():
         sender_user=nikita,
         recipient_user=kate,
         percentage=15,
-        winning_chips=100,
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
@@ -319,7 +304,6 @@ def run_seeds():
         sender_user=kate,
         recipient_user=nikita,
         percentage=15,
-        winning_chips=0,
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
@@ -328,7 +312,6 @@ def run_seeds():
         sender_user=cary,
         recipient_user=kate,
         percentage=5,
-        winning_chips=500,
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
@@ -337,7 +320,6 @@ def run_seeds():
         sender_user=kate,
         recipient_user=cary,
         percentage=5,
-        winning_chips=0,
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 

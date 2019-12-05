@@ -12,7 +12,7 @@ def attach(app):
 
     @app.route('/populate_database')
     @role_jwt_required(['admin'])
-    def populate():
+    def populate(user_id):
         run_seeds()
         return 'Seeds ran!'
 
