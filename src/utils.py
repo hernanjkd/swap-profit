@@ -64,11 +64,11 @@ def role_jwt_required(valid_roles=['invalid']):
                     valid = True
 
             if not valid:
-                raise Exception('Access denied', 401)
+                raise APIException('Access denied', 401)
 
             user_id = get_jwt()['sub']
             if not Users.query.get(user_id):
-                raise Exception('User not found', 404)
+                raise APIException('User not found with id: '+user_id, 404)
 
             kwargs = {
                 **kwargs,

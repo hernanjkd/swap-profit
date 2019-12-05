@@ -122,14 +122,12 @@ class Swaps(db.Model):
                 'recipient_id': self.recipient_id,
                 'tournament_id': self.tournament_id,
                 'due_at': self.due_at,
-                'winning_chips': self.winning_chips,
                 'status': self.status,
                 'paid': self.paid
             }
         json = {
             'tournament_id': self.tournament_id,
             'percentage': self.percentage,
-            'winning_chips': self.winning_chips,
             'due_at': self.due_at,
             'status': self.status,
             'sender_user': self.sender_user.serialize(),
@@ -180,6 +178,9 @@ class Tournaments(db.Model):
             'id': self.id,
             'name': self.name,
             'address': self.address,
+            'city': self.city,
+            'state': self.state,
+            'zip_code': self.zip_code,
             'start_at': self.start_at,
             'end_at': self.end_at,
             'longitude': self.longitude,
