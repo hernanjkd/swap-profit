@@ -533,7 +533,7 @@ def attach(app):
         if trmnts is None:
             raise APIException('You have not bought into any current tournaments', 404)
 
-        list_of_swap_trackers = []
+        live_swaps_buyins = []
 
         for trmnt in trmnts:
 
@@ -556,13 +556,16 @@ def attach(app):
                             ).serialize())
             } for swap in swaps]
 
-            list_of_swap_trackers.append({
+            live_swaps_buyins.append({
                 'tournament': trmnt.serialize(),
                 'my_buyin': my_buyin.serialize(),
                 'swaps': swaps
             })
         
-        return jsonify(list_of_swap_trackers)
+        return jsonify({
+            'live': live_swaps_buyins,
+            'upcoming': ''
+        })
 
 
 

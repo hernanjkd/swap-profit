@@ -214,7 +214,7 @@ class Flights(db.Model):
             'start_at': self.start_at,
             'end_at': self.end_at,
             'day': self.day,
-            'buy_ins': [x.serialize() for x in buy_ins]
+            'buy_ins': [x.serialize() for x in self.buy_ins]
         }
         if long:
             return {
