@@ -543,22 +543,22 @@ def attach(app):
                     sender_id = user_id,
                     tournament_id = trmnt.id
                 )
-                if swaps is None:
-                    return jsonify({'message':'You have no live swaps in this tournament'})
+
+                swaps_buyins = [{
+                    'swap': swap.serialize(),
+                    'buyin': Buy_ins.get_latest(
+                                user_id = swap.recipient_id,
+                                tournament_id = trmnt.id
+                            ).serialize()
+                } for swap in swaps]
 
                 swap_trackers.append({
                     'tournament': trmnt.serialize(),
                     'my_buyin': my_buyin.serialize(),
-                    'swaps': [{
-                        'swap': swap.serialize(),
-                        'buyin': Buy_ins.get_latest(
-                                    user_id = swap.recipient_id,
-                                    tournament_id = trmnt.id
-                                ).serialize()
-                    } for swap in swaps]
+                    'swaps': swaps_buyins
                 })
 
-        return jsonify({ swap_trackers })
+        return jsonify( swap_trackers )
 
 
 
