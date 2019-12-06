@@ -8,6 +8,7 @@ from sqlalchemy import desc, asc
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Coins, Devices
 from notifications import send_email
+from datetime import datetime
 
 
 def attach(app):
@@ -316,7 +317,17 @@ def attach(app):
     def get_tournaments(user_id, id):
 
         if id == 'all':
-            trmnts = Tournaments.query.order_by( Tournaments.start_at.asc() ).all()
+            now = datetime.utcnow()
+            
+            if request.args.get('history') == 'true':
+                trmnts = Tournaments.query \
+                            .filter( Tournaments.end_at < now )
+                            .order_by( Tournaments.start_at.desc() )
+            else:
+                trmnts = Tournaments.query \
+                            .filter( Tournaments.end_at > now )
+                            .order_by( Tournaments.start_at.asc() )
+                            
             return jsonify([x.serialize() for x in trmnts]), 200
 
         if id.isnumeric():
