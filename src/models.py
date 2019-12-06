@@ -213,7 +213,8 @@ class Flights(db.Model):
             'tournament': self.tournament.name,
             'start_at': self.start_at,
             'end_at': self.end_at,
-            'day': self.day
+            'day': self.day,
+            'buy_ins': [x.serialize() for x in buy_ins]
         }
         if long:
             return {
