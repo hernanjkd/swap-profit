@@ -69,9 +69,6 @@ class Profiles(db.Model):
             'swaps': swaps
         }
 
-    def testing(self):
-        return jsonify({'msg':'working'})
-
     def serialize(self, long=False):
         json = {
             'id': self.id,
@@ -113,8 +110,11 @@ class Swaps(db.Model):
             + f'recipient_email:{self.recipient_user.user.email} '
             + f'tournament:{self.tournament.name}>')
 
+    def get_counterswap(self):
+        swap = Swaps.query.get((recipient_id, sender_id, tournament_id))
+        return swap.serialize(percentage=True)
+
     def serialize(self, long=False, sender=False, percentage=False):
-        # Being used in Profiles method
         if percentage:
             return {'percentage': self.percentage}
         if sender:
@@ -213,7 +213,8 @@ class Flights(db.Model):
             'tournament': self.tournament.name,
             'start_at': self.start_at,
             'end_at': self.end_at,
-            'day': self.day
+            'day': self.day,
+            'buy_ins': [x.serialize() for x in buy_ins]
         }
         if long:
             return {
