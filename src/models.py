@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc
+from sqlalchemy import asc, desc
 from datetime import datetime
 
 db = SQLAlchemy()
@@ -164,14 +164,15 @@ class Tournaments(db.Model):
         return f'<Tournament {self.name}>'
 
     @staticmethod
-    def get_live(user_id):
+    def get_live_upcoming(user_id):
         now = datetime.utcnow()
         trmnts = (Tournaments.query
-                    .filter( Tournaments.start_at < now )
                     .filter( Tournaments.end_at > now )
                     .filter( Tournaments.flights.any( 
-                        Flights.buy_ins.any( user_id = user_id )) ))
+                        Flights.buy_ins.any( user_id = user_id )))
+                    .order_by( Tournaments.start_at.asc() ))
         return trmnts if trmnts.count() > 0 else None
+
 
     def serialize(self):
         return {
