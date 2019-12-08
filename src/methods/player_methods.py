@@ -321,11 +321,11 @@ def attach(app):
             
             if request.args.get('history') == 'true':
                 trmnts = Tournaments.query \
-                            .filter( Tournaments.end_at < now )
+                            .filter( Tournaments.end_at < now ) \
                             .order_by( Tournaments.start_at.desc() )
             else:
                 trmnts = Tournaments.query \
-                            .filter( Tournaments.end_at > now )
+                            .filter( Tournaments.end_at > now ) \
                             .order_by( Tournaments.start_at.asc() )
                             
             return jsonify([x.serialize() for x in trmnts]), 200

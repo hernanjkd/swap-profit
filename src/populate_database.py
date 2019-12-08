@@ -254,7 +254,7 @@ def run_seeds():
         tournament=live,
         sender_user=cary,
         recipient_user=lou,
-        percentage=10,
+        percentage=9,
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -404,10 +404,9 @@ def run_seeds():
 
     db.session.add(Swaps(
         tournament=live,
-        sender_user=lou,
+        sender_user=kate,
         recipient_user=cary,
         percentage=10,
-        winning_chips=None,
         due_at=(live.end_at + timedelta(days=4)),
         status='incoming'
     ))
@@ -415,9 +414,8 @@ def run_seeds():
     db.session.add(Swaps(
         tournament=live,
         sender_user=cary,
-        recipient_user=lou,
-        percentage=10,
-        winning_chips=None,
+        recipient_user=kate,
+        percentage=5,
         due_at=(live.end_at + timedelta(days=4)),
         status='pending'
     ))
@@ -490,12 +488,11 @@ def run_seeds():
     #   AGREED SWAPS
     #####################
 
-    db.session.add (Swaps
+    db.session.add(Swaps(
         tournament=newvegas,
         sender_user=lou,
         recipient_user=cary,
         percentage=8,
-        winning_chips=None,
         due_at=(newvegas.end_at + timedelta(days=4)),
         status='agreed'
 
@@ -505,8 +502,7 @@ def run_seeds():
         tournament= newvegas,
         sender_user=cary,
         recipient_user=lou,
-        percentage=8,
-        winning_chips=None,
+        percentage=2,
         due_at=(newvegas.end_at + timedelta(days=4))
     ))
 
@@ -514,12 +510,11 @@ def run_seeds():
     #   REJECTED SWAPS
     ######################
 
-    db.session.add (Swaps
+    db.session.add(Swaps(
         tournament=newvegas,
         sender_user=lou,
         recipient_user=nikita,
         percentage=40,
-        winning_chips=None,
         due_at=(newvegas.end_at + timedelta(days=4)),
         status='rejected'
 
@@ -530,7 +525,6 @@ def run_seeds():
         sender_user=nikita,
         recipient_user=lou,
         percentage=40,
-        winning_chips=None,
         due_at=(newvegas.end_at + timedelta(days=4)),
         status='rejected'
 
@@ -540,12 +534,11 @@ def run_seeds():
     #   CANCELED SWAPS
     #####################
 
-    db.session.add (Swaps
+    db.session.add(Swaps(
         tournament=live,
         sender_user=lou,
         recipient_user=nikita,
         percentage=20,
-        winning_chips=None,
         due_at=(live.end_at + timedelta(days=4)),
 	    status='canceled'
     ))
@@ -555,7 +548,6 @@ def run_seeds():
         sender_user=nikita,
         recipient_user=lou,
         percentage=20,
-        winning_chips=None,
         due_at=(live.end_at + timedelta(days=4)),
 	    status='canceled'
     ))
@@ -596,12 +588,11 @@ def run_seeds():
         flight=flight1_oldvegas     
     ))
 
-    db.session.add (Swaps
+    db.session.add(Swaps(
         tournament=oldvegas,
-        sender_user=lou,
+        sender_user=nikita,
         recipient_user=cary,
         percentage=5,
-        winning_chips=None,
         due_at=(newvegas.end_at + timedelta(days=4)),
         status='agreed'
     ))
@@ -609,9 +600,8 @@ def run_seeds():
     db.session.add(Swaps(
         tournament= oldvegas,
         sender_user=cary,
-        recipient_user=lou,
-        percentage=5,
-        winning_chips=None,
+        recipient_user=nikita,
+        percentage=7,
         due_at=(newvegas.end_at + timedelta(days=4)),
         status='agreed'
     ))
