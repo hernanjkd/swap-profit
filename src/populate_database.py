@@ -91,7 +91,10 @@ def run_seeds():
 
     heartland = Tournaments(
         name='Heartland Poker Tour - HPT Colorado, Black Hawk',
-        address='261 Main St, Black Hawk, CO 80422',
+        address='261 Main St',
+        city='Black Hawk',
+        state='CO',
+        zip_code='80422',
         start_at=datetime(2019,10,11,12),
         end_at=datetime(2019,10,11,21)
     )
@@ -99,7 +102,10 @@ def run_seeds():
 
     stones = Tournaments(
         name='Stones Live Fall Poker Series',
-        address='6510 Antelope Rd, Citrus Heights, CA 95621',
+        address='6510 Antelope Rd',
+        city='Citrus Heights',
+        state='CA',
+        zip_code='95621',
         start_at=datetime(2019,9,30,11),
         end_at=datetime(2019,10,1,22)
     )
@@ -107,7 +113,10 @@ def run_seeds():
 
     wpt = Tournaments(
         name='WPT DeepStacks - WPTDS Sacramento',
-        address='Thunder Valley Casino Resort, 1200 Athens Ave, Lincoln, CA 95648',
+        address='Thunder Valley Casino Resort, 1200 Athens Ave',
+        city='Lincoln',
+        state='CA',
+        zip_code='95648',
         start_at=datetime(2019,10,2,12),
         end_at=datetime(2019,10,2,22)
     )
@@ -426,7 +435,10 @@ def run_seeds():
 
     newvegas = Tournaments(
         name='New Vegas Strip - Texas Hold\'em Finale',
-        address='129 East Fremont St., Las Vegas, NV 89101',
+        address='129 East Fremont St.',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89101',
         start_at=datetime(2281,10,11,10),
         end_at=datetime(2281,10,11,22)
     )
@@ -558,7 +570,10 @@ def run_seeds():
 
     oldvegas = Tournaments(
         name='Old Vegas Strip - Poker Eyes \'90',
-        address='2211 N Rampart Blvd, Las Vegas, NV 89145',
+        address='2211 N Rampart Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89145',
         start_at=datetime(1990,5,2,10),
         end_at=datetime(1990,5,2,15)
     )
