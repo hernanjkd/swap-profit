@@ -175,6 +175,10 @@ class Tournaments(db.Model):
 
 
     def serialize(self):
+        # buyins = []
+        # for flight in self.flights:
+        #     for buyin in flight.buy_ins:
+        #         buyins.append( Buy_ins.get_latest() )
         return {
             'id': self.id,
             'name': self.name,
@@ -188,7 +192,8 @@ class Tournaments(db.Model):
             'latitude': self.latitude,
             'created_at': '',
             'updated_at': '',
-            'flights': [x.serialize() for x in self.flights]
+            'flights': [x.serialize() for x in self.flights],
+            'buy_ins': ''
         }
 
 
@@ -214,8 +219,7 @@ class Flights(db.Model):
             'tournament': self.tournament.name,
             'start_at': self.start_at,
             'end_at': self.end_at,
-            'day': self.day,
-            'buy_ins': [x.serialize() for x in self.buy_ins]
+            'day': self.day
         }
         if long:
             return {
