@@ -105,6 +105,16 @@ class Swaps(db.Model):
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
     recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='receiving_swaps')
 
+    def __init__(self, **kwargs):
+        for attr, value in kwargs.items():
+            if not hasattr(self, attr):
+                raise Exception(f"'{attr}' is an invalid keyword argument for Swaps")
+            if attr == 'status':
+                valid_status = ['pending','rejected','agreed','canceled','incoming']
+                if value not in valid_status:
+                    raise Exception(f"'{value}' is an invalid status for Swaps")
+            setattr(self, attr, value)
+
     def __repr__(self):
         return (f'<Swaps sender_email:{self.sender_user.user.email} ' 
             + f'recipient_email:{self.recipient_user.user.email} '
@@ -181,6 +191,7 @@ class Tournaments(db.Model):
         buyins = []
         for buyin in all_buyins:
             user_id = buyin.user_id
+            # Users may have multiple buy_ins in one tournament
             if user_id not in user_ids:
                 user_ids.append( user_id )
                 buyins.append( Buy_ins.get_latest(user_id, self.id).serialize() )
