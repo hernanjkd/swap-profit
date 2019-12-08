@@ -124,8 +124,8 @@ class Swaps(db.Model):
             + f'tournament:{self.tournament.name}>')
 
     def get_counter_percentage(self):
-        swap = Swaps.query.get(
-            (self.recipient_id, self.sender_id, self.tournament_id))
+        ids = (self.recipient_id, self.sender_id, self.tournament_id)
+        swap = Swaps.query.get(ids)
         return swap.percentage
 
     def serialize(self, long=False):
