@@ -1,5 +1,5 @@
 # from flask_sqlalchemy import SQLAlchemy
-from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Coins
+from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Coins, Devices
 from datetime import datetime, timedelta
 from utils import sha256
 
@@ -8,6 +8,7 @@ from utils import sha256
 def run_seeds():
 
 
+    Devices.query.delete()
     Coins.query.delete()
     Transactions.query.delete()
     Buy_ins.query.delete()
