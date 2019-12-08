@@ -1,14 +1,14 @@
-
 import os
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
-from sqlalchemy import desc
+from sqlalchemy import desc, asc
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Coins, Devices
 from notifications import send_email
+from datetime import datetime
 
 
 def attach(app):
@@ -317,7 +317,18 @@ def attach(app):
     def get_tournaments(user_id, id):
 
         if id == 'all':
-            return jsonify([x.serialize() for x in Tournaments.query.all()]), 200
+            now = datetime.utcnow()
+            
+            if request.args.get('history') == 'true':
+                trmnts = Tournaments.query \
+                            .filter( Tournaments.end_at < now ) \
+                            .order_by( Tournaments.start_at.desc() )
+            else:
+                trmnts = Tournaments.query \
+                            .filter( Tournaments.end_at > now ) \
+                            .order_by( Tournaments.start_at.asc() )
+                            
+            return jsonify([x.serialize() for x in trmnts]), 200
 
         if id.isnumeric():
             trmnt = Tournaments.query.get(int(id))
@@ -529,43 +540,36 @@ def attach(app):
     @role_jwt_required(['user'])
     def swap_tracker(user_id):
 
-        trmnts = Tournaments.get_live(user_id=user_id)
-        if trmnts is None:
-            raise APIException('You have not bought into any current tournaments', 404)
+        trmnts = Tournaments.get_live_upcoming(user_id=user_id)
 
-        live_swaps_buyins = []
+        swap_trackers = []
 
-        for trmnt in trmnts:
+        if trmnts is not None:
+            
+            for trmnt in trmnts:
 
-            my_buyin = Buy_ins.get_latest( user_id=user_id, tournament_id=trmnt.id )
-            if my_buyin is None:
-                raise APIException('Can not find buyin', 404)
+                my_buyin = Buy_ins.get_latest( user_id=user_id, tournament_id=trmnt.id )
 
-            swaps = Swaps.query.filter_by(
-                sender_id = user_id,
-                tournament_id = trmnt.id
-            )
-            if swaps is None:
-                return jsonify({'message':'You have no live swaps in this tournament'})
+                swaps = Swaps.query.filter_by(
+                    sender_id = user_id,
+                    tournament_id = trmnt.id
+                )
 
-            swaps = [{
-                'swap': swap.serialize(),
-                'buyin': (Buy_ins.get_latest(
+                swaps_buyins = [{
+                    'swap': swap.serialize(),
+                    'buyin': Buy_ins.get_latest(
                                 user_id = swap.recipient_id,
                                 tournament_id = trmnt.id
-                            ).serialize())
-            } for swap in swaps]
+                            ).serialize()
+                } for swap in swaps]
 
-            live_swaps_buyins.append({
-                'tournament': trmnt.serialize(),
-                'my_buyin': my_buyin.serialize(),
-                'swaps': swaps
-            })
-        
-        return jsonify({
-            'live': live_swaps_buyins,
-            'upcoming': ''
-        })
+                swap_trackers.append({
+                    'tournament': trmnt.serialize(),
+                    'my_buyin': my_buyin.serialize(),
+                    'swaps': swaps_buyins
+                })
+
+        return jsonify( swap_trackers )
 
 
 

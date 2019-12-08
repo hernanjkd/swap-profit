@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc
+from sqlalchemy import asc, desc
 from datetime import datetime
 
 db = SQLAlchemy()
@@ -164,16 +164,21 @@ class Tournaments(db.Model):
         return f'<Tournament {self.name}>'
 
     @staticmethod
-    def get_live(user_id):
+    def get_live_upcoming(user_id):
         now = datetime.utcnow()
         trmnts = (Tournaments.query
-                    .filter( Tournaments.start_at < now )
                     .filter( Tournaments.end_at > now )
                     .filter( Tournaments.flights.any( 
-                        Flights.buy_ins.any( user_id = user_id )) ))
+                        Flights.buy_ins.any( user_id = user_id )))
+                    .order_by( Tournaments.start_at.asc() ))
         return trmnts if trmnts.count() > 0 else None
 
+
     def serialize(self):
+        # buyins = []
+        # for flight in self.flights:
+        #     for buyin in flight.buy_ins:
+        #         buyins.append( Buy_ins.get_latest() )
         return {
             'id': self.id,
             'name': self.name,
@@ -187,7 +192,8 @@ class Tournaments(db.Model):
             'latitude': self.latitude,
             'created_at': '',
             'updated_at': '',
-            'flights': [x.serialize() for x in self.flights]
+            'flights': [x.serialize() for x in self.flights],
+            'buy_ins': ''
         }
 
 
@@ -213,8 +219,7 @@ class Flights(db.Model):
             'tournament': self.tournament.name,
             'start_at': self.start_at,
             'end_at': self.end_at,
-            'day': self.day,
-            'buy_ins': [x.serialize() for x in self.buy_ins]
+            'day': self.day
         }
         if long:
             return {

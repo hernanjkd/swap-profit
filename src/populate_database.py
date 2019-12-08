@@ -17,6 +17,9 @@ def run_seeds():
     Profiles.query.delete()
     Users.query.delete()
 
+    ########################
+    #  USERS AND PROFILES
+    ########################
 
     lou = Users(
         email='lou@gmail.com',
@@ -82,6 +85,10 @@ def run_seeds():
     )
     db.session.add(nikita)
 
+    ########################
+    #     TOURNAMENTS
+    ########################
+
     heartland = Tournaments(
         name='Heartland Poker Tour - HPT Colorado, Black Hawk',
         address='261 Main St, Black Hawk, CO 80422',
@@ -114,6 +121,10 @@ def run_seeds():
         end_at=now + timedelta(days=600)
     )
     db.session.add(live)
+
+    ########################
+    #       FLIGHTS
+    ########################
 
     flight1_live = Flights(
         start_at=now,
@@ -179,6 +190,10 @@ def run_seeds():
     )
     db.session.add(flight1_wpt)
 
+    ########################
+    #        SWAPS
+    ########################
+
     db.session.add(Swaps(
         tournament=heartland,
         sender_user=lou,
@@ -239,7 +254,7 @@ def run_seeds():
         tournament=live,
         sender_user=cary,
         recipient_user=lou,
-        percentage=10,
+        percentage=9,
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -322,6 +337,10 @@ def run_seeds():
         percentage=5,
         due_at=(wpt.end_at + timedelta(days=4))
     ))
+
+    ########################
+    #       BUY INS
+    ########################
 
     db.session.add(Buy_ins(
         chips=1200,
@@ -377,6 +396,214 @@ def run_seeds():
         seat=1,
         user=nikita,
         flight=flight2_live
+    ))
+
+    ######################
+    #   INCOMING SWAPS
+    ######################
+
+    db.session.add(Swaps(
+        tournament=live,
+        sender_user=kate,
+        recipient_user=cary,
+        percentage=10,
+        due_at=(live.end_at + timedelta(days=4)),
+        status='incoming'
+    ))
+
+    db.session.add(Swaps(
+        tournament=live,
+        sender_user=cary,
+        recipient_user=kate,
+        percentage=5,
+        due_at=(live.end_at + timedelta(days=4)),
+        status='pending'
+    ))
+
+    ####################################
+    #   UPCOMING TOURNAMENT + FLIGHTS
+    ####################################
+
+    newvegas = Tournaments(
+        name='New Vegas Strip - Texas Hold\'em Finale',
+        address='129 East Fremont St., Las Vegas, NV 89101',
+        start_at=datetime(2281,10,11,10),
+        end_at=datetime(2281,10,11,22)
+    )
+    db.session.add(newvegas)
+
+    flight1_newvegas = Flights(
+        start_at=now + timedelta(days=1),
+        end_at=now + timedelta(days=1, hours=5),
+        tournament=newvegas,
+        day=1
+    )
+    db.session.add(flight1_newvegas)
+
+    flight2_newvegas = Flights(
+        start_at=now + timedelta(days=1, hours=6),
+        end_at=now + timedelta(days=1, hours=12),
+        tournament=newvegas,
+        day=1
+    )
+    db.session.add(flight2_newvegas)
+
+    #######################
+    #   UPCOMING BUYINS
+    #######################
+    
+    db.session.add(Buy_ins(         
+        chips=5000,         
+        table=4,         
+        seat=2,         
+        user=lou,        
+        flight=flight1_newvegas     
+    ))
+
+    db.session.add(Buy_ins(         
+        chips=4000,         
+        table=1,         
+        seat=12,         
+        user=lou,        
+        flight=flight1_newvegas     
+    ))
+
+    db.session.add(Buy_ins(         
+        chips=9000,         
+        table=22,         
+        seat=7,         
+        user=lou,        
+        flight=flight2_newvegas     
+    ))
+
+    db.session.add(Buy_ins(         
+        chips=6000,         
+        table=5,         
+        seat=4,         
+        user=lou,        
+        flight=flight2_newvegas     
+    ))
+
+    #####################
+    #   AGREED SWAPS
+    #####################
+
+    db.session.add(Swaps(
+        tournament=newvegas,
+        sender_user=lou,
+        recipient_user=cary,
+        percentage=8,
+        due_at=(newvegas.end_at + timedelta(days=4)),
+        status='agreed'
+
+    ))
+
+    db.session.add(Swaps(
+        tournament= newvegas,
+        sender_user=cary,
+        recipient_user=lou,
+        percentage=2,
+        due_at=(newvegas.end_at + timedelta(days=4))
+    ))
+
+    ######################
+    #   REJECTED SWAPS
+    ######################
+
+    db.session.add(Swaps(
+        tournament=newvegas,
+        sender_user=lou,
+        recipient_user=nikita,
+        percentage=40,
+        due_at=(newvegas.end_at + timedelta(days=4)),
+        status='rejected'
+
+    ))
+
+    db.session.add(Swaps(
+        tournament= newvegas,
+        sender_user=nikita,
+        recipient_user=lou,
+        percentage=40,
+        due_at=(newvegas.end_at + timedelta(days=4)),
+        status='rejected'
+
+    ))
+
+    #####################
+    #   CANCELED SWAPS
+    #####################
+
+    db.session.add(Swaps(
+        tournament=live,
+        sender_user=lou,
+        recipient_user=nikita,
+        percentage=20,
+        due_at=(live.end_at + timedelta(days=4)),
+	    status='canceled'
+    ))
+
+    db.session.add(Swaps(
+        tournament= live,
+        sender_user=nikita,
+        recipient_user=lou,
+        percentage=20,
+        due_at=(live.end_at + timedelta(days=4)),
+	    status='canceled'
+    ))
+
+    ######################
+    #   PAST TOURNAMENT
+    ######################
+
+    oldvegas = Tournaments(
+        name='Old Vegas Strip - Poker Eyes \'90',
+        address='2211 N Rampart Blvd, Las Vegas, NV 89145',
+        start_at=datetime(1990,5,2,10),
+        end_at=datetime(1990,5,2,15)
+    )
+    db.session.add(newvegas)
+
+    flight1_oldvegas = Flights(
+        start_at=now + timedelta(days=1),
+        end_at=now + timedelta(days=1, hours=5),
+        tournament=oldvegas,
+        day=1
+    )
+    db.session.add(flight1_oldvegas)
+
+    db.session.add(Buy_ins(         
+        chips=7500,         
+        table=14,         
+        seat=12,         
+        user=lou,        
+        flight=flight1_oldvegas     
+    ))
+
+    db.session.add(Buy_ins(         
+        chips=4500,         
+        table=21,         
+        seat=1,         
+        user=lou,        
+        flight=flight1_oldvegas     
+    ))
+
+    db.session.add(Swaps(
+        tournament=oldvegas,
+        sender_user=nikita,
+        recipient_user=cary,
+        percentage=5,
+        due_at=(newvegas.end_at + timedelta(days=4)),
+        status='agreed'
+    ))
+
+    db.session.add(Swaps(
+        tournament= oldvegas,
+        sender_user=cary,
+        recipient_user=nikita,
+        percentage=7,
+        due_at=(newvegas.end_at + timedelta(days=4)),
+        status='agreed'
     ))
 
     db.session.commit()
