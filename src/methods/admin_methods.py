@@ -11,8 +11,12 @@ def attach(app):
 
 
     @app.route('/populate_database')
-    @role_jwt_required(['admin'])
+    @jwt_required
     def populate(**kwargs):
+
+        if get_jwt()['role'] != 'admin':
+            raise APIException('Access denied', 401)
+
         run_seeds()
         return 'Seeds ran!'
 
