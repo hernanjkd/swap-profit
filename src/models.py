@@ -173,12 +173,20 @@ class Tournaments(db.Model):
                     .order_by( Tournaments.start_at.asc() ))
         return trmnts if trmnts.count() > 0 else None
 
+    def get_all_users_latest_buyins(self):
+        all_buyins = Buy_ins.query.filter( 
+                        Buy_ins.flight.has( 
+                            Flights.tournament_id == self.id ))
+        user_ids = []
+        buyins = []
+        for buyin in all_buyins:
+            user_id = buyin.user_id
+            if user_id not in user_ids:
+                user_ids.append( user_id )
+                buyins.append( Buy_ins.get_latest(user_id, self.id).serialize() )
+        return buyins
 
     def serialize(self):
-        # buyins = []
-        # for flight in self.flights:
-        #     for buyin in flight.buy_ins:
-        #         buyins.append( Buy_ins.get_latest() )
         return {
             'id': self.id,
             'name': self.name,
@@ -193,7 +201,7 @@ class Tournaments(db.Model):
             'created_at': '',
             'updated_at': '',
             'flights': [x.serialize() for x in self.flights],
-            'buy_ins': ''
+            'buy_ins': self.get_all_users_latest_buyins()
         }
 
 
