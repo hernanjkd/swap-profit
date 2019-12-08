@@ -13,6 +13,6 @@ def attach(app):
 
     @app.route('/testing', methods=['GET'])
     def first_endpoint():
-        return jsonify({ 'details': "All good my friend"}), 406
+        return jsonify({ 'details': "All good my friend"}), 200
 
     return app

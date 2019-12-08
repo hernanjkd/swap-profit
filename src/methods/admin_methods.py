@@ -15,7 +15,7 @@ def attach(app):
     def populate():
 
         if get_jwt()['role'] != 'admin':
-            raise APIException('Access denied', 401)
+            raise APIException('Access denied', 403)
 
         run_seeds()
 
@@ -167,7 +167,7 @@ def attach(app):
     @app.route('/swaps/all', methods=['GET'])
     @role_jwt_required(['admin'])
     def get_swaps(**kwargs):
-
+        
         return jsonify([x.serialize() for x in Swaps.query.all()])
 
 
