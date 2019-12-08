@@ -12,13 +12,28 @@ def attach(app):
 
     @app.route('/populate_database')
     @jwt_required
-    def populate(**kwargs):
+    def populate():
 
         if get_jwt()['role'] != 'admin':
             raise APIException('Access denied', 401)
 
         run_seeds()
-        return 'Seeds ran!'
+
+        lou = Profiles.query.filter_by(nickname='Lou').first()
+
+        return jsonify([
+            {"Lou's id": lou.id},
+            {"token_data": {
+                "id": lou.id,
+                "role": "admin",
+                "exp": 600000
+            }},
+            {"token": create_jwt({
+                        'id': lou.id,
+                        'role': 'admin',
+                        'exp': 600000
+                    })}
+        ])
 
 
 

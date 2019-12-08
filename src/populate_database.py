@@ -464,7 +464,7 @@ def run_seeds():
         chips=4000,         
         table=1,         
         seat=12,         
-        user=lou,        
+        user=cary,        
         flight=flight1_newvegas     
     ))
 
@@ -480,7 +480,7 @@ def run_seeds():
         chips=6000,         
         table=5,         
         seat=4,         
-        user=lou,        
+        user=nikita,        
         flight=flight2_newvegas     
     ))
 
@@ -584,25 +584,25 @@ def run_seeds():
         chips=4500,         
         table=21,         
         seat=1,         
-        user=lou,        
+        user=cary,        
         flight=flight1_oldvegas     
     ))
 
     db.session.add(Swaps(
         tournament=oldvegas,
-        sender_user=nikita,
+        sender_user=lou,
         recipient_user=cary,
         percentage=5,
-        due_at=(newvegas.end_at + timedelta(days=4)),
+        due_at=(oldvegas.end_at + timedelta(days=4)),
         status='agreed'
     ))
 
     db.session.add(Swaps(
         tournament= oldvegas,
         sender_user=cary,
-        recipient_user=nikita,
+        recipient_user=lou,
         percentage=7,
-        due_at=(newvegas.end_at + timedelta(days=4)),
+        due_at=(oldvegas.end_at + timedelta(days=4)),
         status='agreed'
     ))
 
