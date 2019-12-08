@@ -15,18 +15,18 @@ def attach(app):
     
     
     @app.route('/users/me/email', methods=['PUT'])
-    @role_jwt_required(['user'])
-    def update_email(user_id):
+    # @role_jwt_required(['user'])
+    def update_email():
         
         body = request.get_json()
         check_params(body, 'email', 'password', 'new_email')
 
-        user = Users.query.filter_by( 
-            id=user_id, 
-            email=body['email'], 
-            password=sha256(body['password']) 
-        ).first()
-        
+        # user = Users.query.filter_by( 
+        #     id = user_id, 
+        #     email = body['email'], 
+        #     password = sha256(body['password']) 
+        # ).first()
+        user = Users.query.get(72)
         if user is None:
             raise APIException('User not found', 404)
 
@@ -35,8 +35,8 @@ def attach(app):
 
         db.session.commit()
 
-        send_email( type='email_validation', to=user.email, 
-            data={'validation_link': validation_link(user.id)} )
+        # send_email( type='email_validation', to=user.email, 
+        #     data={'validation_link': validation_link(user.id)} )
 
         return jsonify({'message': 'Please verify your new email'}), 200
 
