@@ -1,14 +1,15 @@
 from flask import Flask, request, jsonify, url_for, redirect, render_template
 from flask_jwt_simple import JWTManager, create_jwt, decode_jwt, get_jwt
+from notifications import send_email
 
 def attach(app):
 
     @app.route('/sendemail')
     def sendemailtest():
-        msg = {'message':'Hello Hernan'}
-        send_email(type='test',to='hernanjkd@gmail.com',data=msg)
+        msg = {'name':'Hello Hernan'}
+        send_email(type='account_created',to='hernanjkd@gmail.com',data=msg)
         l = 'testing'
-        return requests.get(f'http://127.0.0.1:3000/{l}').json()
+        return 'email sent'
 
 
     @app.route('/testing', methods=['GET'])

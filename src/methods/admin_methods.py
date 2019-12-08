@@ -5,7 +5,7 @@ from sqlalchemy import desc
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
 from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Coins
 from datetime import datetime
-from populate_database import run_seeds
+from reset_database import run_seeds
 
 def attach(app):
 

@@ -1,9 +1,8 @@
-
 from flask import request, jsonify, render_template
 from flask_cors import CORS
 from flask_jwt_simple import JWTManager, create_jwt, decode_jwt, get_jwt
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
-from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Coins
+from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Coins, Devices
 from notifications import send_email
 
 def attach(app):

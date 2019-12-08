@@ -10,6 +10,8 @@ class Users(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
     valid = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
     profile = db.relationship('Profiles', back_populates='user', uselist=False)
     transactions = db.relationship('Transactions', back_populates='user')
@@ -24,8 +26,8 @@ class Users(db.Model):
             'id': self.id,
             'email': self.email,
             'valid': self.valid,
-            'created_at': '',
-            'updated_at': ''
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
 
 
@@ -39,6 +41,8 @@ class Profiles(db.Model):
     hendon_url = db.Column(db.String(200))
     profile_pic_url = db.Column(db.String(250), default=None)
     roi = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
     user = db.relationship('Users', back_populates='profile', uselist=False)
     buy_ins = db.relationship('Buy_ins', back_populates='user')
@@ -69,8 +73,8 @@ class Profiles(db.Model):
             'swaps': swaps
         }
 
-    def serialize(self, long=False):
-        json = {
+    def serialize(self):
+        return {
             'id': self.id,
             'first_name': self.first_name,
             'last_name': self.last_name,
@@ -78,16 +82,10 @@ class Profiles(db.Model):
             'email': self.user.email,
             'profile_pic_url': self.profile_pic_url,
             'hendon_url': self.hendon_url,
-            'roi': self.roi
+            'roi': self.roi,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
-        if long:
-            return {
-                **json,
-                'valid': self.user.valid,
-                'created_at': '',
-                'updated_at': ''
-            }
-        return json
 
 
 
@@ -99,6 +97,8 @@ class Swaps(db.Model):
     percentage = db.Column(db.Integer, nullable=False)
     due_at = db.Column(db.DateTime, default=None)
     paid = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
     
     valid_status = ['pending','rejected','agreed','canceled','incoming']
     status = db.Column(db.String(20), default='pending')
@@ -124,28 +124,23 @@ class Swaps(db.Model):
             + f'tournament:{self.tournament.name}>')
 
     def get_counter_percentage(self):
-        swap = Swaps.query.get(
-            (self.recipient_id, self.sender_id, self.tournament_id))
+        ids = (self.recipient_id, self.sender_id, self.tournament_id)
+        swap = Swaps.query.get(ids)
         return swap.percentage
 
-    def serialize(self, long=False):
-        json = {
+    def serialize(self):
+        return {
             'tournament_id': self.tournament_id,
             'percentage': self.percentage,
             'counter_percentage': self.get_counter_percentage(),
             'due_at': self.due_at,
             'status': self.status,
             'sender_user': self.sender_user.serialize(),
-            'recipient_user': self.recipient_user.serialize()
+            'recipient_user': self.recipient_user.serialize(),
+            'paid': self.paid,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
-        if long:
-            return {
-                **json,
-                'paid': self.paid,
-                'created_at': '',
-                'updated_at': ''
-            }
-        return json
 
 
 
@@ -161,6 +156,8 @@ class Tournaments(db.Model):
     end_at = db.Column(db.DateTime)
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
     flights = db.relationship('Flights', back_populates='tournament')
     swaps = db.relationship('Swaps', back_populates='tournament')
@@ -204,8 +201,8 @@ class Tournaments(db.Model):
             'end_at': self.end_at,
             'longitude': self.longitude,
             'latitude': self.latitude,
-            'created_at': '',
-            'updated_at': '',
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
             'flights': [x.serialize() for x in self.flights],
             'buy_ins': self.get_all_users_latest_buyins()
         }
@@ -219,6 +216,8 @@ class Flights(db.Model):
     end_at = db.Column(db.DateTime)
     day = db.Column(db.Integer)
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
     tournament = db.relationship('Tournaments', back_populates='flights')
     buy_ins = db.relationship('Buy_ins', back_populates='flight')
@@ -226,22 +225,17 @@ class Flights(db.Model):
     def __repr__(self):
         return f'<Flights tournament:{self.tournament.name} {self.start_at} - {self.end_at}>'
 
-    def serialize(self, long=False):
-        json = {
+    def serialize(self):
+        return {
             'id': self.id,
             'tournament_id': self.tournament_id,
             'tournament': self.tournament.name,
             'start_at': self.start_at,
             'end_at': self.end_at,
-            'day': self.day
+            'day': self.day,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
-        if long:
-            return {
-                **json,
-                'created_at': '',
-                'updated_at': ''
-            }
-        return json
 
 
 
@@ -255,6 +249,8 @@ class Buy_ins(db.Model):
     table = db.Column(db.Integer)
     seat = db.Column(db.Integer)
     place = db.Column(db.Integer)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
     user = db.relationship('Profiles', back_populates='buy_ins')
     flight = db.relationship('Flights', back_populates='buy_ins')
@@ -281,7 +277,9 @@ class Buy_ins(db.Model):
             'table': self.table,
             'seat': self.seat,
             'receipt_img_url': self.receipt_img_url,
-            'user_name': u.nickname if u.nickname else f'{u.first_name} {u.last_name}'
+            'user_name': u.nickname if u.nickname else f'{u.first_name} {u.last_name}',
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
 
 
@@ -292,6 +290,8 @@ class Transactions(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     amount_in_coins = db.Column(db.Integer)
     amount_in_dollars = db.Column(db.Integer)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
     user = db.relationship('Users', back_populates='transactions')
 
@@ -303,7 +303,9 @@ class Transactions(db.Model):
             'id': self.id,
             'user_id': self.user_id,
             'amount_in_coins': self.amount_in_coins,
-            'amount_in_dollars': self.amount_in_dollars
+            'amount_in_dollars': self.amount_in_dollars,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
 
 
@@ -314,6 +316,8 @@ class Coins(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     token = db.Column(db.String(256))
     expires_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
     user = db.relationship('Users', back_populates='coins')
 
@@ -324,7 +328,9 @@ class Coins(db.Model):
         return {
             'user_id': self.user_id,
             'token': self.token,
-            'expires_at': self.expires_at
+            'expires_at': self.expires_at,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
 
 
@@ -334,6 +340,8 @@ class Devices(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     token = db.Column(db.String(256), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
     user = db.relationship('Users', back_populates='devices')
 
@@ -344,7 +352,9 @@ class Devices(db.Model):
         return {
             'id': self.id,
             'token': self.token,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
 
 
@@ -355,6 +365,8 @@ class Zip_Codes(db.Model):
     zip_code = db.Column(db.String(14))
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
     def __repr__(self):
         return f'<Zip_Codes {self.zip_code}>'
@@ -364,5 +376,7 @@ class Zip_Codes(db.Model):
             'id': self.id,
             'zip_code': self.zip_code,
             'longitude': self.longitude,
-            'latitude': self.latitude
+            'latitude': self.latitude,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
