@@ -99,6 +99,8 @@ class Swaps(db.Model):
     percentage = db.Column(db.Integer, nullable=False)
     due_at = db.Column(db.DateTime, default=None)
     paid = db.Column(db.Boolean, default=False)
+    
+    valid_status = ['pending','rejected','agreed','canceled','incoming']
     status = db.Column(db.String(20), default='pending')
 
     tournament = db.relationship('Tournaments', back_populates='swaps')
@@ -109,9 +111,10 @@ class Swaps(db.Model):
         for attr, value in kwargs.items():
             if not hasattr(self, attr):
                 raise Exception(f"'{attr}' is an invalid keyword argument for Swaps")
-            if attr == 'status':
-                valid_status = ['pending','rejected','agreed','canceled','incoming']
-                if value not in valid_status:
+            if attr == 'valid_status':
+                raise Exception(f"'valid_status' can not be modified")
+            if attr == 'status':               
+                if value not in self.valid_status:
                     raise Exception(f"'{value}' is an invalid status for Swaps")
             setattr(self, attr, value)
 
@@ -120,24 +123,16 @@ class Swaps(db.Model):
             + f'recipient_email:{self.recipient_user.user.email} '
             + f'tournament:{self.tournament.name}>')
 
-    def get_counterswap(self):
-        swap = Swaps.query.get((recipient_id, sender_id, tournament_id))
-        return swap.serialize(percentage=True)
+    def get_counter_percentage(self):
+        swap = Swaps.query.get(
+            (self.recipient_id, self.sender_id, self.tournament_id))
+        return swap.percentage
 
-    def serialize(self, long=False, sender=False, percentage=False):
-        if percentage:
-            return {'percentage': self.percentage}
-        if sender:
-            return {
-                'recipient_id': self.recipient_id,
-                'tournament_id': self.tournament_id,
-                'due_at': self.due_at,
-                'status': self.status,
-                'paid': self.paid
-            }
+    def serialize(self, long=False):
         json = {
             'tournament_id': self.tournament_id,
             'percentage': self.percentage,
+            'counter_percentage': self.get_counter_percentage(),
             'due_at': self.due_at,
             'status': self.status,
             'sender_user': self.sender_user.serialize(),

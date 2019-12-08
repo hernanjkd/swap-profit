@@ -48,7 +48,7 @@ def attach(app):
 
         jwt_data = decode_jwt(token)
         if jwt_data['role'] != 'password':
-            raise APIException('Access denied', 401)
+            raise APIException('Access denied', 403)
 
         if request.method == 'GET':
             return render_template('reset_password.html',
@@ -114,7 +114,7 @@ def attach(app):
 
         if id == 'all':
             if jwt_data['role'] != 'admin':
-                raise APIException('Access denied', 401)
+                raise APIException('Access denied', 403)
 
             return jsonify([x.serialize(long=True) for x in Profiles.query.all()]), 200
 
