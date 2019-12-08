@@ -10,7 +10,7 @@ from populate_database import run_seeds
 def attach(app):
 
 
-    @app.route('/populate_database')
+    @app.route('/reset_database')
     @jwt_required
     def populate():
 
