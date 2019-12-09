@@ -15,17 +15,17 @@ def attach(app):
     
     
     @app.route('/users/me/email', methods=['PUT'])
-    # @role_jwt_required(['user'])
+    @role_jwt_required(['user'])
     def update_email():
         
         body = request.get_json()
         check_params(body, 'email', 'password', 'new_email')
 
-        # user = Users.query.filter_by( 
-        #     id = user_id, 
-        #     email = body['email'], 
-        #     password = sha256(body['password']) 
-        # ).first()
+        user = Users.query.filter_by( 
+            id = user_id, 
+            email = body['email'], 
+            password = sha256(body['password']) 
+        ).first()
         user = Users.query.get(72)
         if user is None:
             raise APIException('User not found', 404)
@@ -35,8 +35,8 @@ def attach(app):
 
         db.session.commit()
 
-        # send_email( type='email_validation', to=user.email, 
-        #     data={'validation_link': validation_link(user.id)} )
+        send_email( type='email_validation', to=user.email, 
+            data={'validation_link': validation_link(user.id)} )
 
         return jsonify({'message': 'Please verify your new email'}), 200
 
@@ -116,7 +116,7 @@ def attach(app):
             if jwt_data['role'] != 'admin':
                 raise APIException('Access denied', 403)
 
-            return jsonify([x.serialize(long=True) for x in Profiles.query.all()]), 200
+            return jsonify([x.serialize() for x in Profiles.query.all()]), 200
 
         if id == 'me':
             id = str(user_id)
@@ -128,7 +128,7 @@ def attach(app):
         if user is None:
             raise APIException('User not found', 404)
 
-        return jsonify(user.serialize(long=True)), 200
+        return jsonify(user.serialize()), 200
 
 
 
