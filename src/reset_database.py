@@ -622,4 +622,40 @@ def run_seeds():
         status='agreed'
     ))
 
+    ##################
+    # NEW TOURNAMENT
+    ##################
+
+    gamorrah = Tournaments(
+            name='Final Days Poker at Gamorrah Casino',
+            address='200 Fremont St, Las Vegas, NV 89101',
+            start_at=datetime(2281,10,11,12),
+            end_at=datetime(2281,10,11,21)
+    )
+    db.session.add(gamorrah)
+    
+    flight1_gamorrah = Flights(
+            start_at=datetime(2281,10,11,12),
+            end_at=datetime(2281,10,11,16),
+            tournament=gamorrah,
+            day=1
+    )
+    db.session.add(flight1_gamorrah)
+
+    flight2_gamorrah = Flights(
+            start_at=datetime(2281,10,11,16),
+            end_at=datetime(2281,10,11,21),
+            tournament=gamorrah,
+            day=1
+    )
+    db.session.add(flight2_gamorrah)
+
+    db.session.add(Buy_ins(
+        chips=13000,
+        table=13,
+        seat=3,
+        user=kate,
+        flight=flight1_gamorrah
+    ))
+
     db.session.commit()
