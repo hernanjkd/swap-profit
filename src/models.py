@@ -10,8 +10,8 @@ class Users(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
     valid = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     profile = db.relationship('Profiles', back_populates='user', uselist=False)
     transactions = db.relationship('Transactions', back_populates='user')
@@ -41,8 +41,8 @@ class Profiles(db.Model):
     hendon_url = db.Column(db.String(200))
     profile_pic_url = db.Column(db.String(250), default=None)
     roi = db.Column(db.Float)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = db.relationship('Users', back_populates='profile', uselist=False)
     buy_ins = db.relationship('Buy_ins', back_populates='user')
@@ -97,8 +97,8 @@ class Swaps(db.Model):
     percentage = db.Column(db.Integer, nullable=False)
     due_at = db.Column(db.DateTime, default=None)
     paid = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     valid_status = ['pending','rejected','agreed','canceled','incoming']
     status = db.Column(db.String(20), default='pending')
@@ -112,7 +112,7 @@ class Swaps(db.Model):
             if not hasattr(self, attr):
                 raise Exception(f"'{attr}' is an invalid keyword argument for Swaps")
             if attr == 'valid_status':
-                raise Exception(f"'valid_status' can not be modified")
+                raise Exception(f"'{attr}' can not be modified")
             if attr == 'status':               
                 if value not in self.valid_status:
                     raise Exception(f"'{value}' is an invalid status for Swaps")
@@ -156,8 +156,8 @@ class Tournaments(db.Model):
     end_at = db.Column(db.DateTime)
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     flights = db.relationship('Flights', back_populates='tournament')
     swaps = db.relationship('Swaps', back_populates='tournament')
@@ -216,8 +216,8 @@ class Flights(db.Model):
     end_at = db.Column(db.DateTime)
     day = db.Column(db.Integer)
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     tournament = db.relationship('Tournaments', back_populates='flights')
     buy_ins = db.relationship('Buy_ins', back_populates='flight')
@@ -249,8 +249,8 @@ class Buy_ins(db.Model):
     table = db.Column(db.Integer)
     seat = db.Column(db.Integer)
     place = db.Column(db.Integer)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = db.relationship('Profiles', back_populates='buy_ins')
     flight = db.relationship('Flights', back_populates='buy_ins')
@@ -290,8 +290,8 @@ class Transactions(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     amount_in_coins = db.Column(db.Integer)
     amount_in_dollars = db.Column(db.Integer)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = db.relationship('Users', back_populates='transactions')
 
@@ -316,8 +316,8 @@ class Coins(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     token = db.Column(db.String(256))
     expires_at = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = db.relationship('Users', back_populates='coins')
 
@@ -340,8 +340,8 @@ class Devices(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     token = db.Column(db.String(256), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = db.relationship('Users', back_populates='devices')
 
@@ -365,8 +365,8 @@ class Zip_Codes(db.Model):
     zip_code = db.Column(db.String(14))
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
         return f'<Zip_Codes {self.zip_code}>'
