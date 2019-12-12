@@ -380,34 +380,19 @@ def attach(app):
             sender_id = user_id,
             tournament_id = body['tournament_id'],
             recipient_id = body['recipient_id'],
-            percentage = percentage
+            percentage = percentage,
+            status = 'pending'
         ))
         db.session.add(Swaps(
             sender_id = body['recipient_id'],
             tournament_id = body['tournament_id'],
             recipient_id = user_id,
-            percentage = percentage
+            percentage = percentage,
+            status = 'incoming'
         ))
         db.session.commit()
 
         trmnt = Tournaments.query.get(body['tournament_id'])
-
-        send_email( type='swap_created', to=sender.user.email,
-            data={
-                'percentage': percentage,
-                'recipient_firstname': recipient.first_name,
-                'recipient_lastname': recipient.last_name,
-                'recipient_email': recipient.user.email
-            }
-        )
-        send_email( type='swap_created', to=recipient.user.email,
-            data={
-                'percentage': percentage,
-                'recipient_firstname': sender.first_name,
-                'recipient_lastname': sender.last_name,
-                'recipient_email': sender.user.email
-            }
-        )
 
         return jsonify({'message':'Swap created successfully.'}), 200
 
@@ -423,6 +408,7 @@ def attach(app):
         sender = Profiles.query.get(user_id)
 
         body = request.get_json()
+        counter_swap_body = {}
         check_params(body, 'tournament_id', 'recipient_id')
 
         # get recipient user
@@ -456,14 +442,30 @@ def attach(app):
 
             # So it can be updated correctly with the update_table funcion
             body['percentage'] = new_percentage
-            update_table(counter_swap, {
-                'percentage': new_counter_percentage
-            })
 
+            counter_swap_body = {'percentage': new_counter_percentage}
+
+
+        if 'status' in body:
+            counter_swap_body = {
+                **counter_swap_body,
+                'status': Swaps.counter_status( body['status'] )
+            }
+
+
+        update_table(swap, body, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
+        update_table(counter_swap, counter_swap_body)
+
+        db.session.commit()
+
+        if body['status'] == 'agreed':
+            swap = Swaps.query.get((user_id, recipient.id, body['tournament_id']))
+            counter_swap = Swaps.query.get((recipient.id, user_id, body['tournament_id']))
+            
             send_email( type='swap_created', to=sender.user.email,
                 data={
-                    'percentage': new_percentage,
-                    'counter_percentage': new_counter_percentage,
+                    'percentage': swap.percentage,
+                    'counter_percentage': counter_swap.percentage,
                     'recipient_firstname': recipient.first_name,
                     'recipient_lastname': recipient.last_name,
                     'recipient_email': recipient.user.email
@@ -471,17 +473,13 @@ def attach(app):
             )
             send_email( type='swap_created', to=recipient.user.email,
                 data={
-                    'percentage': new_counter_percentage,
-                    'counter_percentage': new_percentage,
+                    'percentage': counter_swap.percentage,
+                    'counter_percentage': swap.percentage,
                     'recipient_firstname': sender.first_name,
                     'recipient_lastname': sender.last_name,
                     'recipient_email': sender.user.email
                 }
             )
-
-        update_table(swap, body, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
-
-        db.session.commit()
 
         return jsonify([
             swap.serialize(),

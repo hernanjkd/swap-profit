@@ -25,7 +25,7 @@ def send_email(type, to, data={}):
                 'api',
                 os.environ.get('MAILGUN_API_KEY')),
             data={
-                'from': f'{domain} <mailgun@mailgun.pokerswap.co>',
+                'from': f'{domain} <mailgun@swapprofit-test.herokuapp.com>',
                 'to': to,
                 'subject': template['subject'],
                 'text': template['text'],

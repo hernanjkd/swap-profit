@@ -7,7 +7,7 @@ from models import (db, Users, Profiles, Tournaments, Flights, Swaps, Buy_ins,
 def SetupAdmin(app):
 
     class ExcludedModelView(ModelView):
-        form_excluded_columns = ['created_at', 'updated_at']
+        form_excluded_columns = ['created_at', 'updated_at', 'password']
     
     admin = Admin(app, name='Swap Profit', template_mode='bootstrap3')
 

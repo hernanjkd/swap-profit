@@ -209,6 +209,7 @@ def run_seeds():
         sender_user=lou,
         recipient_user=cary,
         percentage=10,
+        status='pending',
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -217,6 +218,7 @@ def run_seeds():
         sender_user=cary,
         recipient_user=lou,
         percentage=10,
+        status='incoming',
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -225,6 +227,7 @@ def run_seeds():
         sender_user=nikita,
         recipient_user=kate,
         percentage=15,
+        status='pending',
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -233,6 +236,7 @@ def run_seeds():
         sender_user=kate,
         recipient_user=nikita,
         percentage=15,
+        status='incoming',
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -241,6 +245,7 @@ def run_seeds():
         sender_user=lou,
         recipient_user=kate,
         percentage=5,
+        status='incoming',
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -249,6 +254,7 @@ def run_seeds():
         sender_user=kate,
         recipient_user=lou,
         percentage=5,
+        status='pending',
         due_at=(heartland.end_at + timedelta(days=4))
     ))
 
@@ -257,6 +263,7 @@ def run_seeds():
         sender_user=lou,
         recipient_user=cary,
         percentage=10,
+        status='pending',
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -265,6 +272,7 @@ def run_seeds():
         sender_user=cary,
         recipient_user=lou,
         percentage=9,
+        status='incoming',
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -273,6 +281,7 @@ def run_seeds():
         sender_user=nikita,
         recipient_user=kate,
         percentage=15,
+        status='pending',
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -281,6 +290,7 @@ def run_seeds():
         sender_user=kate,
         recipient_user=nikita,
         percentage=15,
+        status='incoming',
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -289,6 +299,7 @@ def run_seeds():
         sender_user=lou,
         recipient_user=kate,
         percentage=5,
+        status='incoming',
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -297,6 +308,7 @@ def run_seeds():
         sender_user=kate,
         recipient_user=lou,
         percentage=5,
+        status='pending',
         due_at=(live.end_at + timedelta(days=4))
     ))
 
@@ -305,6 +317,7 @@ def run_seeds():
         sender_user=lou,
         recipient_user=cary,
         percentage=10,
+        status='pending',
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
@@ -313,6 +326,7 @@ def run_seeds():
         sender_user=cary,
         recipient_user=lou,
         percentage=10,
+        status='incoming',
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
@@ -321,6 +335,7 @@ def run_seeds():
         sender_user=nikita,
         recipient_user=kate,
         percentage=15,
+        status='pending',
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
@@ -329,6 +344,7 @@ def run_seeds():
         sender_user=kate,
         recipient_user=nikita,
         percentage=15,
+        status='incoming',
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
@@ -337,6 +353,7 @@ def run_seeds():
         sender_user=cary,
         recipient_user=kate,
         percentage=5,
+        status='pending',
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
@@ -345,6 +362,7 @@ def run_seeds():
         sender_user=kate,
         recipient_user=cary,
         percentage=5,
+        status='incoming',
         due_at=(wpt.end_at + timedelta(days=4))
     ))
 
@@ -516,7 +534,8 @@ def run_seeds():
         sender_user=cary,
         recipient_user=lou,
         percentage=2,
-        due_at=(newvegas.end_at + timedelta(days=4))
+        due_at=(newvegas.end_at + timedelta(days=4)),
+        status='agreed'
     ))
 
     ######################
