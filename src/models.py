@@ -99,9 +99,8 @@ class Swaps(db.Model):
     paid = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    valid_status = ['pending','rejected','agreed','canceled','incoming']
     status = db.Column(db.String(20), default='pending')
+    valid_status = ['pending','rejected','agreed','canceled','incoming']
 
     tournament = db.relationship('Tournaments', back_populates='swaps')
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
@@ -123,11 +122,19 @@ class Swaps(db.Model):
             + f'recipient_email:{self.recipient_user.user.email} '
             + f'tournament:{self.tournament.name}>')
 
+    @staticmethod
+    def counter_status(status):
+        if status == 'pending':
+            return 'incoming'
+        if status == 'incoming':
+            return 'pending'
+        return status
+
     def get_counter_percentage(self):
         ids = (self.recipient_id, self.sender_id, self.tournament_id)
         swap = Swaps.query.get(ids)
         return swap.percentage
-
+    
     def serialize(self):
         return {
             'tournament_id': self.tournament_id,
