@@ -534,8 +534,8 @@ def run_seeds():
         sender_user=cary,
         recipient_user=lou,
         percentage=2,
-        due_at=(newvegas.end_at + timedelta(days=4))
-        status='agreed',
+        due_at=(newvegas.end_at + timedelta(days=4)),
+        status='agreed'
     ))
 
     ######################
