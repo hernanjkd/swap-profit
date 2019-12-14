@@ -193,8 +193,7 @@ def attach(app):
                 'width': 200, 'height': 200,
                 'crop': 'thumb', 'gravity': 'face',
                 'radius': 100
-            },
-            ],
+            }],
             tags=['profile_picture']
         )
 
@@ -202,7 +201,7 @@ def attach(app):
 
         db.session.commit()
 
-        return jsonify({'message':'ok'}), 200
+        return jsonify({'profile_pic_url': result['secure_url']}), 200
 
 
 
@@ -306,7 +305,9 @@ def attach(app):
             }
         )
 
-        return jsonify({'message':'Image uploaded successfully'}), 200
+        return jsonify({
+            'message':'Image uploaded successfully. Email sent.'
+        }), 200
 
 
 
@@ -590,19 +591,18 @@ def attach(app):
 
 
 
-    # @app.route('/users/me/transaction', methods=['POST'])
-    # @role_jwt_required(['user'])
-    # def add_coins(user_id):
+    @app.route('/users/me/transaction', methods=['POST'])
+    @role_jwt_required(['user'])
+    def add_coins(user_id):
 
-    #     body = request.get_json()
-    #     check_params(body, 'amount', 'token')
+        body = request.get_json()
+        check_params(body, 'amount')
         
-    #     for x in body['amount']:
-    #         db.session.add( Coins(
-    #             user_id = user_id,
-    #             token = body['token'],
-    #             expires_at = ''
-    #         ))
+        for x in body['amount']:
+            db.session.add( Coins(
+                user_id = user_id,
+                expires_at = ''
+            ))
 
 
 
