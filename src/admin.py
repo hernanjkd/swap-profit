@@ -1,7 +1,7 @@
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import Admin
 from models import (db, Users, Profiles, Tournaments, Flights, Swaps, Buy_ins,
-    Transactions, Tournaments, Coins, Devices)
+    Transactions, Tournaments, Devices)
 
 
 def SetupAdmin(app):
@@ -18,7 +18,6 @@ def SetupAdmin(app):
     admin.add_view(ExcludedModelView(Swaps, db.session))
     admin.add_view(ExcludedModelView(Buy_ins, db.session))
     admin.add_view(ExcludedModelView(Transactions, db.session))
-    admin.add_view(ExcludedModelView(Coins, db.session))
     admin.add_view(ExcludedModelView(Devices, db.session))
 
     return admin
