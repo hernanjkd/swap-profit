@@ -20,10 +20,11 @@ class Users(db.Model):
     def __repr__(self):
         return f'<Users {self.email}>'
 
-    # def get_total_coins(self):
-    #     total = 0
-    #     for coins in self.transactions:
-
+    def get_total_coins(self):
+        total = 0
+        for transaction in self.transactions:
+            total += transaction.coins
+        return total
 
     def serialize(self):
         return {
@@ -89,6 +90,7 @@ class Profiles(db.Model):
             'profile_pic_url': self.profile_pic_url,
             'hendon_url': self.hendon_url,
             'roi': self.roi,
+            'coins': self.user.get_total_coins(),
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
@@ -301,22 +303,22 @@ class Transactions(db.Model):
     __tablename__ = 'transactions'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    amount_in_coins = db.Column(db.Integer)
-    amount_in_dollars = db.Column(db.Integer)
+    coins = db.Column(db.Integer)
+    dollars = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = db.relationship('Users', back_populates='transactions')
 
     def __repr__(self):
-        return f'<Transactions user:{self.user.name} coins:{self.amount_in_coins} dollars:{self.amount_in_dollars}>'
+        return f'<Transactions user:{self.user.name} coins:{self.coins} dollars:{self.dollars}>'
 
     def serialize(self):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'amount_in_coins': self.amount_in_coins,
-            'amount_in_dollars': self.amount_in_dollars,
+            'coins': self.coins,
+            'dollars': self.dollars,
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
