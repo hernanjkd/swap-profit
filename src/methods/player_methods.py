@@ -596,18 +596,18 @@ def attach(app):
     def add_coins(user_id):
 
         body = request.get_json()
-        check_params(body, 'amount_in_dollars','amount_in_coins')
+        check_params(body, 'dollars','coins')
 
         db.session.add( Transactions(
             user_id = user_id,
-            amount_in_dollars = body['amount_in_dollars'],
-            amount_in_coins = body['amount_in_coins']
+            dollars = body['dollars'],
+            coins = body['coins']
         ))
 
         db.session.commit()
 
         user = Users.query.get(user_id)
-        return jsonify(user.serialize())
+        return jsonify({'total_coins': user.get_total_coins()})
 
 
 
