@@ -351,8 +351,7 @@ class Devices(db.Model):
 
 class Zip_Codes(db.Model):
     __tablename__ = 'zip_codes'
-    id = db.Column(db.Integer, primary_key=True)
-    zip_code = db.Column(db.String(14))
+    zip_code = db.Column(db.String(14), primary_key=True)
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
