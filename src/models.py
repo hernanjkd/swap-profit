@@ -219,6 +219,7 @@ class Tournaments(db.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'flights': [x.serialize() for x in self.flights],
+            'swaps': [x.serialize() for x in self.swaps],
             'buy_ins': self.get_all_users_latest_buyins()
         }
 
