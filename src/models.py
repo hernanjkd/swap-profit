@@ -15,11 +15,16 @@ class Users(db.Model):
 
     profile = db.relationship('Profiles', back_populates='user', uselist=False)
     transactions = db.relationship('Transactions', back_populates='user')
-    coins = db.relationship('Coins', back_populates='user')
     devices = db.relationship('Devices', back_populates='user')
 
     def __repr__(self):
         return f'<Users {self.email}>'
+
+    def get_total_coins(self):
+        total = 0
+        for transaction in self.transactions:
+            total += transaction.coins
+        return total
 
     def serialize(self):
         return {
@@ -27,7 +32,9 @@ class Users(db.Model):
             'email': self.email,
             'valid': self.valid,
             'created_at': self.created_at,
-            'updated_at': self.updated_at
+            'updated_at': self.updated_at,
+            'transactions': [x.serialize() for x in self.transactions],
+            'devices': [x.serialize() for x in self.devices]
         }
 
 
@@ -83,6 +90,7 @@ class Profiles(db.Model):
             'profile_pic_url': self.profile_pic_url,
             'hendon_url': self.hendon_url,
             'roi': self.roi,
+            'coins': self.user.get_total_coins(),
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
@@ -211,6 +219,7 @@ class Tournaments(db.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'flights': [x.serialize() for x in self.flights],
+            'swaps': [x.serialize() for x in self.swaps],
             'buy_ins': self.get_all_users_latest_buyins()
         }
 
@@ -295,47 +304,22 @@ class Transactions(db.Model):
     __tablename__ = 'transactions'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    amount_in_coins = db.Column(db.Integer)
-    amount_in_dollars = db.Column(db.Integer)
+    coins = db.Column(db.Integer)
+    dollars = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = db.relationship('Users', back_populates='transactions')
 
     def __repr__(self):
-        return f'<Transactions user:{self.user.name} coins:{self.amount_in_coins} dollars:{self.amount_in_dollars}>'
+        return f'<Transactions user:{self.user.name} coins:{self.coins} dollars:{self.dollars}>'
 
     def serialize(self):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'amount_in_coins': self.amount_in_coins,
-            'amount_in_dollars': self.amount_in_dollars,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at
-        }
-
-
-
-class Coins(db.Model):
-    __tablename__ = 'coins'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    token = db.Column(db.String(256))
-    expires_at = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    user = db.relationship('Users', back_populates='coins')
-
-    def __repr__(self):
-        return f'<Coins id:{self.id} user:{self.user_id}>'
-
-    def serialize(self):
-        return {
-            'user_id': self.user_id,
-            'token': self.token,
-            'expires_at': self.expires_at,
+            'coins': self.coins,
+            'dollars': self.dollars,
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
@@ -368,8 +352,7 @@ class Devices(db.Model):
 
 class Zip_Codes(db.Model):
     __tablename__ = 'zip_codes'
-    id = db.Column(db.Integer, primary_key=True)
-    zip_code = db.Column(db.String(14))
+    zip_code = db.Column(db.String(14), primary_key=True)
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -387,3 +370,28 @@ class Zip_Codes(db.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
+
+
+
+# class Coins(db.Model):
+#     __tablename__ = 'coins'
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+#     token = db.Column(db.String(256))
+#     expires_at = db.Column(db.DateTime)
+#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+#     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+#     user = db.relationship('Users', back_populates='coins')
+
+#     def __repr__(self):
+#         return f'<Coins id:{self.id} user:{self.user_id}>'
+
+#     def serialize(self):
+#         return {
+#             'user_id': self.user_id,
+#             'token': self.token,
+#             'expires_at': self.expires_at,
+#             'created_at': self.created_at,
+#             'updated_at': self.updated_at
+#         }

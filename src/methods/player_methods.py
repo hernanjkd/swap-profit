@@ -6,7 +6,7 @@ from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc, asc
 from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
-from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Coins, Devices
+from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Devices
 from notifications import send_email
 from datetime import datetime
 
@@ -596,13 +596,18 @@ def attach(app):
     def add_coins(user_id):
 
         body = request.get_json()
-        check_params(body, 'amount')
-        
-        for x in body['amount']:
-            db.session.add( Coins(
-                user_id = user_id,
-                expires_at = ''
-            ))
+        check_params(body, 'dollars','coins')
+
+        db.session.add( Transactions(
+            user_id = user_id,
+            dollars = body['dollars'],
+            coins = body['coins']
+        ))
+
+        db.session.commit()
+
+        user = Users.query.get(user_id)
+        return jsonify({'total_coins': user.get_total_coins()})
 
 
 

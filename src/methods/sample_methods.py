@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify, url_for, redirect, render_template
-from flask_jwt_simple import JWTManager, create_jwt, decode_jwt, get_jwt
+from flask import Flask, jsonify
 from notifications import send_email
+import requests
+import os
 
 def attach(app):
 
@@ -15,5 +16,16 @@ def attach(app):
     @app.route('/testing', methods=['GET'])
     def first_endpoint():
         return jsonify({ 'details': "All good my friend"}), 200
+
+    @app.route('/mailgun')
+    def get_logs():
+        return jsonify( requests.get(
+            f"https://api.mailgun.net/v3/{os.environ.get('MAILGUN_DOMAIN')}/events",
+            auth=("api", os.environ.get("MAILGUN_API_KEY")),
+            params={"begin"       : "Fri, 13 DEC 2019 09:00:00 -0000",
+                    "ascending"   : "yes",
+                    "limit"       :  25,
+                    "pretty"      : "yes",
+                    "recipient" : "hernanjkd@gmail.com"}).json())
 
     return app

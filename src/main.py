@@ -29,20 +29,16 @@ def create_app(testing=False):
     CORS(app)
 
     jwt = JWTManager(app)
-    admin = SetupAdmin(app)
+    SetupAdmin(app)
 
     @app.errorhandler(APIException)
     def handle_invalid_usage(error):
         return jsonify(error.to_dict()), error.status_code
 
-    ###############################################################################
-    #
-    # Must always pass just one dictionary when using create_jwt(), even if empty
-    # The expiration is for timedelta, so any keyworded argument that fits it
-    #
-    #       create_jwt( {'id':100,'role':'admin','exp':15} )
-    #
-    ###############################################################################
+    ######################################################################
+    # Takes in a dictionary with id, role and expiration date in minutes
+    #        create_jwt({ 'id': 100, 'role': 'admin', 'exp': 15 })
+    ######################################################################
     @jwt.jwt_data_loader
     def add_claims_to_access_token(kwargs={}):
         now = datetime.utcnow()
