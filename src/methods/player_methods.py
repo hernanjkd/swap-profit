@@ -539,7 +539,10 @@ def attach(app):
     @role_jwt_required(['user'])
     def swap_tracker(user_id):
 
-        trmnts = Tournaments.get_live_upcoming(user_id=user_id)
+        if request.args.get('history') == 'true':
+            trmnts = Tournaments.get_user_history(user_id=user_id)
+        else:
+            trmnts = Tournaments.get_user_live_upcoming(user_id=user_id)
 
         swap_trackers = []
 

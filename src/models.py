@@ -4,12 +4,13 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+
+
 class Users(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
-    valid = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -181,13 +182,23 @@ class Tournaments(db.Model):
         return f'<Tournament {self.name}>'
 
     @staticmethod
-    def get_live_upcoming(user_id):
+    def get_user_live_upcoming(user_id):
         now = datetime.utcnow()
         trmnts = (Tournaments.query
                     .filter( Tournaments.end_at > now )
                     .filter( Tournaments.flights.any( 
                         Flights.buy_ins.any( user_id = user_id )))
                     .order_by( Tournaments.start_at.asc() ))
+        return trmnts if trmnts.count() > 0 else None
+
+    @staticmethod
+    def get_user_history(user_id):
+        now = datetime.utcnow()
+        trmnts = (Tournaments.query
+                    .filter( Tournaments.flights.any( 
+                        Flights.buy_ins.any( user_id = user_id )))
+                    .filter( Tournaments.end_at < now )
+                    .order_by( Tournaments.start_at.desc() ))
         return trmnts if trmnts.count() > 0 else None
 
     def get_all_users_latest_buyins(self):
