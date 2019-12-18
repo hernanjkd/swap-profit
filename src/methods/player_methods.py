@@ -599,12 +599,12 @@ def attach(app):
     def add_coins(user_id):
 
         body = request.get_json()
-        check_params(body, 'dollars','coins')
+        check_params(body, 'coins')
 
         db.session.add( Transactions(
             user_id = user_id,
-            dollars = body['dollars'],
-            coins = body['coins']
+            coins = body['coins'],
+            dollars = body['dollars'] if 'dollars' in body else 0
         ))
 
         db.session.commit()
