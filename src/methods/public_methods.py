@@ -57,7 +57,7 @@ def attach(app):
         user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
 
         if user is None:
-            raise APIException('The log in information is incorrect', 401)
+            raise APIException('User not found', 404)
 
         if user.valid == False:
             raise APIException('Email not validated', 405)
