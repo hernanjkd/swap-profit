@@ -43,9 +43,9 @@ def create_app(testing=False):
     def add_claims_to_access_token(kwargs={}):
         now = datetime.utcnow()
         kwargs = kwargs if isinstance(kwargs, dict) else {}
-        id = kwargs['id'] if 'id' in kwargs else None
-        role = kwargs['role'] if 'role' in kwargs else 'invalid'
-        exp = kwargs['exp'] if 'exp' in kwargs else 15
+        id = kwargs.get('id')
+        role = kwargs.get('role', 'invalid')
+        exp = kwargs.get('exp', 15)
 
         return {
             'exp': now + timedelta(minutes=exp),
