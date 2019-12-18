@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import asc, desc
 from datetime import datetime
+# import enum
 
 db = SQLAlchemy()
 
@@ -99,6 +100,13 @@ class Profiles(db.Model):
 
 
 
+class SwapStatus(enum.Enum):
+    pending = 'pending'
+    incoming = 'incoming'
+    agreed = 'agreed'
+    rejected = 'rejected'
+    canceled = 'canceled'
+
 class Swaps(db.Model):
     __tablename__ = 'swaps'
     sender_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
@@ -109,23 +117,11 @@ class Swaps(db.Model):
     paid = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    status = db.Column(db.String(20), default='pending')
-    valid_status = ['pending','rejected','agreed','canceled','incoming']
-
+    status = db.Column(db.Enum(SwapStatus), default=SwapStatus.pending)
+    
     tournament = db.relationship('Tournaments', back_populates='swaps')
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
     recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='receiving_swaps')
-
-    def __init__(self, **kwargs):
-        for attr, value in kwargs.items():
-            if not hasattr(self, attr):
-                raise Exception(f"'{attr}' is an invalid keyword argument for Swaps")
-            if attr == 'valid_status':
-                raise Exception(f"'{attr}' can not be modified")
-            if attr == 'status':               
-                if value not in self.valid_status:
-                    raise Exception(f"'{value}' is an invalid status for Swaps")
-            setattr(self, attr, value)
 
     def __repr__(self):
         return (f'<Swaps sender_email:{self.sender_user.user.email} ' 
@@ -151,7 +147,7 @@ class Swaps(db.Model):
             'percentage': self.percentage,
             'counter_percentage': self.get_counter_percentage(),
             'due_at': self.due_at,
-            'status': self.status,
+            'status': self.status._value_,
             'sender_user': self.sender_user.serialize(),
             'recipient_user': self.recipient_user.serialize(),
             'paid': self.paid,
@@ -171,6 +167,7 @@ class Tournaments(db.Model):
     zip_code = db.Column(db.String(14))
     start_at = db.Column(db.DateTime)
     end_at = db.Column(db.DateTime)
+    results_link = db.Column(db.String(256))
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -228,6 +225,7 @@ class Tournaments(db.Model):
             'end_at': self.end_at,
             'longitude': self.longitude,
             'latitude': self.latitude,
+            'results_link': self.results_link,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'flights': [x.serialize() for x in self.flights],
