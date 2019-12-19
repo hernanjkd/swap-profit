@@ -34,6 +34,15 @@ def check_params(body, *args):
         msg = re.sub(r'(.*),', r'\1 and', msg[:-2])
         raise Exception('You must specify the ' + msg, 400)
 
+def check_pagination(request_args):
+    page = request_args.get('page', '0')
+    offset = int(page) - 1 if page.isnumeric() and int(page) > 0 else 0
+    
+    limit = request_args.get('limit', '10')
+    limit = int(limit) if limit.isnumeric() and int(limit) > 0 else '10'
+    
+    return offset, limit
+
 def update_table(table, body, ignore=[]):
     for attr, value in body.items():
         if attr not in ignore:

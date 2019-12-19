@@ -16,14 +16,14 @@ def attach(app):
 
     @app.route('/testing', methods=['GET'])
     def first_endpoint():
-        page = request.args.get('page')
-        page = (int(page) - 1) if page is not None and int(page) > 0 else 'x'
-        return str(page)
-        p = request.args.get('x')
-        p = p and str(int(p) - 1)
-        return p
-        b = Buy_ins.query.offset(None)
-        return jsonify([x.id for x in b])
+        # page = request.args.get('page')
+        # page = (int(page) - 1) if page is not None and int(page) > 0 else 'x'
+        # return str(page)
+        # p = request.args.get('x')
+        # p = p and str(int(p) - 1)
+        # return p
+        # b = Buy_ins.query.offset(None).limit(None)
+        # return jsonify([x.id for x in b])
         return jsonify({ 'details': "All good my friend"}), 200
 
     @app.route('/mailgun')

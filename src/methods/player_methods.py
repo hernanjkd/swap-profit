@@ -5,8 +5,10 @@ import cloudinary.api
 from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc, asc
-from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
-from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Devices
+from utils import (APIException, check_params, validation_link, update_table, 
+    sha256, role_jwt_required, check_pagination)
+from models import (db, Users, Profiles, Tournaments, Swaps, Flights, 
+    Buy_ins, Transactions, Devices)
 from notifications import send_email
 from datetime import datetime
 
@@ -322,12 +324,7 @@ def attach(app):
             
             if request.args.get('history') == 'true':
                 
-                page = request.args.get('page', '0')
-                condition = page.isnumeric() and int(page) > 0
-                offset = int(page) - 1 if condition else 0
-
-                limit = request.args.get('limit', '10')
-                limit = int(limit) if limit.isnumeric() else 10
+                offset, limit = check_pagination( request.args )
 
                 trmnts = Tournaments.query \
                             .filter( Tournaments.end_at < now ) \
