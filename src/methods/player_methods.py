@@ -538,7 +538,7 @@ def attach(app):
     @app.route('/me/swap_tracker', methods=['GET'])
     @role_jwt_required(['user'])
     def swap_tracker(user_id):
-
+        
         if request.args.get('history') == 'true':
             trmnts = Tournaments.get_user_history(user_id=user_id)
         else:
@@ -579,7 +579,7 @@ def attach(app):
     @app.route('/users/me/devices', methods=['POST'])
     @role_jwt_required(['user'])
     def add_device(user_id):
-
+        
         req = request.get_json()
         check_params(req, 'token')
 

@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import asc, desc
 from datetime import datetime
-# import enum
+import enum
 
 db = SQLAlchemy()
 
