@@ -321,9 +321,20 @@ def attach(app):
             now = datetime.utcnow()
             
             if request.args.get('history') == 'true':
+                
+                page = request.args.get('page', '0')
+                condition = page.isnumeric() and int(page) > 0
+                offset = int(page) - 1 if condition else 0
+
+                limit = request.args.get('limit', '10')
+                limit = int(limit) if limit.isnumeric() else 10
+
                 trmnts = Tournaments.query \
                             .filter( Tournaments.end_at < now ) \
-                            .order_by( Tournaments.start_at.desc() )
+                            .order_by( Tournaments.start_at.desc() ) \
+                            .offset( offset ) \
+                            .limit( limit )
+
             else:
                 trmnts = Tournaments.query \
                             .filter( Tournaments.end_at > now ) \
