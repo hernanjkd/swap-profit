@@ -2,7 +2,9 @@ from flask import Flask, jsonify, request
 from notifications import send_email
 import requests
 import os
-from models import Buy_ins
+# from models import Buy_ins
+# from utils import resolve_pagination
+# import time
 
 def attach(app):
 
@@ -22,7 +24,13 @@ def attach(app):
         # p = request.args.get('x')
         # p = p and str(int(p) - 1)
         # return p
-        # b = Buy_ins.query.offset(None).limit(None)
+        # x = [*request.__dict__.items()]
+        # o = {}
+        # for a, v in x:
+        #     o = {**o, a: str(v)}
+        # return jsonify(o)
+        # offset, limit = resolve_pagination(request.args)
+        # b = Buy_ins.query.offset(offset).limit(limit)
         # return jsonify([x.id for x in b])
         return jsonify({ 'details': "All good my friend"}), 200
 

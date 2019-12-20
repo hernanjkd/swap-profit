@@ -6,7 +6,7 @@ from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc, asc
 from utils import (APIException, check_params, validation_link, update_table, 
-    sha256, role_jwt_required, check_pagination)
+    sha256, role_jwt_required, resolve_pagination)
 from models import (db, Users, Profiles, Tournaments, Swaps, Flights, 
     Buy_ins, Transactions, Devices)
 from notifications import send_email
@@ -323,19 +323,17 @@ def attach(app):
             now = datetime.utcnow()
             
             if request.args.get('history') == 'true':
-                
-                offset, limit = check_pagination( request.args )
-
                 trmnts = Tournaments.query \
                             .filter( Tournaments.end_at < now ) \
                             .order_by( Tournaments.start_at.desc() ) \
-                            .offset( offset ) \
-                            .limit( limit )
-
             else:
                 trmnts = Tournaments.query \
                             .filter( Tournaments.end_at > now ) \
                             .order_by( Tournaments.start_at.asc() )
+
+            offset, limit = resolve_pagination( request.args )
+
+            trmnts = trmnts.offset( offset ).limit( limit )
                             
             return jsonify([x.serialize() for x in trmnts]), 200
 
