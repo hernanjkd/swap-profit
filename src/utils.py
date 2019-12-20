@@ -49,12 +49,12 @@ def sha256(string):
     m.update(string.encode('utf-8'))
     return m.hexdigest()
 
-def resolve_pagination(request_args):
+def resolve_pagination(request_args, limit_default=10):
     page = request_args.get('page', '0')
     offset = int(page) - 1 if page.isnumeric() and int(page) > 0 else 0
     
     limit = request_args.get('limit', '10')
-    limit = int(limit) if limit.isnumeric() and int(limit) > 0 else '10'
+    limit = int(limit) if limit.isnumeric() and int(limit) > 0 else limit_default
     
     return offset, limit
 

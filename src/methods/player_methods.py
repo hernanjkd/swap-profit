@@ -453,10 +453,7 @@ def attach(app):
 
 
         if 'status' in req:
-            counter_swap_body = {
-                **counter_swap_body,
-                'status': Swaps.counter_status( req['status'] )
-            }
+            counter_swap_body['status'] = Swaps.counter_status( req['status'] )
 
 
         update_table(swap, req, ignore=['tournament_id','recipient_id','paid','counter_percentage'])

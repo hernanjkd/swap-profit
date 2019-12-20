@@ -63,19 +63,21 @@ class Profiles(db.Model):
         return f'<Profiles {self.first_name} {self.last_name}>'
 
     def available_percentage(self, tournament_id):
+        status_to_consider = ['pending','agreed']
         total = 0
         for swap in self.sending_swaps:
             if swap.tournament_id == tournament_id:
-                if swap.status != 'rejected' and swap.status != 'unable to contact': 
+                if swap.status in status_to_consider:
                     total += swap.percentage
         return 50 - total
 
     def get_swaps_actions(self, tournament_id):
+        status_to_consider = ['pending','agreed']
         actions = 0
         swaps = 0
         for swap in self.sending_swaps:
             if swap.tournament_id == tournament_id:
-                if swap.status != 'rejected' and swap.status != 'unable to contact':
+                if swap.status in status_to_consider:
                     actions += swap.percentage
                     swaps += 1
         return {
@@ -106,6 +108,7 @@ class SwapStatus(enum.Enum):
     agreed = 'agreed'
     rejected = 'rejected'
     canceled = 'canceled'
+    unable_to_contact = 'unable to contact'
 
 class Swaps(db.Model):
     __tablename__ = 'swaps'
