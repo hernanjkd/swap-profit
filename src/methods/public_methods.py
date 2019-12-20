@@ -1,7 +1,7 @@
 from flask import request, jsonify, render_template
 from flask_cors import CORS
 from flask_jwt_simple import JWTManager, create_jwt, decode_jwt, get_jwt
-from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
+from utils import APIException, check_params, jwt_link, update_table, sha256, role_jwt_required
 from models import db, Users, Devices
 from notifications import send_email
 
@@ -19,7 +19,7 @@ def attach(app):
                 .first())
 
         if user and user.valid == False:     
-            data = {'validation_link': validation_link(user.id)}
+            data = {'validation_link': jwt_link(user.id)}
             send_email( type='email_validation', to=user.email, data=data)
             
             return jsonify({'message':'Another email has been sent for email validation'})
@@ -41,7 +41,7 @@ def attach(app):
         user = Users.query.filter_by(email=req['email']).first()
 
         send_email( type='email_validation', to=user.email, 
-            data={'validation_link': validation_link(user.id)} )
+            data={'validation_link': jwt_link(user.id)} )
 
         return jsonify({'message': 'Please verify your email'}), 200
 

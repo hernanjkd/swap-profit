@@ -35,14 +35,15 @@ def check_params(body, *args):
         raise Exception('You must specify the ' + msg, 400)
 
 def update_table(table, body, ignore=[]):
+    ignore = [*ignore, 'created_at', 'updated_at']
     for attr, value in body.items():
         if attr not in ignore:
             if not hasattr(table, attr):
                 raise Exception(f'Incorrect parameter in body: {attr}', 400)
             setattr(table, attr, value)
 
-def validation_link(id):
-    return os.environ.get('API_HOST') + '/users/validate/' + create_jwt({'id':id, 'role':'validating'})
+def jwt_link(id, path='/users/validate/', role='validating'):
+    return os.environ['API_HOST'] + path + create_jwt({'id':id, 'role':role})
 
 def sha256(string):
     m = hashlib.sha256()
