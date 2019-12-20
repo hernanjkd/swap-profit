@@ -489,7 +489,6 @@ def run_seeds():
         user=lou,        
         flight=flight1_newvegas     
     ))
-
     db.session.add(Buy_ins(         
         chips=4000,         
         table=1,         
@@ -497,7 +496,6 @@ def run_seeds():
         user=cary,        
         flight=flight1_newvegas     
     ))
-
     db.session.add(Buy_ins(         
         chips=9000,         
         table=22,         
@@ -505,7 +503,6 @@ def run_seeds():
         user=lou,        
         flight=flight2_newvegas     
     ))
-
     db.session.add(Buy_ins(         
         chips=6000,         
         table=5,         
@@ -527,7 +524,6 @@ def run_seeds():
         status='agreed'
 
     ))
-
     db.session.add(Swaps(
         tournament= newvegas,
         sender_user=cary,
@@ -550,7 +546,6 @@ def run_seeds():
         status='rejected'
 
     ))
-
     db.session.add(Swaps(
         tournament= newvegas,
         sender_user=nikita,
@@ -573,7 +568,6 @@ def run_seeds():
         due_at=(live.end_at + timedelta(days=4)),
 	    status='canceled'
     ))
-
     db.session.add(Swaps(
         tournament= live,
         sender_user=nikita,
@@ -613,12 +607,25 @@ def run_seeds():
         user=lou,        
         flight=flight1_oldvegas     
     ))
-
     db.session.add(Buy_ins(         
         chips=4500,         
         table=21,         
         seat=1,         
         user=cary,        
+        flight=flight1_oldvegas     
+    ))
+    db.session.add(Buy_ins(         
+        chips=5500,         
+        table=1,         
+        seat=7,         
+        user=nikita,        
+        flight=flight1_oldvegas     
+    ))
+    db.session.add(Buy_ins(         
+        chips=9000,         
+        table=13,         
+        seat=12,         
+        user=kate,        
         flight=flight1_oldvegas     
     ))
 
@@ -630,7 +637,6 @@ def run_seeds():
         due_at=(oldvegas.end_at + timedelta(days=4)),
         status='agreed'
     ))
-
     db.session.add(Swaps(
         tournament= oldvegas,
         sender_user=cary,
@@ -638,6 +644,39 @@ def run_seeds():
         percentage=7,
         due_at=(oldvegas.end_at + timedelta(days=4)),
         status='agreed'
+    ))
+    db.session.add(Swaps(
+        tournament=oldvegas,
+        sender_user=lou,
+        recipient_user=nikita,
+        percentage=5,
+        due_at=(oldvegas.end_at + timedelta(days=4)),
+        status='agreed',
+        paid=True
+    ))
+    db.session.add(Swaps(
+        tournament= oldvegas,
+        sender_user=nikita,
+        recipient_user=lou,
+        percentage=7,
+        due_at=(oldvegas.end_at + timedelta(days=4)),
+        status='agreed'
+    ))
+    db.session.add(Swaps(
+        tournament=oldvegas,
+        sender_user=lou,
+        recipient_user=kate,
+        percentage=15,
+        due_at=(oldvegas.end_at + timedelta(days=4)),
+        status='pending'
+    ))    
+    db.session.add(Swaps(
+        tournament= oldvegas,
+        sender_user=kate,
+        recipient_user=lou,
+        percentage=17,
+        due_at=(oldvegas.end_at + timedelta(days=4)),
+        status='incoming'
     ))
 
     ##################
@@ -675,5 +714,108 @@ def run_seeds():
         user=kate,
         flight=flight1_gamorrah
     ))
+
+    # TOURNAMENTS
+    p1 = Tournaments(
+        name='Placeholder Tournament 1',
+        address='2211 N Rampart Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89145',
+        start_at=datetime(1994,5,2,10),
+        end_at=datetime(1994,5,2,15)
+    )
+    db.session.add(p1) 
+    p2 = Tournaments(
+        name='Placeholder Tournament 2',
+        address='2211 N Rampart Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89145',
+        start_at=datetime(1998,5,2,10),
+        end_at=datetime(1998,5,2,15)
+    )
+    db.session.add(p2) 
+    p3 = Tournaments(
+        name='Placeholder Tournament 3',
+        address='2211 N Rampart Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89145',
+        start_at=datetime(2002,5,2,10),
+        end_at=datetime(2002,5,2,15)
+    )
+    db.session.add(p3) 
+    p4 = Tournaments(
+        name='Placeholder Tournament 4',
+        address='2211 N Rampart Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89145',
+        start_at=datetime(2019,5,2,10),
+        end_at=datetime(2019,5,2,15)
+    )
+    db.session.add(p4) 
+    p5 = Tournaments(
+        name='Placeholder Tournament 5',
+        address='2211 N Rampart Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89145',
+        start_at=datetime(2019,5,2,10),
+        end_at=datetime(2019,11,2,15)
+    )
+    db.session.add(p5) 
+    p6 = Tournaments(
+        name='Placeholder Tournament 6',
+        address='2211 N Rampart Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89145',
+        start_at=datetime(2019,5,2,10),
+        end_at=datetime(2019,12,2,15)
+    )
+    db.session.add(p6) 
+    p7 = Tournaments(
+        name='Placeholder Tournament 7',
+        address='2211 N Rampart Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89145',
+        start_at=datetime(2019,5,2,10),
+        end_at=datetime(2019,12,12,15)
+    )
+    db.session.add(p7) 
+    p8 = Tournaments(
+        name='Placeholder Tournament 8',
+        address='2211 N Rampart Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89145',
+        start_at=datetime(2019,5,2,10),
+        end_at=datetime(2019,12,14,15)
+    )
+    db.session.add(p8) 
+    p9 = Tournaments(
+        name='Placeholder Tournament 9',
+        address='2211 N Rampart Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89145',
+        start_at=datetime(2019,5,2,10),
+        end_at=datetime(2019,12,19,15)
+    )
+    db.session.add(p9) 
+    p10 = Tournaments(
+        name='Placeholder Tournament 10',
+        address='2211 N Rampart Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89145',
+        start_at=datetime(2019,5,2,10),
+        end_at=datetime(2019,12,19,15)
+    )
+    db.session.add(p10)
+
 
     db.session.commit()
