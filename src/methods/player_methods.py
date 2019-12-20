@@ -5,8 +5,10 @@ import cloudinary.api
 from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc, asc
-from utils import APIException, check_params, validation_link, update_table, sha256, role_jwt_required
-from models import db, Users, Profiles, Tournaments, Swaps, Flights, Buy_ins, Transactions, Devices
+from utils import (APIException, check_params, validation_link, update_table, 
+    sha256, role_jwt_required, resolve_pagination)
+from models import (db, Users, Profiles, Tournaments, Swaps, Flights, 
+    Buy_ins, Transactions, Devices)
 from notifications import send_email
 from datetime import datetime
 
@@ -18,20 +20,20 @@ def attach(app):
     @role_jwt_required(['user'])
     def update_email():
         
-        body = request.get_json()
-        check_params(body, 'email', 'password', 'new_email')
+        req = request.get_json()
+        check_params(req, 'email', 'password', 'new_email')
 
         user = Users.query.filter_by( 
             id = user_id, 
-            email = body['email'], 
-            password = sha256(body['password']) 
+            email = req['email'], 
+            password = sha256(req['password']) 
         ).first()
         user = Users.query.get(72)
         if user is None:
             raise APIException('User not found', 404)
 
         user.valid = False
-        user.email = body['new_email']
+        user.email = req['new_email']
 
         db.session.commit()
 
@@ -57,14 +59,14 @@ def attach(app):
             )
 
         # request.method == 'PUT'
-        body = request.get_json()
-        check_params(body, 'email', 'password')
+        req = request.get_json()
+        check_params(req, 'email', 'password')
 
-        user = Users.query.filter_by(id = jwt_data['sub'], email = body['email']).first()
+        user = Users.query.filter_by(id = jwt_data['sub'], email = req['email']).first()
         if user is None:
             raise APIException('User not found', 404)
 
-        user.password = sha256(body['password'])
+        user.password = sha256(req['password'])
 
         db.session.commit()
 
@@ -84,19 +86,19 @@ def attach(app):
             }), 200
 
 
-        body = request.get_json()
-        check_params(body, 'email', 'password', 'new_password')
+        req = request.get_json()
+        check_params(req, 'email', 'password', 'new_password')
 
         user = Users.query.filter_by( 
             id=user_id, 
-            email=body['email'], 
-            password=sha256(body['password'])
+            email=req['email'], 
+            password=sha256(req['password'])
         ).first()
         
         if user is None:
             raise APIException('Invalid parameters', 400)
 
-        user.password = sha256(body['new_password'])
+        user.password = sha256(req['new_password'])
 
         db.session.commit()
 
@@ -139,14 +141,14 @@ def attach(app):
 
         user = Users.query.get(user_id)
 
-        body = request.get_json()
-        check_params(body, 'first_name', 'last_name')
+        req = request.get_json()
+        check_params(req, 'first_name', 'last_name')
 
         db.session.add(Profiles(
-            first_name = body['first_name'],
-            last_name = body['last_name'],
-            nickname = body['nickname'] if 'nickname' in body else None,
-            hendon_url = body['hendon_url'] if 'hendon_url' in body else None,
+            first_name = req['first_name'],
+            last_name = req['last_name'],
+            nickname = req.get('nickname'),
+            hendon_url = req.get('hendon_url'),
             user = user
         ))
         db.session.commit()
@@ -162,10 +164,10 @@ def attach(app):
 
         prof = Profiles.query.get(user_id)
 
-        body = request.get_json()
-        check_params(body)
+        req = request.get_json()
+        check_params(req)
 
-        update_table(prof, body, ignore=['profile_pic_url'])
+        update_table(prof, req, ignore=['profile_pic_url'])
 
         db.session.commit()
 
@@ -210,17 +212,17 @@ def attach(app):
     @role_jwt_required(['user'])
     def create_buy_in(user_id):
 
-        body = request.get_json()
-        check_params(body, 'flight_id', 'chips', 'table', 'seat')
+        req = request.get_json()
+        check_params(req, 'flight_id', 'chips', 'table', 'seat')
 
         prof = Profiles.query.get(user_id)
 
         buyin = Buy_ins(
             user_id = user_id,
-            flight_id = body['flight_id'],
-            chips = body['chips'],
-            table = body['table'],
-            seat = body['seat']
+            flight_id = req['flight_id'],
+            chips = req['chips'],
+            table = req['table'],
+            seat = req['seat']
         )
         db.session.add(buyin)
         db.session.commit()
@@ -229,10 +231,10 @@ def attach(app):
 
         buyin = Buy_ins.query.filter_by(
             user_id = user_id,
-            flight_id = body['flight_id'],
-            chips = body['chips'],
-            table = body['table'],
-            seat = body['seat']
+            flight_id = req['flight_id'],
+            chips = req['chips'],
+            table = req['table'],
+            seat = req['seat']
         ).order_by(Buy_ins.id.desc()).first()
 
         return jsonify({ **buyin.serialize(), "name": name }), 200
@@ -244,15 +246,15 @@ def attach(app):
     @role_jwt_required(['user'])
     def update_buy_in(user_id, id):
 
-        body = request.get_json()
-        check_params(body)
+        req = request.get_json()
+        check_params(req)
 
         buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
 
         if buyin is None:
             raise APIException('Buy_in not found', 404)
 
-        update_table(buyin, body, ignore=['user_id','flight_id','receipt_img_url'])
+        update_table(buyin, req, ignore=['user_id','flight_id','receipt_img_url'])
 
         db.session.commit()
         
@@ -323,11 +325,15 @@ def attach(app):
             if request.args.get('history') == 'true':
                 trmnts = Tournaments.query \
                             .filter( Tournaments.end_at < now ) \
-                            .order_by( Tournaments.start_at.desc() )
+                            .order_by( Tournaments.start_at.desc() ) \
             else:
                 trmnts = Tournaments.query \
                             .filter( Tournaments.end_at > now ) \
                             .order_by( Tournaments.start_at.asc() )
+
+            offset, limit = resolve_pagination( request.args )
+
+            trmnts = trmnts.offset( offset ).limit( limit )
                             
             return jsonify([x.serialize() for x in trmnts]), 200
 
@@ -354,46 +360,46 @@ def attach(app):
         # get sender user
         sender = Profiles.query.get(user_id)
 
-        body = request.get_json()
-        check_params(body, 'tournament_id', 'recipient_id', 'percentage')
+        req = request.get_json()
+        check_params(req, 'tournament_id', 'recipient_id', 'percentage')
 
-        percentage = abs(body['percentage'])
+        percentage = abs(req['percentage'])
 
         # get recipient user
-        recipient = Profiles.query.get(body['recipient_id'])
+        recipient = Profiles.query.get(req['recipient_id'])
         if recipient is None:
             raise APIException('Recipient user not found', 404)
 
-        if Swaps.query.get((user_id, body['recipient_id'], body['tournament_id'])):
+        if Swaps.query.get((user_id, req['recipient_id'], req['tournament_id'])):
             raise APIException('Swap already exists, can not duplicate', 400)
 
-        sender_availability = sender.available_percentage( body['tournament_id'] )
+        sender_availability = sender.available_percentage( req['tournament_id'] )
         if percentage > sender_availability:
             raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
                                 f'You have available: {sender_availability}%'), 400)
 
-        recipient_availability = recipient.available_percentage( body['tournament_id'] )
+        recipient_availability = recipient.available_percentage( req['tournament_id'] )
         if percentage > recipient_availability:
             raise APIException(('Swap percentage too large for recipient. '
                                 f'He has available to swap: {recipient_availability}%'), 400)
 
         db.session.add(Swaps(
             sender_id = user_id,
-            tournament_id = body['tournament_id'],
-            recipient_id = body['recipient_id'],
+            tournament_id = req['tournament_id'],
+            recipient_id = req['recipient_id'],
             percentage = percentage,
             status = 'pending'
         ))
         db.session.add(Swaps(
-            sender_id = body['recipient_id'],
-            tournament_id = body['tournament_id'],
+            sender_id = req['recipient_id'],
+            tournament_id = req['tournament_id'],
             recipient_id = user_id,
             percentage = percentage,
             status = 'incoming'
         ))
         db.session.commit()
 
-        trmnt = Tournaments.query.get(body['tournament_id'])
+        trmnt = Tournaments.query.get(req['tournament_id'])
 
         return jsonify({'message':'Swap created successfully.'}), 200
 
@@ -408,32 +414,32 @@ def attach(app):
         # get sender user
         sender = Profiles.query.get(user_id)
 
-        body = request.get_json()
+        req = request.get_json()
         counter_swap_body = {}
-        check_params(body, 'tournament_id', 'recipient_id')
+        check_params(req, 'tournament_id', 'recipient_id')
 
         # get recipient user
-        recipient = Profiles.query.get(body['recipient_id'])
+        recipient = Profiles.query.get(req['recipient_id'])
         if recipient is None:
             raise APIException('Recipient user not found', 404)
 
         # get swap
-        swap = Swaps.query.get((user_id, recipient.id, body['tournament_id']))
-        counter_swap = Swaps.query.get((recipient.id, user_id, body['tournament_id']))
+        swap = Swaps.query.get((user_id, recipient.id, req['tournament_id']))
+        counter_swap = Swaps.query.get((recipient.id, user_id, req['tournament_id']))
         if swap is None or counter_swap is None:
             raise APIException('Swap not found', 404)
 
-        if 'percentage' in body:
+        if 'percentage' in req:
 
-            percentage = abs(body['percentage'])
-            counter = abs(body['counter_percentage']) if 'counter_percentage' in body else percentage
+            percentage = abs(req['percentage'])
+            counter = abs(req.get('counter_percentage', percentage))
 
-            sender_availability = sender.available_percentage( body['tournament_id'] )
+            sender_availability = sender.available_percentage( req['tournament_id'] )
             if percentage > sender_availability:
                 raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
                                     f'You have available: {sender_availability}%'), 400)
 
-            recipient_availability = recipient.available_percentage( body['tournament_id'] )
+            recipient_availability = recipient.available_percentage( req['tournament_id'] )
             if counter > recipient_availability:
                 raise APIException(('Swap percentage too large for recipient. '
                                     f'He has available to swap: {recipient_availability}%'), 400)
@@ -442,26 +448,26 @@ def attach(app):
             new_counter_percentage = counter_swap.percentage + counter
 
             # So it can be updated correctly with the update_table funcion
-            body['percentage'] = new_percentage
+            req['percentage'] = new_percentage
 
             counter_swap_body = {'percentage': new_counter_percentage}
 
 
-        if 'status' in body:
+        if 'status' in req:
             counter_swap_body = {
                 **counter_swap_body,
-                'status': Swaps.counter_status( body['status'] )
+                'status': Swaps.counter_status( req['status'] )
             }
 
 
-        update_table(swap, body, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
+        update_table(swap, req, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
         update_table(counter_swap, counter_swap_body)
 
         db.session.commit()
 
-        if body['status'] == 'agreed':
-            swap = Swaps.query.get((user_id, recipient.id, body['tournament_id']))
-            counter_swap = Swaps.query.get((recipient.id, user_id, body['tournament_id']))
+        if req['status'] == 'agreed':
+            swap = Swaps.query.get((user_id, recipient.id, req['tournament_id']))
+            counter_swap = Swaps.query.get((recipient.id, user_id, req['tournament_id']))
             
             send_email( type='swap_created', to=sender.user.email,
                 data={
@@ -508,10 +514,10 @@ def attach(app):
         # get sender user
         sender = Profiles.query.get(user_id)
 
-        body = request.get_json()
-        check_params(body, 'tournament_id', 'recipient_id')
+        req = request.get_json()
+        check_params(req, 'tournament_id', 'recipient_id')
 
-        swap = Swaps.query.get(user_id, body['recipient_id'], body['tournament_id'])
+        swap = Swaps.query.get(user_id, req['recipient_id'], req['tournament_id'])
 
         swap.paid = True
 
@@ -538,7 +544,7 @@ def attach(app):
     @app.route('/me/swap_tracker', methods=['GET'])
     @role_jwt_required(['user'])
     def swap_tracker(user_id):
-
+        
         if request.args.get('history') == 'true':
             trmnts = Tournaments.get_user_history(user_id=user_id)
         else:
@@ -579,13 +585,13 @@ def attach(app):
     @app.route('/users/me/devices', methods=['POST'])
     @role_jwt_required(['user'])
     def add_device(user_id):
-
-        body = request.get_json()
-        check_params(body, 'token')
+        
+        req = request.get_json()
+        check_params(req, 'token')
 
         db.session.add(Devices(
             user_id = user_id,
-            token = body['token']
+            token = req['token']
         ))
         db.session.commit()
 
@@ -598,13 +604,13 @@ def attach(app):
     @role_jwt_required(['user'])
     def add_coins(user_id):
 
-        body = request.get_json()
-        check_params(body, 'coins')
+        req = request.get_json()
+        check_params(req, 'coins')
 
         db.session.add( Transactions(
             user_id = user_id,
-            coins = body['coins'],
-            dollars = body['dollars'] if 'dollars' in body else 0
+            coins = req['coins'],
+            dollars = req.get('dollars', 0)
         ))
 
         db.session.commit()

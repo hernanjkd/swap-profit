@@ -47,19 +47,19 @@ def attach(app):
 
     @app.route('/tournaments', methods=['POST'])
     def add_tournament():
-        body = request.get_json()
+        req = request.get_json()
         db.session.add(Tournaments(
-            name = body['name'],
-            address = body['address'],
-            start_at = datetime( *body['start_at'] ),
-            end_at = datetime( *body['end_at'] ),
+            name = req['name'],
+            address = req['address'],
+            start_at = datetime( *req['start_at'] ),
+            end_at = datetime( *req['end_at'] ),
             longitude = None,
             latitude = None
         ))
         db.session.commit()
         search = {
-            'name': body['name'],
-            'start_at': datetime( *body['start_at'] )
+            'name': req['name'],
+            'start_at': datetime( *req['start_at'] )
         }
         return jsonify(Tournaments.query.filter_by(**search).first().serialize()), 200
 
@@ -84,19 +84,19 @@ def attach(app):
 
     @app.route('/flights', methods=['POST'])
     def create_flight():
-        body = request.get_json()
+        req = request.get_json()
         db.session.add(Flights(
-            tournament_id = body['tournament_id'],
-            start_at = datetime( *body['start_at'] ),
-            end_at = datetime( *body['end_at'] ),
-            day = body['day']
+            tournament_id = req['tournament_id'],
+            start_at = datetime( *req['start_at'] ),
+            end_at = datetime( *req['end_at'] ),
+            day = req['day']
         ))
         db.session.commit()
         search = {
-            'tournament_id': body['tournament_id'],
-            'start_at': datetime(*body['start_at']),
-            'end_at': datetime(*body['end_at']),
-            'day': body['day']
+            'tournament_id': req['tournament_id'],
+            'start_at': datetime(*req['start_at']),
+            'end_at': datetime(*req['end_at']),
+            'day': req['day']
         }
         return jsonify(Flights.query.filter_by(**search).first().serialize()), 200
 
@@ -145,8 +145,8 @@ def attach(app):
     @app.route('/swaps', methods=['DELETE'])
     @role_jwt_required(['admin'])
     def delete_swap(**kwargs):
-        body = request.get_json()
-        db.session.delete( Swaps.query.get(body['sender_id'], body['recipient_id'], body['tournament_id']) )
+        req = request.get_json()
+        db.session.delete( Swaps.query.get(req['sender_id'], req['recipient_id'], req['tournament_id']) )
         db.session.commit()
         return jsonify({'message':'Swap deleted'}), 200
 
@@ -156,7 +156,7 @@ def attach(app):
     @app.route('/devices/<int:id>', methods=['DELETE'])
     @role_jwt_required(['admin'])
     def delete_device(id, **kwargs):
-        body = request.get_json()
+        req = request.get_json()
         db.session.delete()
         db.session.commit()
         return jsonify({'message':'Device deleted'})

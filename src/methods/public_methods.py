@@ -10,12 +10,12 @@ def attach(app):
     @app.route('/users', methods=['POST'])
     def register_user():
 
-        body = request.get_json()
-        check_params(body, 'email', 'password', 'device_token')
+        req = request.get_json()
+        check_params(req, 'email', 'password', 'device_token')
 
         # If user exists and failed to validate his account
         user = (Users.query
-                .filter_by( email=body['email'], password=sha256(body['password']) )
+                .filter_by( email=req['email'], password=sha256(req['password']) )
                 .first())
 
         if user and user.valid == False:     
@@ -28,17 +28,17 @@ def attach(app):
             raise APIException('User already exists', 405)
 
         user = Users(
-            email = body['email'],
-            password = sha256(body['password'])
+            email = req['email'],
+            password = sha256(req['password'])
         )
         db.session.add(user)
         db.session.add( Devices(
-            token = body['device_token'],
+            token = req['device_token'],
             user = user
         ))
         db.session.commit()
 
-        user = Users.query.filter_by(email=body['email']).first()
+        user = Users.query.filter_by(email=req['email']).first()
 
         send_email( type='email_validation', to=user.email, 
             data={'validation_link': validation_link(user.id)} )
@@ -51,10 +51,10 @@ def attach(app):
     @app.route('/users/token', methods=['POST'])
     def login():
 
-        body = request.get_json()
-        check_params(body, 'email', 'password')
+        req = request.get_json()
+        check_params(req, 'email', 'password')
 
-        user = Users.query.filter_by( email=body['email'], password=sha256(body['password']) ).first()
+        user = Users.query.filter_by( email=req['email'], password=sha256(req['password']) ).first()
 
         if user is None:
             raise APIException('User not found', 404)
@@ -66,7 +66,7 @@ def attach(app):
             'jwt': create_jwt({
                 'id': user.id,
                 'role': 'user',
-                'exp': body['exp'] if 'exp' in body else 15
+                'exp': req.get('exp', 15)
             })
         }), 200
 

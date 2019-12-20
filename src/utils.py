@@ -49,6 +49,15 @@ def sha256(string):
     m.update(string.encode('utf-8'))
     return m.hexdigest()
 
+def resolve_pagination(request_args):
+    page = request_args.get('page', '0')
+    offset = int(page) - 1 if page.isnumeric() and int(page) > 0 else 0
+    
+    limit = request_args.get('limit', '10')
+    limit = int(limit) if limit.isnumeric() and int(limit) > 0 else '10'
+    
+    return offset, limit
+
 # Notes: 'admin' will have access even if arg not passed
 def role_jwt_required(valid_roles=['invalid']):
     def decorator(func):
