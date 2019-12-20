@@ -5,7 +5,7 @@ import cloudinary.api
 from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc, asc
-from utils import (APIException, check_params, validation_link, update_table, 
+from utils import (APIException, check_params, jwt_link, update_table, 
     sha256, role_jwt_required, resolve_pagination)
 from models import (db, Users, Profiles, Tournaments, Swaps, Flights, 
     Buy_ins, Transactions, Devices)
@@ -38,7 +38,7 @@ def attach(app):
         db.session.commit()
 
         send_email( type='email_validation', to=user.email, 
-            data={'validation_link': validation_link(user.id)} )
+            data={'validation_link': jwt_link(user.id)} )
 
         return jsonify({'message': 'Please verify your new email'}), 200
 
@@ -48,14 +48,16 @@ def attach(app):
     @app.route('/users/reset_password/<token>', methods=['GET','PUT'])
     def html_reset_password(token):
 
-        jwt_data = decode_jwt(token)
-        if jwt_data['role'] != 'password':
+        email = decode_jwt(token).get('role')
+        
+        if email is None or '@' not in email:
             raise APIException('Access denied', 403)
 
         if request.method == 'GET':
             return render_template('reset_password.html',
                 host = os.environ.get('API_HOST'),
-                token = token
+                token = token,
+                email = email
             )
 
         # request.method == 'PUT'
@@ -79,15 +81,18 @@ def attach(app):
     @role_jwt_required(['user'])
     def reset_password(user_id):
 
+        req = request.get_json()
+        check_params(req, 'email')
+
+        # User forgot their password
         if request.args.get('forgot') == 'true':
             return jsonify({
                 'message': 'A link has been sent to your email to reset the password',
-                'link': os.environ.get('API_HOST') + '/users/reset_password/' + create_jwt({'id':user_id, 'role':'password'})
+                'link': jwt_link(user_id, '/users/reset_password/', req['email'])
             }), 200
 
-
-        req = request.get_json()
-        check_params(req, 'email', 'password', 'new_password')
+        # User knows their password
+        check_params(req, 'password', 'new_password')
 
         user = Users.query.filter_by( 
             id=user_id, 
