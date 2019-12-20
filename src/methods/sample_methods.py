@@ -27,7 +27,7 @@ def attach(app):
         # x = [*request.__dict__.items()]
         # o = {}
         # for a, v in x:
-        #     o = {**o, a: str(v)}
+        #     o[a] = str(v)
         # return jsonify(o)
         # offset, limit = resolve_pagination(request.args)
         # b = Buy_ins.query.offset(offset).limit(limit)
