@@ -325,14 +325,13 @@ def attach(app):
             if request.args.get('history') == 'true':
                 trmnts = Tournaments.query \
                             .filter( Tournaments.end_at < now ) \
-                            .order_by( Tournaments.start_at.desc() ) \
+                            .order_by( Tournaments.start_at.desc() )
             else:
                 trmnts = Tournaments.query \
                             .filter( Tournaments.end_at > now ) \
                             .order_by( Tournaments.start_at.asc() )
 
             offset, limit = resolve_pagination( request.args )
-
             trmnts = trmnts.offset( offset ).limit( limit )
                             
             return jsonify([x.serialize() for x in trmnts]), 200
