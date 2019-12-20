@@ -325,7 +325,7 @@ class Transactions(db.Model):
     user = db.relationship('Users', back_populates='transactions')
 
     def __repr__(self):
-        return f'<Transactions user:{self.user.name} coins:{self.coins} dollars:{self.dollars}>'
+        return f'<Transactions user:{self.user.email} coins:{self.coins} dollars:{self.dollars}>'
 
     def serialize(self):
         return {
