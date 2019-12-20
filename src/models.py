@@ -67,7 +67,7 @@ class Profiles(db.Model):
         total = 0
         for swap in self.sending_swaps:
             if swap.tournament_id == tournament_id:
-                if swap.status in status_to_consider:
+                if swap.status._value_ in status_to_consider:
                     total += swap.percentage
         return 50 - total
 
@@ -77,7 +77,7 @@ class Profiles(db.Model):
         swaps = 0
         for swap in self.sending_swaps:
             if swap.tournament_id == tournament_id:
-                if swap.status in status_to_consider:
+                if swap.status._value_ in status_to_consider:
                     actions += swap.percentage
                     swaps += 1
         return {
