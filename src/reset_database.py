@@ -17,6 +17,13 @@ def run_seeds():
     Profiles.query.delete()
     Users.query.delete()
 
+    db.session.execute("ALTER SEQUENCE users_id_seq RESTART")
+    db.session.execute("ALTER SEQUENCE tournaments_id_seq RESTART")
+    db.session.execute("ALTER SEQUENCE flights_id_seq RESTART")
+    db.session.execute("ALTER SEQUENCE buy_ins_id_seq RESTART")
+    db.session.execute("ALTER SEQUENCE transactions_id_seq RESTART")
+    db.session.execute("ALTER SEQUENCE devices_id_seq RESTART")
+
     ########################
     #  USERS AND PROFILES
     ########################
