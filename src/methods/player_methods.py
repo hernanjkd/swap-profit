@@ -10,7 +10,7 @@ from utils import (APIException, check_params, jwt_link, update_table,
 from models import (db, Users, Profiles, Tournaments, Swaps, Flights, 
     Buy_ins, Transactions, Devices)
 from notifications import send_email
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def attach(app):
@@ -325,34 +325,64 @@ def attach(app):
     def get_tournaments(user_id, id):
 
         if id == 'all':
-            now = datetime.utcnow()
-            
-            if request.args.get('history') == 'true':
-                trmnts = Tournaments.query \
-                            .filter( Tournaments.end_at < now ) \
-                            .order_by( Tournaments.start_at.desc() )
-            else:
-                trmnts = Tournaments.query \
-                            .filter( Tournaments.end_at > now ) \
-                            .order_by( Tournaments.start_at.asc() )
+            now = datetime.utcnow() - timedelta(days=1)
+            trmnts = Tournaments.query
 
+            # By name
+            name = request.args.get('name') 
+            if name is not None:
+                trmnts = trmnts.filter( Tournaments.name.ilike(f'%{name}%') )
+            
+            # Past tournaments
+            if request.args.get('history') == 'true':
+                trmnts = trmnts.filter( Tournaments.end_at < now )
+
+            # Current and future tournaments
+            elif name is None:
+                trmnts = trmnts.filter( Tournaments.start_at > now )
+
+            # By zip code
+            zip = request.args.get('zip', '')
+            if zip.isnumeric():
+                z = Zip_Codes.query.get(zip)
+                lat = str(z.latitude)
+                lon = str(z.longitude)
+
+            # By user location
+            else:
+                lat = request.args.get('lat', '')
+                lon = request.args.get('lon', '')
+
+            if lat.isnumeric() and lon.isnumeric():
+                trmnts = trmnts.order_by( 
+                    (int(lon) - Tournaments.longitude + int(lat) - Tournaments.latitude)
+                .asc() )
+
+            # By ascending date
+            if request.args.get('asc') == 'true':
+                trmnts = trmnts.order_by( Tournaments.start_at.asc() )
+
+            # By descending date
+            if request.args.get('desc') == 'true':
+                trmnts = trmnts.order_by( Tournaments.start_at.desc() )
+
+            # Pagination
             offset, limit = resolve_pagination( request.args )
             trmnts = trmnts.offset( offset ).limit( limit )
                             
             return jsonify([x.serialize() for x in trmnts]), 200
 
-        if id.isnumeric():
+
+        # Single tournament by id
+        elif id.isnumeric():
             trmnt = Tournaments.query.get(int(id))
-        else:
-            trmnt = Tournaments.query.filter( Tournaments.name.ilike(f'%{id}%') ).all()
+            if trmnt is None:
+                raise APIException('Tournament not found', 404)
 
-        if trmnt is None:
-            raise APIException('Tournament not found', 404)
+            return jsonify(trmnt.serialize()), 200
 
-        if isinstance(trmnt, list):
-            return jsonify([x.serialize() for x in trmnt]), 200
 
-        return jsonify(trmnt.serialize()), 200
+        raise APIException('Invalid id', 400)
 
 
 
