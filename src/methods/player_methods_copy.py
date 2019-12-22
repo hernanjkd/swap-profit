@@ -298,6 +298,7 @@ def attach(app):
         )
 
         buyin.receipt_img_url = result['secure_url']
+
         db.session.commit()
 
         send_email(type='buyin_receipt', to=buyin.user.user.email,

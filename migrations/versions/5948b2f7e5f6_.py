@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 2ebbce1fda8b
+Revision ID: 5948b2f7e5f6
 Revises: 
-Create Date: 2019-11-19 20:33:09.362813
+Create Date: 2019-12-22 10:01:54.277136
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '2ebbce1fda8b'
+revision = '5948b2f7e5f6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,11 +21,17 @@ def upgrade():
     op.create_table('tournaments',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=500), nullable=False),
-    sa.Column('address', sa.String(length=250), nullable=True),
+    sa.Column('address', sa.String(length=200), nullable=True),
+    sa.Column('city', sa.String(length=50), nullable=True),
+    sa.Column('state', sa.String(length=20), nullable=True),
+    sa.Column('zip_code', sa.String(length=14), nullable=True),
     sa.Column('start_at', sa.DateTime(), nullable=True),
     sa.Column('end_at', sa.DateTime(), nullable=True),
+    sa.Column('results_link', sa.String(length=256), nullable=True),
     sa.Column('longitude', sa.Float(), nullable=True),
     sa.Column('latitude', sa.Float(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('users',
@@ -33,8 +39,27 @@ def upgrade():
     sa.Column('email', sa.String(length=100), nullable=False),
     sa.Column('password', sa.String(length=256), nullable=False),
     sa.Column('valid', sa.Boolean(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
+    )
+    op.create_table('zip_codes',
+    sa.Column('zip_code', sa.String(length=14), nullable=False),
+    sa.Column('longitude', sa.Float(), nullable=True),
+    sa.Column('latitude', sa.Float(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.PrimaryKeyConstraint('zip_code')
+    )
+    op.create_table('devices',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('token', sa.String(length=256), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('flights',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -42,6 +67,8 @@ def upgrade():
     sa.Column('end_at', sa.DateTime(), nullable=True),
     sa.Column('day', sa.Integer(), nullable=True),
     sa.Column('tournament_id', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['tournament_id'], ['tournaments.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -53,22 +80,18 @@ def upgrade():
     sa.Column('hendon_url', sa.String(length=200), nullable=True),
     sa.Column('profile_pic_url', sa.String(length=250), nullable=True),
     sa.Column('roi', sa.Float(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('tokens',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('token', sa.String(length=256), nullable=True),
-    sa.Column('expires_at', sa.DateTime(), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('transactions',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('amount_in_coins', sa.Integer(), nullable=True),
-    sa.Column('amount_in_dollars', sa.Integer(), nullable=True),
+    sa.Column('coins', sa.Integer(), nullable=True),
+    sa.Column('dollars', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -81,23 +104,29 @@ def upgrade():
     sa.Column('table', sa.Integer(), nullable=True),
     sa.Column('seat', sa.Integer(), nullable=True),
     sa.Column('place', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['flight_id'], ['flights.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['profiles.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('swaps',
-    sa.Column('sender_id', sa.Integer(), nullable=False),
-    sa.Column('recipient_id', sa.Integer(), nullable=False),
-    sa.Column('tournament_id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('counter_swap_id', sa.Integer(), nullable=True),
+    sa.Column('sender_id', sa.Integer(), nullable=True),
+    sa.Column('recipient_id', sa.Integer(), nullable=True),
+    sa.Column('tournament_id', sa.Integer(), nullable=True),
     sa.Column('percentage', sa.Integer(), nullable=False),
-    sa.Column('winning_chips', sa.Integer(), nullable=True),
     sa.Column('due_at', sa.DateTime(), nullable=True),
     sa.Column('paid', sa.Boolean(), nullable=True),
-    sa.Column('status', sa.String(length=20), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('status', sa.Enum('pending', 'incoming', 'agreed', 'rejected', 'canceled', name='swapstatus'), nullable=True),
+    sa.ForeignKeyConstraint(['counter_swap_id'], ['swaps.id'], ),
     sa.ForeignKeyConstraint(['recipient_id'], ['profiles.id'], ),
     sa.ForeignKeyConstraint(['sender_id'], ['profiles.id'], ),
     sa.ForeignKeyConstraint(['tournament_id'], ['tournaments.id'], ),
-    sa.PrimaryKeyConstraint('sender_id', 'recipient_id', 'tournament_id')
+    sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
 
@@ -107,9 +136,10 @@ def downgrade():
     op.drop_table('swaps')
     op.drop_table('buy_ins')
     op.drop_table('transactions')
-    op.drop_table('tokens')
     op.drop_table('profiles')
     op.drop_table('flights')
+    op.drop_table('devices')
+    op.drop_table('zip_codes')
     op.drop_table('users')
     op.drop_table('tournaments')
     # ### end Alembic commands ###

@@ -108,13 +108,14 @@ class SwapStatus(enum.Enum):
     agreed = 'agreed'
     rejected = 'rejected'
     canceled = 'canceled'
-    unable_to_contact = 'unable to contact'
 
 class Swaps(db.Model):
     __tablename__ = 'swaps'
-    sender_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
-    recipient_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
-    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    counter_swap_id = db.Column(db.Integer, db.ForeignKey('swaps.id'))
+    sender_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
+    recipient_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
     percentage = db.Column(db.Integer, nullable=False)
     due_at = db.Column(db.DateTime, default=None)
     paid = db.Column(db.Boolean, default=False)
@@ -125,6 +126,8 @@ class Swaps(db.Model):
     tournament = db.relationship('Tournaments', back_populates='swaps')
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
     recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='receiving_swaps')
+    counter_swap = db.relationship('Swaps', remote_side=[id], uselist=False,
+                                            backref=db.backref('counter_swap2'))
 
     def __repr__(self):
         return (f'<Swaps sender_email:{self.sender_user.user.email} ' 
@@ -139,16 +142,13 @@ class Swaps(db.Model):
             return 'pending'
         return status
 
-    def get_counter_percentage(self):
-        ids = (self.recipient_id, self.sender_id, self.tournament_id)
-        swap = Swaps.query.get(ids)
-        return swap.percentage
-    
     def serialize(self):
         return {
+            'id': self.id,
+            'counter_swap_id': self.counter_swap_id,
             'tournament_id': self.tournament_id,
             'percentage': self.percentage,
-            'counter_percentage': self.get_counter_percentage(),
+            'counter_percentage': self.counter_swap.percentage,
             'due_at': self.due_at,
             'status': self.status._value_,
             'sender_user': self.sender_user.serialize(),

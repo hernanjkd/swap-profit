@@ -28,4 +28,38 @@ def attach(app):
                     "pretty"      : "yes",
                     "recipient" : "hernanjkd@gmail.com"}).json())
 
+    @app.route('/ocr_image', methods=['PUT'])
+    def ocr():
+        import cloudinary
+        from google.cloud import vision
+
+        # return cloudinary.uploader.destroy('ocr')
+
+        result = cloudinary.uploader.upload(
+            request.files['image'],
+            public_id='ocr',
+            crop='limit',
+            width=450,
+            height=450,
+            eager=[{
+                'width': 200, 'height': 200,
+                'crop': 'thumb', 'gravity': 'face',
+                'radius': 100
+            }],
+            tags=[
+                'buyin_receipt',
+                f'user_',
+                f'buyin_'
+            ]
+        )
+        
+        client = vision.ImageAnnotatorClient()
+        image = vision.types.Image()
+        image.source.image_uri = result['secure_url']
+
+        response = client.text_detection(image=image)
+        texts = response.text_annotations
+
+        return jsonify(texts[0].description)
+
     return app
