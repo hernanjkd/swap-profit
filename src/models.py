@@ -126,7 +126,7 @@ class Swaps(db.Model):
     tournament = db.relationship('Tournaments', back_populates='swaps')
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
     recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='receiving_swaps')
-    counter_swap = db.relationship('Swaps', remote_side=[id], uselist=False,
+    counter_swap = db.relationship('Swaps', remote_side=[counter_swap_id], uselist=False, join_depth=1,
                                             backref=db.backref('counter_swap2'))
 
     def __repr__(self):
