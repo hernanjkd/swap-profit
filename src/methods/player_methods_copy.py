@@ -1,7 +1,7 @@
 import os
 import cloudinary
 import cloudinary.uploader
-import cloudinary.api
+from datetime import datetime, timedelta
 from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc, asc
@@ -10,7 +10,6 @@ from utils import (APIException, check_params, jwt_link, update_table,
 from models import (db, Users, Profiles, Tournaments, Swaps, Flights, 
     Buy_ins, Transactions, Devices)
 from notifications import send_email
-from datetime import datetime, timedelta
 
 
 def attach(app):

@@ -1,7 +1,8 @@
 import os
 import cloudinary
 import cloudinary.uploader
-import cloudinary.api
+from google.cloud import vision
+from datetime import datetime, timedelta
 from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc, asc
@@ -10,7 +11,6 @@ from utils import (APIException, check_params, jwt_link, update_table,
 from models import (db, Users, Profiles, Tournaments, Swaps, Flights, 
     Buy_ins, Transactions, Devices)
 from notifications import send_email
-from datetime import datetime, timedelta
 
 
 def attach(app):
@@ -392,6 +392,14 @@ def attach(app):
 
         # get sender user
         sender = Profiles.query.get(user_id)
+
+        if sender.user.get_coins() == 0:
+            raise APIException('Insufficient coins to make a swap')
+
+        db.session.add( Transactions(
+            user_id = user_id,
+            coins = -1
+        ))
 
         req = request.get_json()
         check_params(req, 'tournament_id', 'recipient_id', 'percentage')

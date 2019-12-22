@@ -31,6 +31,7 @@ def attach(app):
     @app.route('/ocr_image', methods=['PUT'])
     def ocr():
         import cloudinary
+        import cloudinary.uploader
         from google.cloud import vision
 
         # return cloudinary.uploader.destroy('ocr')
@@ -60,6 +61,7 @@ def attach(app):
         response = client.text_detection(image=image)
         texts = response.text_annotations
 
+        cloudinary.uploader.destroy('ocr')
         return jsonify(texts[0].description)
 
     return app

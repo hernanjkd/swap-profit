@@ -23,7 +23,7 @@ class Users(db.Model):
     def __repr__(self):
         return f'<Users {self.email}>'
 
-    def get_total_coins(self):
+    def get_coins(self):
         total = 0
         for transaction in self.transactions:
             total += transaction.coins
@@ -95,7 +95,7 @@ class Profiles(db.Model):
             'profile_pic_url': self.profile_pic_url,
             'hendon_url': self.hendon_url,
             'roi': self.roi,
-            'coins': self.user.get_total_coins(),
+            'coins': self.user.get_coins(),
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
@@ -317,8 +317,8 @@ class Transactions(db.Model):
     __tablename__ = 'transactions'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    coins = db.Column(db.Integer)
-    dollars = db.Column(db.Integer)
+    coins = db.Column(db.Integer, nullable=False)
+    dollars = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
