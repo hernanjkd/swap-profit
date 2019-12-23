@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from notifications import send_email
 import requests
 import os
+import models
 
 def attach(app):
 
@@ -15,6 +16,9 @@ def attach(app):
 
     @app.route('/testing', methods=['GET'])
     def first_endpoint():
+
+        return jsonify([{**x.serialize(), 'cccccc': x.counter_swap.serialize()} for x in models.Swaps.query.all()])
+
         return jsonify({ 'details': "All good my friend"}), 200
 
     @app.route('/mailgun')

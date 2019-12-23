@@ -126,7 +126,7 @@ class Swaps(db.Model):
     tournament = db.relationship('Tournaments', back_populates='swaps')
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
     recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='receiving_swaps')
-    counter_swap = db.relationship('Swaps', remote_side=[counter_swap_id], uselist=False, join_depth=1,
+    counter_swap = db.relationship('Swaps', remote_side=[id], uselist=False, post_update=True,
                                             backref=db.backref('counter_swap2'))
 
     def __repr__(self):
@@ -145,15 +145,15 @@ class Swaps(db.Model):
     def serialize(self):
         return {
             'id': self.id,
-            'counter_swap_id': self.counter_swap_id,
             'tournament_id': self.tournament_id,
             'percentage': self.percentage,
-            'counter_percentage': self.counter_swap.percentage,
             'due_at': self.due_at,
             'status': self.status._value_,
             'sender_user': self.sender_user.serialize(),
             'recipient_user': self.recipient_user.serialize(),
             'paid': self.paid,
+            'counter_swap_id': self.counter_swap_id,
+            'counter_percentage': self.counter_swap.percentage,
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
