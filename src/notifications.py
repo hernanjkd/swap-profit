@@ -31,7 +31,7 @@ def send_email(type, to, data={}):
                 'text': template['text'],
                 'html': template['html']
             })
-        
+        print(r.content)
         return r.status_code == 200
         
     return False
