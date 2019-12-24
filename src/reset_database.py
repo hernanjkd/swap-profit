@@ -21,6 +21,7 @@ def run_seeds():
     db.session.execute("ALTER SEQUENCE tournaments_id_seq RESTART")
     db.session.execute("ALTER SEQUENCE flights_id_seq RESTART")
     db.session.execute("ALTER SEQUENCE buy_ins_id_seq RESTART")
+    db.session.execute("ALTER SEQUENCE swaps_id_seq RESTART")
     db.session.execute("ALTER SEQUENCE transactions_id_seq RESTART")
     db.session.execute("ALTER SEQUENCE devices_id_seq RESTART")
 
@@ -148,15 +149,14 @@ def run_seeds():
         tournament=live,
         day=1
     )
-    db.session.add(flight1_live)
-
     flight2_live = Flights(
         start_at=now + timedelta(days=1),
         end_at=now + timedelta(days=1, hours=5),
         tournament=live,
         day=2
     )
-    db.session.add(flight2_live)
+    db.session.add_all([flight1_live, flight2_live])
+
 
     flight1_heartland = Flights(
         start_at=datetime(2019,10,11,12),
@@ -164,15 +164,14 @@ def run_seeds():
         tournament=heartland,
         day=1
     )
-    db.session.add(flight1_heartland)
-
     flight2_heartland = Flights(
         start_at=datetime(2019,10,11,16),
         end_at=datetime(2019,10,11,21),
         tournament=heartland,
         day=1
     )
-    db.session.add(flight2_heartland)
+    db.session.add_all([flight1_heartland, flight2_heartland])
+
 
     flight1_stones = Flights(
         start_at=datetime(2019,9,30,12),
@@ -180,23 +179,20 @@ def run_seeds():
         tournament=stones,
         day=1
     )
-    db.session.add(flight1_stones)
-
     flight2_stones = Flights(
         start_at=datetime(2019,9,30,15),
         end_at=datetime(2019,9,30,21),
         tournament=stones,
         day=1
     )
-    db.session.add(flight2_stones)
-
     flight3_stones = Flights(
         start_at=datetime(2019,10,1,12),
         end_at=datetime(2019,10,1,21),
         tournament=stones,
         day=2
     )
-    db.session.add(flight3_stones)
+    db.session.add_all([flight1_stones, flight2_stones, flight3_stones])
+
 
     flight1_wpt = Flights(
         start_at=datetime(2019,10,2,12),
@@ -206,171 +202,199 @@ def run_seeds():
     )
     db.session.add(flight1_wpt)
 
+
     ########################
     #        SWAPS
     ########################
 
-    db.session.add(Swaps(
+    s1 = Swaps(
         tournament=heartland,
         sender_user=lou,
         recipient_user=cary,
         percentage=10,
         status='pending',
         due_at=(heartland.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament=heartland,
         sender_user=cary,
         recipient_user=lou,
         percentage=10,
         status='incoming',
-        due_at=(heartland.end_at + timedelta(days=4))
-    ))
+        due_at=(heartland.end_at + timedelta(days=4)),
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
+    
 
-    db.session.add(Swaps(
+    s1 = Swaps(
         tournament=heartland,
         sender_user=nikita,
         recipient_user=kate,
         percentage=15,
         status='pending',
         due_at=(heartland.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament=heartland,
         sender_user=kate,
         recipient_user=nikita,
         percentage=15,
         status='incoming',
-        due_at=(heartland.end_at + timedelta(days=4))
-    ))
+        due_at=(heartland.end_at + timedelta(days=4)),
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
 
-    db.session.add(Swaps(
+
+    s1 = Swaps(
         tournament=heartland,
         sender_user=lou,
         recipient_user=kate,
         percentage=5,
         status='incoming',
         due_at=(heartland.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament=heartland,
         sender_user=kate,
         recipient_user=lou,
         percentage=5,
         status='pending',
-        due_at=(heartland.end_at + timedelta(days=4))
-    ))
+        due_at=(heartland.end_at + timedelta(days=4)),
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
 
-    db.session.add(Swaps(
+
+    s1 = Swaps(
         tournament=live,
         sender_user=lou,
         recipient_user=cary,
         percentage=10,
         status='pending',
         due_at=(live.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament=live,
         sender_user=cary,
         recipient_user=lou,
         percentage=9,
         status='incoming',
-        due_at=(live.end_at + timedelta(days=4))
-    ))
+        due_at=(live.end_at + timedelta(days=4)),
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
 
-    db.session.add(Swaps(
+
+    s1 = Swaps(
         tournament=live,
         sender_user=nikita,
         recipient_user=kate,
         percentage=15,
         status='pending',
         due_at=(live.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament=live,
         sender_user=kate,
         recipient_user=nikita,
         percentage=15,
         status='incoming',
-        due_at=(live.end_at + timedelta(days=4))
-    ))
+        due_at=(live.end_at + timedelta(days=4)),
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
 
-    db.session.add(Swaps(
+
+    s1 = Swaps(
         tournament=live,
         sender_user=lou,
         recipient_user=kate,
         percentage=5,
         status='incoming',
         due_at=(live.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament=live,
         sender_user=kate,
         recipient_user=lou,
         percentage=5,
         status='pending',
-        due_at=(live.end_at + timedelta(days=4))
-    ))
+        due_at=(live.end_at + timedelta(days=4)),
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
 
-    db.session.add(Swaps(
+
+    s1 = Swaps(
         tournament=wpt,
         sender_user=lou,
         recipient_user=cary,
         percentage=10,
         status='pending',
         due_at=(wpt.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament=wpt,
         sender_user=cary,
         recipient_user=lou,
         percentage=10,
         status='incoming',
-        due_at=(wpt.end_at + timedelta(days=4))
-    ))
+        due_at=(wpt.end_at + timedelta(days=4)),
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
 
-    db.session.add(Swaps(
+
+    s1 = Swaps(
         tournament=wpt,
         sender_user=nikita,
         recipient_user=kate,
         percentage=15,
         status='pending',
         due_at=(wpt.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament=wpt,
         sender_user=kate,
         recipient_user=nikita,
         percentage=15,
         status='incoming',
-        due_at=(wpt.end_at + timedelta(days=4))
-    ))
+        due_at=(wpt.end_at + timedelta(days=4)),
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
 
-    db.session.add(Swaps(
+
+    s1 = Swaps(
         tournament=wpt,
         sender_user=cary,
         recipient_user=kate,
         percentage=5,
         status='pending',
         due_at=(wpt.end_at + timedelta(days=4))
-    ))
-
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament=wpt,
         sender_user=kate,
         recipient_user=cary,
         percentage=5,
         status='incoming',
-        due_at=(wpt.end_at + timedelta(days=4))
-    ))
+        due_at=(wpt.end_at + timedelta(days=4)),
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
+
 
     ########################
     #       BUY INS
@@ -436,23 +460,26 @@ def run_seeds():
     #   INCOMING SWAPS
     ######################
 
-    db.session.add(Swaps(
+    s1 = Swaps(
         tournament=live,
         sender_user=kate,
         recipient_user=cary,
         percentage=10,
         due_at=(live.end_at + timedelta(days=4)),
         status='incoming'
-    ))
-
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament=live,
         sender_user=cary,
         recipient_user=kate,
         percentage=5,
         due_at=(live.end_at + timedelta(days=4)),
-        status='pending'
-    ))
+        status='pending',
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
+
 
     ####################################
     #   UPCOMING TOURNAMENT + FLIGHTS
@@ -467,23 +494,20 @@ def run_seeds():
         start_at=datetime(2281,10,11,10),
         end_at=datetime(2281,10,11,22)
     )
-    db.session.add(newvegas)
-
     flight1_newvegas = Flights(
         start_at=now + timedelta(days=1),
         end_at=now + timedelta(days=1, hours=5),
         tournament=newvegas,
         day=1
     )
-    db.session.add(flight1_newvegas)
-
     flight2_newvegas = Flights(
         start_at=now + timedelta(days=1, hours=6),
         end_at=now + timedelta(days=1, hours=12),
         tournament=newvegas,
         day=1
     )
-    db.session.add(flight2_newvegas)
+    db.session.add_all([newvegas, flight1_newvegas, flight2_newvegas])
+
 
     #######################
     #   UPCOMING BUYINS
@@ -522,67 +546,76 @@ def run_seeds():
     #   AGREED SWAPS
     #####################
 
-    db.session.add(Swaps(
+    s1 = Swaps(
         tournament=newvegas,
         sender_user=lou,
         recipient_user=cary,
         percentage=8,
         due_at=(newvegas.end_at + timedelta(days=4)),
         status='agreed'
-
-    ))
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament= newvegas,
         sender_user=cary,
         recipient_user=lou,
         percentage=2,
         due_at=(newvegas.end_at + timedelta(days=4)),
-        status='agreed'
-    ))
+        status='agreed',
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
+
 
     ######################
     #   REJECTED SWAPS
     ######################
 
-    db.session.add(Swaps(
+    s1 = Swaps(
         tournament=newvegas,
         sender_user=lou,
         recipient_user=nikita,
         percentage=40,
         due_at=(newvegas.end_at + timedelta(days=4)),
         status='rejected'
-
-    ))
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament= newvegas,
         sender_user=nikita,
         recipient_user=lou,
         percentage=40,
         due_at=(newvegas.end_at + timedelta(days=4)),
-        status='rejected'
+        status='rejected',
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
 
-    ))
 
     #####################
     #   CANCELED SWAPS
     #####################
 
-    db.session.add(Swaps(
+    s1 = Swaps(
         tournament=live,
         sender_user=lou,
         recipient_user=nikita,
         percentage=20,
         due_at=(live.end_at + timedelta(days=4)),
 	    status='canceled'
-    ))
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament= live,
         sender_user=nikita,
         recipient_user=lou,
         percentage=20,
         due_at=(live.end_at + timedelta(days=4)),
-	    status='canceled'
-    ))
+	    status='canceled',
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
+
 
     ######################
     #   PAST TOURNAMENT
@@ -597,15 +630,14 @@ def run_seeds():
         start_at=datetime(1990,5,2,10),
         end_at=datetime(1990,5,2,15)
     )
-    db.session.add(newvegas)
-
     flight1_oldvegas = Flights(
         start_at=now + timedelta(days=1),
         end_at=now + timedelta(days=1, hours=5),
         tournament=oldvegas,
         day=1
     )
-    db.session.add(flight1_oldvegas)
+    db.session.add_all([oldvegas, flight1_oldvegas])
+
 
     db.session.add(Buy_ins(         
         chips=7500,         
@@ -636,23 +668,29 @@ def run_seeds():
         flight=flight1_oldvegas     
     ))
 
-    db.session.add(Swaps(
+
+    s1 = Swaps(
         tournament=oldvegas,
         sender_user=lou,
         recipient_user=cary,
         percentage=5,
         due_at=(oldvegas.end_at + timedelta(days=4)),
         status='agreed'
-    ))
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament= oldvegas,
         sender_user=cary,
         recipient_user=lou,
         percentage=7,
         due_at=(oldvegas.end_at + timedelta(days=4)),
-        status='agreed'
-    ))
-    db.session.add(Swaps(
+        status='agreed',
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
+
+
+    s1 = Swaps(
         tournament=oldvegas,
         sender_user=lou,
         recipient_user=nikita,
@@ -660,31 +698,40 @@ def run_seeds():
         due_at=(oldvegas.end_at + timedelta(days=4)),
         status='agreed',
         paid=True
-    ))
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament= oldvegas,
         sender_user=nikita,
         recipient_user=lou,
         percentage=7,
         due_at=(oldvegas.end_at + timedelta(days=4)),
-        status='agreed'
-    ))
-    db.session.add(Swaps(
+        status='agreed',
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
+
+
+    s1 = Swaps(
         tournament=oldvegas,
         sender_user=lou,
         recipient_user=kate,
         percentage=15,
         due_at=(oldvegas.end_at + timedelta(days=4)),
         status='pending'
-    ))    
-    db.session.add(Swaps(
+    )
+    s2 = Swaps(
         tournament= oldvegas,
         sender_user=kate,
         recipient_user=lou,
         percentage=17,
         due_at=(oldvegas.end_at + timedelta(days=4)),
-        status='incoming'
-    ))
+        status='incoming',
+        counter_swap=s1
+    )
+    s1.counter_swap = s2
+    db.session.add_all([s1, s2])
+
 
     ##################
     # NEW TOURNAMENT
@@ -696,23 +743,20 @@ def run_seeds():
             start_at=datetime(2281,10,11,12),
             end_at=datetime(2281,10,11,21)
     )
-    db.session.add(gamorrah)
-    
     flight1_gamorrah = Flights(
             start_at=datetime(2281,10,11,12),
             end_at=datetime(2281,10,11,16),
             tournament=gamorrah,
             day=1
     )
-    db.session.add(flight1_gamorrah)
-
     flight2_gamorrah = Flights(
             start_at=datetime(2281,10,11,16),
             end_at=datetime(2281,10,11,21),
             tournament=gamorrah,
             day=1
     )
-    db.session.add(flight2_gamorrah)
+    db.session.add_all([gamorrah, flight1_gamorrah, flight2_gamorrah])
+
 
     db.session.add(Buy_ins(
         chips=13000,

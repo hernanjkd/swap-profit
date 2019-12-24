@@ -23,7 +23,7 @@ class Users(db.Model):
     def __repr__(self):
         return f'<Users {self.email}>'
 
-    def get_total_coins(self):
+    def get_coins(self):
         total = 0
         for transaction in self.transactions:
             total += transaction.coins
@@ -95,7 +95,7 @@ class Profiles(db.Model):
             'profile_pic_url': self.profile_pic_url,
             'hendon_url': self.hendon_url,
             'roi': self.roi,
-            'coins': self.user.get_total_coins(),
+            'coins': self.user.get_coins(),
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
@@ -108,16 +108,18 @@ class SwapStatus(enum.Enum):
     agreed = 'agreed'
     rejected = 'rejected'
     canceled = 'canceled'
-    unable_to_contact = 'unable to contact'
 
 class Swaps(db.Model):
     __tablename__ = 'swaps'
-    sender_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
-    recipient_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), primary_key=True)
-    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    counter_swap_id = db.Column(db.Integer, db.ForeignKey('swaps.id'))
+    sender_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
+    recipient_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
     percentage = db.Column(db.Integer, nullable=False)
     due_at = db.Column(db.DateTime, default=None)
     paid = db.Column(db.Boolean, default=False)
+    cost = db.Column(db.Integer, default=1)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     status = db.Column(db.Enum(SwapStatus), default=SwapStatus.pending)
@@ -125,6 +127,8 @@ class Swaps(db.Model):
     tournament = db.relationship('Tournaments', back_populates='swaps')
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
     recipient_user = db.relationship('Profiles', foreign_keys=[recipient_id], backref='receiving_swaps')
+    counter_swap = db.relationship('Swaps', remote_side=[id], post_update=True, uselist=False,
+                                            backref='counter_swap2')
 
     def __repr__(self):
         return (f'<Swaps sender_email:{self.sender_user.user.email} ' 
@@ -139,21 +143,19 @@ class Swaps(db.Model):
             return 'pending'
         return status
 
-    def get_counter_percentage(self):
-        ids = (self.recipient_id, self.sender_id, self.tournament_id)
-        swap = Swaps.query.get(ids)
-        return swap.percentage
-    
     def serialize(self):
         return {
+            'id': self.id,
             'tournament_id': self.tournament_id,
             'percentage': self.percentage,
-            'counter_percentage': self.get_counter_percentage(),
             'due_at': self.due_at,
             'status': self.status._value_,
             'sender_user': self.sender_user.serialize(),
             'recipient_user': self.recipient_user.serialize(),
             'paid': self.paid,
+            'cost': self.cost,
+            'counter_swap_id': self.counter_swap_id,
+            'counter_percentage': self.counter_swap.percentage,
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
@@ -317,8 +319,8 @@ class Transactions(db.Model):
     __tablename__ = 'transactions'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    coins = db.Column(db.Integer)
-    dollars = db.Column(db.Integer)
+    coins = db.Column(db.Integer, nullable=False)
+    dollars = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -360,51 +362,3 @@ class Devices(db.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
-
-
-
-class Zip_Codes(db.Model):
-    __tablename__ = 'zip_codes'
-    zip_code = db.Column(db.String(14), primary_key=True)
-    longitude = db.Column(db.Float)
-    latitude = db.Column(db.Float)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    def __repr__(self):
-        return f'<Zip_Codes {self.zip_code}>'
-
-    def serialize(self):
-        return {
-            'id': self.id,
-            'zip_code': self.zip_code,
-            'longitude': self.longitude,
-            'latitude': self.latitude,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at
-        }
-
-
-
-# class Coins(db.Model):
-#     __tablename__ = 'coins'
-#     id = db.Column(db.Integer, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-#     token = db.Column(db.String(256))
-#     expires_at = db.Column(db.DateTime)
-#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-#     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-#     user = db.relationship('Users', back_populates='coins')
-
-#     def __repr__(self):
-#         return f'<Coins id:{self.id} user:{self.user_id}>'
-
-#     def serialize(self):
-#         return {
-#             'user_id': self.user_id,
-#             'token': self.token,
-#             'expires_at': self.expires_at,
-#             'created_at': self.created_at,
-#             'updated_at': self.updated_at
-#         }

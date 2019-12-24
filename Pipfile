@@ -25,6 +25,7 @@ flask-admin = "*"
 pytest-flask = "*"
 pytest-flask-sqlalchemy = "*"
 cloudinary = "*"
+google-cloud-vision = "*"
 
 [requires]
 python_version = "3.7"

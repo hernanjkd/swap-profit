@@ -1,7 +1,6 @@
 import os
 import cloudinary
 import cloudinary.uploader
-from google.cloud import vision
 from datetime import datetime, timedelta
 from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
@@ -298,6 +297,7 @@ def attach(app):
         )
 
         buyin.receipt_img_url = result['secure_url']
+
         db.session.commit()
 
         send_email(type='buyin_receipt', to=buyin.user.user.email,
@@ -390,174 +390,133 @@ def attach(app):
     @role_jwt_required(['user'])
     def create_swap(user_id):
 
-        # Get sender user
+        # get sender user
         sender = Profiles.query.get(user_id)
 
-
-        # Get request json
         req = request.get_json()
         check_params(req, 'tournament_id', 'recipient_id', 'percentage')
 
-        swap_cost = abs( req.get('cost', 1) )
-        if sender.user.get_coins() < swap_cost:
-            raise APIException('Insufficient coins to make this swap', 402)
+        percentage = abs(req['percentage'])
 
-        percentage = abs( req['percentage'] )
-        counter = abs( req.get('counter_percentage', percentage) )
-
-
-        # Get recipient user
-        recipient = Profiles.query.get( req['recipient_id'] )
+        # get recipient user
+        recipient = Profiles.query.get(req['recipient_id'])
         if recipient is None:
             raise APIException('Recipient user not found', 404)
 
+        if Swaps.query.get((user_id, req['recipient_id'], req['tournament_id'])):
+            raise APIException('Swap already exists, can not duplicate', 400)
 
-        # Check tournament existance
-        trmnt = Tournaments.query.get( req['tournament_id'] )
-        if trmnt is None:
-            raise APIException('Tournament not found', 404)
-
-
-        # Availability
         sender_availability = sender.available_percentage( req['tournament_id'] )
         if percentage > sender_availability:
             raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
                                 f'You have available: {sender_availability}%'), 400)
 
         recipient_availability = recipient.available_percentage( req['tournament_id'] )
-        if counter > recipient_availability:
+        if percentage > recipient_availability:
             raise APIException(('Swap percentage too large for recipient. '
                                 f'He has available to swap: {recipient_availability}%'), 400)
 
-
-        s1 = Swaps(
+        db.session.add(Swaps(
             sender_id = user_id,
             tournament_id = req['tournament_id'],
-            recipient_id = recipient.id,
+            recipient_id = req['recipient_id'],
             percentage = percentage,
-            cost = swap_cost,
             status = 'pending'
-        )
-        s2 = Swaps(
-            sender_id = recipient.id,
+        ))
+        db.session.add(Swaps(
+            sender_id = req['recipient_id'],
             tournament_id = req['tournament_id'],
             recipient_id = user_id,
-            percentage = counter,
-            cost = swap_cost,
-            status = 'incoming',
-            counter_swap = s1
-        )
-        s1.counter_swap = s2
-        
-        db.session.add_all([s1, s2])
+            percentage = percentage,
+            status = 'incoming'
+        ))
         db.session.commit()
 
-
-        # SEND NOTIFICATION TO RECIPIENT
-
+        trmnt = Tournaments.query.get(req['tournament_id'])
 
         return jsonify({'message':'Swap created successfully.'}), 200
 
 
 
 
-    @app.route('/me/swaps/<int:id>', methods=['PUT'])
+    # JSON receives a counter_percentage to update the swap of the recipient
+    @app.route('/me/swaps', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_swap(user_id, id):
+    def update_swap(user_id):
 
-        # Get sender user
+        # get sender user
         sender = Profiles.query.get(user_id)
 
         req = request.get_json()
-        check_params(req)
-        
-
-        # Get swaps
-        swap = Swaps.query.get(id)
-        if sender.id != swap.sender_id:
-            raise APIException('This user has no access to this swap. ' +
-                                'Try swap id: ' + swap.counter_swap_id, 401)
-
-        if sender.user.get_coins() < swap.cost:
-            raise APIException('Insufficient coins to see this swap', 402)
-
-        unpermitted_status = ['canceled','rejected','agreed']
-        if swap.status._value_ in unpermitted_status:
-            raise APIException('This swap can not be modified', 400)
-
         counter_swap_body = {}
-        counter_swap = Swaps.query.get( swap.counter_swap_id )
-        if swap is None or counter_swap is None:
-            raise APIException('Swap not found', 404)
+        check_params(req, 'tournament_id', 'recipient_id')
 
-
-        # Get recipient user
-        recipient = Profiles.query.get( swap.recipient_id )
+        # get recipient user
+        recipient = Profiles.query.get(req['recipient_id'])
         if recipient is None:
             raise APIException('Recipient user not found', 404)
 
+        # get swap
+        swap = Swaps.query.get((user_id, recipient.id, req['tournament_id']))
+        counter_swap = Swaps.query.get((recipient.id, user_id, req['tournament_id']))
+        if swap is None or counter_swap is None:
+            raise APIException('Swap not found', 404)
 
         if 'percentage' in req:
-            percentage = abs( req['percentage'] )
-            counter = abs( req.get('counter_percentage', percentage) )
 
-            sender_availability = sender.available_percentage( swap.tournament_id )
+            percentage = abs(req['percentage'])
+            counter = abs(req.get('counter_percentage', percentage))
+
+            sender_availability = sender.available_percentage( req['tournament_id'] )
             if percentage > sender_availability:
                 raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
                                     f'You have available: {sender_availability}%'), 400)
 
-            recipient_availability = recipient.available_percentage( swap.tournament_id )
+            recipient_availability = recipient.available_percentage( req['tournament_id'] )
             if counter > recipient_availability:
                 raise APIException(('Swap percentage too large for recipient. '
                                     f'He has available to swap: {recipient_availability}%'), 400)
- 
+
             new_percentage = swap.percentage + percentage
             new_counter_percentage = counter_swap.percentage + counter
 
             # So it can be updated correctly with the update_table funcion
             req['percentage'] = new_percentage
 
-            counter_swap_body['percentage'] = new_counter_percentage
+            counter_swap_body = {'percentage': new_counter_percentage}
 
 
-        status = req.get('status')
         if 'status' in req:
-
-            if status == 'agreed' and swap.status._value_ == 'pending':
-                raise APIException('Can not agree a swap on a pending status', 400)
-            
-            counter_swap_body['status'] = Swaps.counter_status( status )
+            counter_swap_body['status'] = Swaps.counter_status( req['status'] )
 
 
-        update_table( swap, req, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
-        update_table( counter_swap, counter_swap_body )
+        update_table(swap, req, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
+        update_table(counter_swap, counter_swap_body)
 
         db.session.commit()
 
-
-        if req.get('status') == 'agreed':
-
-            if recipient.user.get_coins() < swap.cost:
-                raise APIException('Recipient has insufficient coins to process this swap')
-
-            db.session.add( Transactions(
-                user_id = user_id,
-                dollars = 0,
-                coins = -swap.cost
-            ))
-            db.session.add( Transactions(
-                user_id = recipient.id,
-                dollars = 0,
-                coins = -swap.cost
-            ))
-
+        if req['status'] == 'agreed':
+            swap = Swaps.query.get((user_id, recipient.id, req['tournament_id']))
+            counter_swap = Swaps.query.get((recipient.id, user_id, req['tournament_id']))
+            
             send_email( type='swap_created', to=sender.user.email,
-                data={}
+                data={
+                    'percentage': swap.percentage,
+                    'counter_percentage': counter_swap.percentage,
+                    'recipient_firstname': recipient.first_name,
+                    'recipient_lastname': recipient.last_name,
+                    'recipient_email': recipient.user.email
+                }
             )
             send_email( type='swap_created', to=recipient.user.email,
-                data={}
+                data={
+                    'percentage': counter_swap.percentage,
+                    'counter_percentage': swap.percentage,
+                    'recipient_firstname': sender.first_name,
+                    'recipient_lastname': sender.last_name,
+                    'recipient_email': sender.user.email
+                }
             )
-
 
         return jsonify([
             swap.serialize(),
@@ -578,22 +537,17 @@ def attach(app):
 
 
 
-    @app.route('/users/me/swaps/<int:id>/done', methods=['PUT'])
+    @app.route('/users/me/swaps/done', methods=['PUT'])
     @role_jwt_required(['user'])
-    def set_swap_paid(user_id, id):
+    def set_swap_paid(user_id):
 
+        # get sender user
         sender = Profiles.query.get(user_id)
 
         req = request.get_json()
         check_params(req, 'tournament_id', 'recipient_id')
 
-        swap = Swaps.query.get(id)
-        if req['tournament_id'] !=  swap.tournament_id \
-            or req['recipient_id'] != swap.recipient_id:
-            raise APIException('IDs do not match', 400)
-
-        if swap.status._value_ != 'agreed':
-            raise APIException('This swap has not been agreed upon', 400)
+        swap = Swaps.query.get(user_id, req['recipient_id'], req['tournament_id'])
 
         swap.paid = True
 
