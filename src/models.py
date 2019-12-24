@@ -119,6 +119,7 @@ class Swaps(db.Model):
     percentage = db.Column(db.Integer, nullable=False)
     due_at = db.Column(db.DateTime, default=None)
     paid = db.Column(db.Boolean, default=False)
+    cost = db.Column(db.Integer, default=1)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     status = db.Column(db.Enum(SwapStatus), default=SwapStatus.pending)
@@ -152,6 +153,7 @@ class Swaps(db.Model):
             'sender_user': self.sender_user.serialize(),
             'recipient_user': self.recipient_user.serialize(),
             'paid': self.paid,
+            'cost': self.cost,
             'counter_swap_id': self.counter_swap_id,
             'counter_percentage': self.counter_swap.percentage,
             'created_at': self.created_at,
@@ -360,51 +362,3 @@ class Devices(db.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
-
-
-
-class Zip_Codes(db.Model):
-    __tablename__ = 'zip_codes'
-    zip_code = db.Column(db.String(14), primary_key=True)
-    longitude = db.Column(db.Float)
-    latitude = db.Column(db.Float)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    def __repr__(self):
-        return f'<Zip_Codes {self.zip_code}>'
-
-    def serialize(self):
-        return {
-            'id': self.id,
-            'zip_code': self.zip_code,
-            'longitude': self.longitude,
-            'latitude': self.latitude,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at
-        }
-
-
-
-# class Coins(db.Model):
-#     __tablename__ = 'coins'
-#     id = db.Column(db.Integer, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-#     token = db.Column(db.String(256))
-#     expires_at = db.Column(db.DateTime)
-#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-#     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-#     user = db.relationship('Users', back_populates='coins')
-
-#     def __repr__(self):
-#         return f'<Coins id:{self.id} user:{self.user_id}>'
-
-#     def serialize(self):
-#         return {
-#             'user_id': self.user_id,
-#             'token': self.token,
-#             'expires_at': self.expires_at,
-#             'created_at': self.created_at,
-#             'updated_at': self.updated_at
-#         }

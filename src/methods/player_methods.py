@@ -459,7 +459,6 @@ def attach(app):
 
 
 
-    # JSON receives a counter_percentage to update the swap of the recipient
     @app.route('/me/swaps/<int:id>', methods=['PUT'])
     @role_jwt_required(['user'])
     def update_swap(user_id, id):
@@ -502,7 +501,6 @@ def attach(app):
 
         if 'percentage' in req:
             percentage = abs( req['percentage'] )
-            counter = abs( req.get('counter_percentage', percentage) )
 
             sender_availability = sender.available_percentage( swap.tournament_id )
             if percentage > sender_availability:
@@ -513,7 +511,7 @@ def attach(app):
             if counter > recipient_availability:
                 raise APIException(('Swap percentage too large for recipient. '
                                     f'He has available to swap: {recipient_availability}%'), 400)
-
+ 
             new_percentage = swap.percentage + percentage
             new_counter_percentage = counter_swap.percentage + counter
 
@@ -556,6 +554,7 @@ def attach(app):
                 data={}
             )
 
+
         return jsonify([
             swap.serialize(),
             counter_swap.serialize()
@@ -575,17 +574,22 @@ def attach(app):
 
 
 
-    @app.route('/users/me/swaps/done', methods=['PUT'])
+    @app.route('/users/me/swaps/<int:id>/done', methods=['PUT'])
     @role_jwt_required(['user'])
-    def set_swap_paid(user_id):
+    def set_swap_paid(user_id, id):
 
-        # get sender user
         sender = Profiles.query.get(user_id)
 
         req = request.get_json()
         check_params(req, 'tournament_id', 'recipient_id')
 
-        swap = Swaps.query.get(user_id, req['recipient_id'], req['tournament_id'])
+        swap = Swaps.query.get(id)
+        if req['tournament_id'] !=  swap.tournament_id \
+            or req['recipient_id'] != swap.recipient_id:
+            raise APIException('IDs do not match', 400)
+
+        if swap.status._value_ != 'agreed':
+            raise APIException('This swap has not been agreed upon', 400)
 
         swap.paid = True
 
