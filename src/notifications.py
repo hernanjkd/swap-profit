@@ -32,7 +32,7 @@ def send_email(type, to, data={}):
                 'html': template['html']
             })
         
-        return r
+        return r.status_code == 200
         
     return False
 
