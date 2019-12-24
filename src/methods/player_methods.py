@@ -393,23 +393,23 @@ def attach(app):
         # Get sender user
         sender = Profiles.query.get(user_id)
 
-        if sender.user.get_coins() == 0:
-            raise APIException('Insufficient coins to make a swap', 402)
 
-
+        # Get request json
         req = request.get_json()
         check_params(req, 'tournament_id', 'recipient_id', 'percentage')
 
+        swap_cost = abs( req.get('cost', 1) )
+        if sender.user.get_coins() < swap_cost:
+            raise APIException('Insufficient coins to make this swap', 402)
+
         percentage = abs( req['percentage'] )
+        counter = abs( req.get('counter_percentage', percentage) )
 
 
         # Get recipient user
         recipient = Profiles.query.get( req['recipient_id'] )
         if recipient is None:
             raise APIException('Recipient user not found', 404)
-
-        if recipient.user.get_coins() == 0:
-            raise APIException('Recipient has insufficient coins to make a swap', 402)
 
 
         # Check tournament existance
@@ -425,7 +425,7 @@ def attach(app):
                                 f'You have available: {sender_availability}%'), 400)
 
         recipient_availability = recipient.available_percentage( req['tournament_id'] )
-        if percentage > recipient_availability:
+        if counter > recipient_availability:
             raise APIException(('Swap percentage too large for recipient. '
                                 f'He has available to swap: {recipient_availability}%'), 400)
 
@@ -433,15 +433,17 @@ def attach(app):
         s1 = Swaps(
             sender_id = user_id,
             tournament_id = req['tournament_id'],
-            recipient_id = req['recipient_id'],
+            recipient_id = recipient.id,
             percentage = percentage,
+            cost = swap_cost,
             status = 'pending'
         )
         s2 = Swaps(
-            sender_id = req['recipient_id'],
+            sender_id = recipient.id,
             tournament_id = req['tournament_id'],
             recipient_id = user_id,
-            percentage = percentage,
+            percentage = counter,
+            cost = swap_cost,
             status = 'incoming',
             counter_swap = s1
         )
@@ -466,10 +468,6 @@ def attach(app):
         # Get sender user
         sender = Profiles.query.get(user_id)
 
-        if sender.user.get_coins() == 0:
-            raise APIException('Insufficient coins to make a swap', 402)
-
-
         req = request.get_json()
         check_params(req)
         
@@ -479,6 +477,9 @@ def attach(app):
         if sender.id != swap.sender_id:
             raise APIException('This user has no access to this swap. ' +
                                 'Try swap id: ' + swap.counter_swap_id, 401)
+
+        if sender.user.get_coins() < swap.cost:
+            raise APIException('Insufficient coins to see this swap', 402)
 
         unpermitted_status = ['canceled','rejected','agreed']
         if swap.status._value_ in unpermitted_status:
@@ -495,12 +496,10 @@ def attach(app):
         if recipient is None:
             raise APIException('Recipient user not found', 404)
 
-        if recipient.user.get_coins() == 0:
-            raise APIException('Recipient has insufficient coins to make a swap', 402)
-
 
         if 'percentage' in req:
             percentage = abs( req['percentage'] )
+            counter = abs( req.get('counter_percentage', percentage) )
 
             sender_availability = sender.available_percentage( swap.tournament_id )
             if percentage > sender_availability:
@@ -530,21 +529,26 @@ def attach(app):
             counter_swap_body['status'] = Swaps.counter_status( status )
 
 
-        update_table(swap, req, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
-        update_table(counter_swap, counter_swap_body)
+        update_table( swap, req, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
+        update_table( counter_swap, counter_swap_body )
 
         db.session.commit()
 
+
         if req.get('status') == 'agreed':
+
+            if recipient.user.get_coins() < swap.cost:
+                raise APIException('Recipient has insufficient coins to process this swap')
+
             db.session.add( Transactions(
-                user_id = sender.id,
+                user_id = user_id,
                 dollars = 0,
-                coins = -1
+                coins = -swap.cost
             ))
             db.session.add( Transactions(
                 user_id = recipient.id,
                 dollars = 0,
-                coins = -1
+                coins = -swap.cost
             ))
 
             send_email( type='swap_created', to=sender.user.email,
