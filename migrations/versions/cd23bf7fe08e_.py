@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 5948b2f7e5f6
+Revision ID: cd23bf7fe08e
 Revises: 
-Create Date: 2019-12-22 10:01:54.277136
+Create Date: 2019-12-24 17:00:58.217145
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5948b2f7e5f6'
+revision = 'cd23bf7fe08e'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -43,14 +43,6 @@ def upgrade():
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
-    )
-    op.create_table('zip_codes',
-    sa.Column('zip_code', sa.String(length=14), nullable=False),
-    sa.Column('longitude', sa.Float(), nullable=True),
-    sa.Column('latitude', sa.Float(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.PrimaryKeyConstraint('zip_code')
     )
     op.create_table('devices',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -88,7 +80,7 @@ def upgrade():
     op.create_table('transactions',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('coins', sa.Integer(), nullable=True),
+    sa.Column('coins', sa.Integer(), nullable=False),
     sa.Column('dollars', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
@@ -119,6 +111,7 @@ def upgrade():
     sa.Column('percentage', sa.Integer(), nullable=False),
     sa.Column('due_at', sa.DateTime(), nullable=True),
     sa.Column('paid', sa.Boolean(), nullable=True),
+    sa.Column('cost', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('status', sa.Enum('pending', 'incoming', 'agreed', 'rejected', 'canceled', name='swapstatus'), nullable=True),
@@ -139,7 +132,6 @@ def downgrade():
     op.drop_table('profiles')
     op.drop_table('flights')
     op.drop_table('devices')
-    op.drop_table('zip_codes')
     op.drop_table('users')
     op.drop_table('tournaments')
     # ### end Alembic commands ###
