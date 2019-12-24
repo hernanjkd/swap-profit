@@ -529,7 +529,7 @@ def attach(app):
             counter_swap_body['status'] = Swaps.counter_status( status )
 
 
-        update_table( swap, req, ignore=['tournament_id','recipient_id','paid','counter_percentage'])
+        update_table( swap, req, ignore=['tournament_id','recipient_id','paid','counter_percentage','cost'])
         update_table( counter_swap, counter_swap_body )
 
         db.session.commit()
