@@ -20,7 +20,7 @@ def attach(app):
 
         if user and user.valid == False:     
             data = {'validation_link': jwt_link(user.id)}
-            send_email( type='email_validation', to=user.email, data=data)
+            return send_email( type='email_validation', to=user.email, data=data)
             
             return jsonify({'message':'Another email has been sent for email validation'})
 
