@@ -135,6 +135,7 @@ def run_seeds():
 
     now = datetime.utcnow()
     live = Tournaments(
+        name='WPT DeepStacks - LIVE',
         address='Thunder Valley Casino Resort, 1200 Athens Ave',
         city='Lincoln',
         state='CA',
@@ -219,7 +220,7 @@ def run_seeds():
         recipient_user=cary,
         percentage=10,
         status='pending',
-        due_at=(heartland.end_at + timedelta(days=4))
+        due_at=(heartland.start_at + timedelta(days=4))
     )
     s2 = Swaps(
         tournament=heartland,
@@ -227,7 +228,7 @@ def run_seeds():
         recipient_user=lou,
         percentage=10,
         status='incoming',
-        due_at=(heartland.end_at + timedelta(days=4)),
+        due_at=(heartland.start_at + timedelta(days=4)),
         counter_swap=s1
     )
     s1.counter_swap = s2
@@ -240,7 +241,7 @@ def run_seeds():
         recipient_user=kate,
         percentage=15,
         status='pending',
-        due_at=(heartland.end_at + timedelta(days=4))
+        due_at=(heartland.start_at + timedelta(days=4))
     )
     s2 = Swaps(
         tournament=heartland,
@@ -248,7 +249,7 @@ def run_seeds():
         recipient_user=nikita,
         percentage=15,
         status='incoming',
-        due_at=(heartland.end_at + timedelta(days=4)),
+        due_at=(heartland.start_at + timedelta(days=4)),
         counter_swap=s1
     )
     s1.counter_swap = s2
@@ -261,7 +262,7 @@ def run_seeds():
         recipient_user=kate,
         percentage=5,
         status='incoming',
-        due_at=(heartland.end_at + timedelta(days=4))
+        due_at=(heartland.start_at + timedelta(days=4))
     )
     s2 = Swaps(
         tournament=heartland,
@@ -269,7 +270,7 @@ def run_seeds():
         recipient_user=lou,
         percentage=5,
         status='pending',
-        due_at=(heartland.end_at + timedelta(days=4)),
+        due_at=(heartland.start_at + timedelta(days=4)),
         counter_swap=s1
     )
     s1.counter_swap = s2
@@ -282,7 +283,7 @@ def run_seeds():
         recipient_user=cary,
         percentage=10,
         status='pending',
-        due_at=(live.end_at + timedelta(days=4))
+        due_at=(live.start_at + timedelta(days=4))
     )
     s2 = Swaps(
         tournament=live,
@@ -290,7 +291,7 @@ def run_seeds():
         recipient_user=lou,
         percentage=9,
         status='incoming',
-        due_at=(live.end_at + timedelta(days=4)),
+        due_at=(live.start_at + timedelta(days=4)),
         counter_swap=s1
     )
     s1.counter_swap = s2
@@ -303,7 +304,7 @@ def run_seeds():
         recipient_user=kate,
         percentage=15,
         status='pending',
-        due_at=(live.end_at + timedelta(days=4))
+        due_at=(live.start_at + timedelta(days=4))
     )
     s2 = Swaps(
         tournament=live,
@@ -311,7 +312,7 @@ def run_seeds():
         recipient_user=nikita,
         percentage=15,
         status='incoming',
-        due_at=(live.end_at + timedelta(days=4)),
+        due_at=(live.start_at + timedelta(days=4)),
         counter_swap=s1
     )
     s1.counter_swap = s2
@@ -324,7 +325,7 @@ def run_seeds():
         recipient_user=kate,
         percentage=5,
         status='incoming',
-        due_at=(live.end_at + timedelta(days=4))
+        due_at=(live.start_at + timedelta(days=4))
     )
     s2 = Swaps(
         tournament=live,
@@ -332,7 +333,7 @@ def run_seeds():
         recipient_user=lou,
         percentage=5,
         status='pending',
-        due_at=(live.end_at + timedelta(days=4)),
+        due_at=(live.start_at + timedelta(days=4)),
         counter_swap=s1
     )
     s1.counter_swap = s2
@@ -345,7 +346,7 @@ def run_seeds():
         recipient_user=cary,
         percentage=10,
         status='pending',
-        due_at=(wpt.end_at + timedelta(days=4))
+        due_at=(wpt.start_at + timedelta(days=4))
     )
     s2 = Swaps(
         tournament=wpt,
@@ -353,7 +354,7 @@ def run_seeds():
         recipient_user=lou,
         percentage=10,
         status='incoming',
-        due_at=(wpt.end_at + timedelta(days=4)),
+        due_at=(wpt.start_at + timedelta(days=4)),
         counter_swap=s1
     )
     s1.counter_swap = s2
@@ -366,7 +367,7 @@ def run_seeds():
         recipient_user=kate,
         percentage=15,
         status='pending',
-        due_at=(wpt.end_at + timedelta(days=4))
+        due_at=(wpt.start_at + timedelta(days=4))
     )
     s2 = Swaps(
         tournament=wpt,
@@ -374,7 +375,7 @@ def run_seeds():
         recipient_user=nikita,
         percentage=15,
         status='incoming',
-        due_at=(wpt.end_at + timedelta(days=4)),
+        due_at=(wpt.start_at + timedelta(days=4)),
         counter_swap=s1
     )
     s1.counter_swap = s2
@@ -387,7 +388,7 @@ def run_seeds():
         recipient_user=kate,
         percentage=5,
         status='pending',
-        due_at=(wpt.end_at + timedelta(days=4))
+        due_at=(wpt.start_at + timedelta(days=4))
     )
     s2 = Swaps(
         tournament=wpt,
@@ -395,7 +396,7 @@ def run_seeds():
         recipient_user=cary,
         percentage=5,
         status='incoming',
-        due_at=(wpt.end_at + timedelta(days=4)),
+        due_at=(wpt.start_at + timedelta(days=4)),
         counter_swap=s1
     )
     s1.counter_swap = s2
@@ -471,7 +472,7 @@ def run_seeds():
         sender_user=kate,
         recipient_user=cary,
         percentage=10,
-        due_at=(live.end_at + timedelta(days=4)),
+        due_at=(live.start_at + timedelta(days=4)),
         status='incoming'
     )
     s2 = Swaps(
@@ -479,7 +480,7 @@ def run_seeds():
         sender_user=cary,
         recipient_user=kate,
         percentage=5,
-        due_at=(live.end_at + timedelta(days=4)),
+        due_at=(live.start_at + timedelta(days=4)),
         status='pending',
         counter_swap=s1
     )
@@ -558,7 +559,7 @@ def run_seeds():
         sender_user=lou,
         recipient_user=cary,
         percentage=8,
-        due_at=(newvegas.end_at + timedelta(days=4)),
+        due_at=(newvegas.start_at + timedelta(days=4)),
         status='agreed'
     )
     s2 = Swaps(
@@ -566,7 +567,7 @@ def run_seeds():
         sender_user=cary,
         recipient_user=lou,
         percentage=2,
-        due_at=(newvegas.end_at + timedelta(days=4)),
+        due_at=(newvegas.start_at + timedelta(days=4)),
         status='agreed',
         counter_swap=s1
     )
@@ -583,7 +584,7 @@ def run_seeds():
         sender_user=lou,
         recipient_user=nikita,
         percentage=40,
-        due_at=(newvegas.end_at + timedelta(days=4)),
+        due_at=(newvegas.start_at + timedelta(days=4)),
         status='rejected'
     )
     s2 = Swaps(
@@ -591,7 +592,7 @@ def run_seeds():
         sender_user=nikita,
         recipient_user=lou,
         percentage=40,
-        due_at=(newvegas.end_at + timedelta(days=4)),
+        due_at=(newvegas.start_at + timedelta(days=4)),
         status='rejected',
         counter_swap=s1
     )
@@ -608,7 +609,7 @@ def run_seeds():
         sender_user=lou,
         recipient_user=nikita,
         percentage=20,
-        due_at=(live.end_at + timedelta(days=4)),
+        due_at=(live.start_at + timedelta(days=4)),
 	    status='canceled'
     )
     s2 = Swaps(
@@ -616,7 +617,7 @@ def run_seeds():
         sender_user=nikita,
         recipient_user=lou,
         percentage=20,
-        due_at=(live.end_at + timedelta(days=4)),
+        due_at=(live.start_at + timedelta(days=4)),
 	    status='canceled',
         counter_swap=s1
     )
@@ -682,7 +683,7 @@ def run_seeds():
         sender_user=lou,
         recipient_user=cary,
         percentage=5,
-        due_at=(oldvegas.end_at + timedelta(days=4)),
+        due_at=(oldvegas.start_at + timedelta(days=4)),
         status='agreed'
     )
     s2 = Swaps(
@@ -690,7 +691,7 @@ def run_seeds():
         sender_user=cary,
         recipient_user=lou,
         percentage=7,
-        due_at=(oldvegas.end_at + timedelta(days=4)),
+        due_at=(oldvegas.start_at + timedelta(days=4)),
         status='agreed',
         counter_swap=s1
     )
@@ -703,7 +704,7 @@ def run_seeds():
         sender_user=lou,
         recipient_user=nikita,
         percentage=5,
-        due_at=(oldvegas.end_at + timedelta(days=4)),
+        due_at=(oldvegas.start_at + timedelta(days=4)),
         status='agreed',
         paid=True
     )
@@ -712,7 +713,7 @@ def run_seeds():
         sender_user=nikita,
         recipient_user=lou,
         percentage=7,
-        due_at=(oldvegas.end_at + timedelta(days=4)),
+        due_at=(oldvegas.start_at + timedelta(days=4)),
         status='agreed',
         counter_swap=s1
     )
@@ -725,7 +726,7 @@ def run_seeds():
         sender_user=lou,
         recipient_user=kate,
         percentage=15,
-        due_at=(oldvegas.end_at + timedelta(days=4)),
+        due_at=(oldvegas.start_at + timedelta(days=4)),
         status='pending'
     )
     s2 = Swaps(
@@ -733,7 +734,7 @@ def run_seeds():
         sender_user=kate,
         recipient_user=lou,
         percentage=17,
-        due_at=(oldvegas.end_at + timedelta(days=4)),
+        due_at=(oldvegas.start_at + timedelta(days=4)),
         status='incoming',
         counter_swap=s1
     )
@@ -810,6 +811,7 @@ def run_seeds():
         latitude=31.4683,
         longitude=-112.4660,
         start_at=datetime(2002,5,2,10)
+    )
     db.session.add(p3) 
     p4 = Tournaments(
         name='Placeholder Tournament 4',
