@@ -103,8 +103,9 @@ def run_seeds():
         city='Black Hawk',
         state='CO',
         zip_code='80422',
-        start_at=datetime(2019,10,11,12),
-        end_at=datetime(2019,10,11,21)
+        latitude=39.801105,
+        longitude=-105.503991,
+        start_at=datetime(2019,10,11,12)
     )
     db.session.add(heartland)
 
@@ -114,8 +115,9 @@ def run_seeds():
         city='Citrus Heights',
         state='CA',
         zip_code='95621',
-        start_at=datetime(2019,9,30,11),
-        end_at=datetime(2019,10,1,22)
+        latitude=38.695155,
+        longitude=-121.307501,
+        start_at=datetime(2019,9,30,11)
     )
     db.session.add(stones)
 
@@ -125,17 +127,21 @@ def run_seeds():
         city='Lincoln',
         state='CA',
         zip_code='95648',
-        start_at=datetime(2019,10,2,12),
-        end_at=datetime(2019,10,2,22)
+        latitude=38.904035,
+        longitude=-121.295541,
+        start_at=datetime(2019,10,2,12)
     )
     db.session.add(wpt)
 
     now = datetime.utcnow()
     live = Tournaments(
-        name='Live Tournament at Vegas Casino',
-        address='Thunder Valley Casino Resort, 1200 Athens Ave, Lincoln, CA 95648',
-        start_at=now - timedelta(days=2),
-        end_at=now + timedelta(days=600)
+        address='Thunder Valley Casino Resort, 1200 Athens Ave',
+        city='Lincoln',
+        state='CA',
+        zip_code='95648',
+        latitude=38.904035,
+        longitude=-121.295541,
+        start_at=now - timedelta(days=2)
     )
     db.session.add(live)
 
@@ -491,8 +497,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89101',
-        start_at=datetime(2281,10,11,10),
-        end_at=datetime(2281,10,11,22)
+        latitude=36.172082,
+        longitude=-115.122366,
+        start_at=datetime(2281,10,11,10)
     )
     flight1_newvegas = Flights(
         start_at=now + timedelta(days=1),
@@ -627,8 +634,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89145',
-        start_at=datetime(1990,5,2,10),
-        end_at=datetime(1990,5,2,15)
+        latitude=36.1683,
+        longitude=-115.2660,
+        start_at=datetime(1990,5,2,10)
     )
     flight1_oldvegas = Flights(
         start_at=now + timedelta(days=1),
@@ -738,22 +746,26 @@ def run_seeds():
     ##################
 
     gamorrah = Tournaments(
-            name='Final Days Poker at Gamorrah Casino',
-            address='200 Fremont St, Las Vegas, NV 89101',
-            start_at=datetime(2281,10,11,12),
-            end_at=datetime(2281,10,11,21)
+        name='Final Days Poker at Gamorrah Casino',
+        address='200 Fremont St',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89101',
+        latitude=36.4683,
+        longitude=-115.4660,
+        start_at=datetime(2281,10,11,12)
     )
     flight1_gamorrah = Flights(
-            start_at=datetime(2281,10,11,12),
-            end_at=datetime(2281,10,11,16),
-            tournament=gamorrah,
-            day=1
+        start_at=datetime(2281,10,11,12),
+        end_at=datetime(2281,10,11,16),
+        tournament=gamorrah,
+        day=1
     )
     flight2_gamorrah = Flights(
-            start_at=datetime(2281,10,11,16),
-            end_at=datetime(2281,10,11,21),
-            tournament=gamorrah,
-            day=1
+        start_at=datetime(2281,10,11,16),
+        end_at=datetime(2281,10,11,21),
+        tournament=gamorrah,
+        day=1
     )
     db.session.add_all([gamorrah, flight1_gamorrah, flight2_gamorrah])
 
@@ -773,8 +785,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89145',
-        start_at=datetime(1994,5,2,10),
-        end_at=datetime(1994,5,2,15)
+        latitude=35.4683,
+        longitude=-125.4660,
+        start_at=datetime(1994,5,2,10)
     )
     db.session.add(p1) 
     p2 = Tournaments(
@@ -783,8 +796,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89145',
-        start_at=datetime(1998,5,2,10),
-        end_at=datetime(1998,5,2,15)
+        latitude=36.4083,
+        longitude=-115.4060,
+        start_at=datetime(1998,5,2,10)
     )
     db.session.add(p2) 
     p3 = Tournaments(
@@ -793,9 +807,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89145',
-        start_at=datetime(2002,5,2,10),
-        end_at=datetime(2002,5,2,15)
-    )
+        latitude=31.4683,
+        longitude=-112.4660,
+        start_at=datetime(2002,5,2,10)
     db.session.add(p3) 
     p4 = Tournaments(
         name='Placeholder Tournament 4',
@@ -803,8 +817,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89145',
-        start_at=datetime(2019,5,2,10),
-        end_at=datetime(2019,5,2,15)
+        latitude=33.4683,
+        longitude=-115.45660,
+        start_at=datetime(2019,5,2,10)
     )
     db.session.add(p4) 
     p5 = Tournaments(
@@ -813,8 +828,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89145',
-        start_at=datetime(2019,5,2,10),
-        end_at=datetime(2019,11,2,15)
+        latitude=35.4683,
+        longitude=-114.4660,
+        start_at=datetime(2019,5,2,10)
     )
     db.session.add(p5) 
     p6 = Tournaments(
@@ -823,8 +839,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89145',
-        start_at=datetime(2019,5,2,10),
-        end_at=datetime(2019,12,2,15)
+        latitude=37.4683,
+        longitude=-115.4660,
+        start_at=datetime(2019,5,2,10)
     )
     db.session.add(p6) 
     p7 = Tournaments(
@@ -833,8 +850,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89145',
-        start_at=datetime(2019,5,2,10),
-        end_at=datetime(2019,12,12,15)
+        latitude=36.4683,
+        longitude=-117.4660,
+        start_at=datetime(2019,5,2,10)
     )
     db.session.add(p7) 
     p8 = Tournaments(
@@ -843,8 +861,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89145',
-        start_at=datetime(2019,5,2,10),
-        end_at=datetime(2019,12,14,15)
+        latitude=36.483,
+        longitude=-115.4860,
+        start_at=datetime(2019,5,2,10)
     )
     db.session.add(p8) 
     p9 = Tournaments(
@@ -853,8 +872,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89145',
-        start_at=datetime(2019,5,2,10),
-        end_at=datetime(2019,12,19,15)
+        latitude=37.4683,
+        longitude=-114.4660,
+        start_at=datetime(2019,5,2,10)
     )
     db.session.add(p9) 
     p10 = Tournaments(
@@ -863,8 +883,9 @@ def run_seeds():
         city='Las Vegas',
         state='NV',
         zip_code='89145',
-        start_at=datetime(2019,5,2,10),
-        end_at=datetime(2019,12,19,15)
+        latitude=36.9683,
+        longitude=-115.9660,
+        start_at=datetime(2019,5,2,10)
     )
     db.session.add(p10)
 
