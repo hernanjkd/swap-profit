@@ -783,110 +783,110 @@ def run_seeds():
     p1 = Tournaments(
         name='Placeholder Tournament 1',
         address='2211 N Rampart Blvd',
-        city='Las Vegas',
-        state='NV',
-        zip_code='89145',
-        latitude=35.4683,
-        longitude=-125.4660,
+        city='Charlotte',
+        state='NC',
+        zip_code='28105',
+        latitude=35.2271,
+        longitude=-80.8431,
         start_at=datetime(1994,5,2,10)
     )
     db.session.add(p1) 
     p2 = Tournaments(
         name='Placeholder Tournament 2',
         address='2211 N Rampart Blvd',
-        city='Las Vegas',
-        state='NV',
-        zip_code='89145',
-        latitude=36.4083,
-        longitude=-115.4060,
+        city='Albany',
+        state='NY',
+        zip_code='12084',
+        latitude=42.6526,
+        longitude=-73.7562,
         start_at=datetime(1998,5,2,10)
     )
     db.session.add(p2) 
     p3 = Tournaments(
         name='Placeholder Tournament 3',
         address='2211 N Rampart Blvd',
-        city='Las Vegas',
-        state='NV',
-        zip_code='89145',
-        latitude=31.4683,
-        longitude=-112.4660,
+        city='New Orleans',
+        state='LA',
+        zip_code='70032',
+        latitude=29.9511,
+        longitude=-90.0715,
         start_at=datetime(2002,5,2,10)
     )
     db.session.add(p3) 
     p4 = Tournaments(
         name='Placeholder Tournament 4',
         address='2211 N Rampart Blvd',
-        city='Las Vegas',
-        state='NV',
-        zip_code='89145',
-        latitude=33.4683,
-        longitude=-115.45660,
+        city='West Palm Beach',
+        state='FL',
+        zip_code='33401',
+        latitude=26.7153,
+        longitude=-80.0534,
         start_at=datetime(2019,5,2,10)
     )
     db.session.add(p4) 
     p5 = Tournaments(
         name='Placeholder Tournament 5',
         address='2211 N Rampart Blvd',
-        city='Las Vegas',
-        state='NV',
-        zip_code='89145',
-        latitude=35.4683,
-        longitude=-114.4660,
+        city='Jacksonville',
+        state='FL',
+        zip_code='32034',
+        latitude=30.3322,
+        longitude=-81.6557,
         start_at=datetime(2019,5,2,10)
     )
     db.session.add(p5) 
     p6 = Tournaments(
         name='Placeholder Tournament 6',
         address='2211 N Rampart Blvd',
-        city='Las Vegas',
-        state='NV',
-        zip_code='89145',
-        latitude=37.4683,
-        longitude=-115.4660,
+        city='Atlanta',
+        state='GA',
+        zip_code='30301',
+        latitude=33.7490,
+        longitude=-84.3880,
         start_at=datetime(2019,5,2,10)
     )
     db.session.add(p6) 
     p7 = Tournaments(
         name='Placeholder Tournament 7',
         address='2211 N Rampart Blvd',
-        city='Las Vegas',
-        state='NV',
-        zip_code='89145',
-        latitude=36.4683,
-        longitude=-117.4660,
+        city='Los Angeles',
+        state='CA',
+        zip_code='90001',
+        latitude=33.7866,
+        longitude=-118.2987,
         start_at=datetime(2019,5,2,10)
     )
     db.session.add(p7) 
     p8 = Tournaments(
         name='Placeholder Tournament 8',
         address='2211 N Rampart Blvd',
-        city='Las Vegas',
-        state='NV',
-        zip_code='89145',
-        latitude=36.483,
-        longitude=-115.4860,
+        city='Seattle',
+        state='WA',
+        zip_code='98101',
+        latitude=47.6488,
+        longitude=-122.3964,
         start_at=datetime(2019,5,2,10)
     )
     db.session.add(p8) 
     p9 = Tournaments(
         name='Placeholder Tournament 9',
         address='2211 N Rampart Blvd',
-        city='Las Vegas',
-        state='NV',
-        zip_code='89145',
-        latitude=37.4683,
-        longitude=-114.4660,
+        city='Dallas',
+        state='TX',
+        zip_code='75001',
+        latitude=32.7767,
+        longitude=-96.7970,
         start_at=datetime(2019,5,2,10)
     )
     db.session.add(p9) 
     p10 = Tournaments(
         name='Placeholder Tournament 10',
         address='2211 N Rampart Blvd',
-        city='Las Vegas',
-        state='NV',
-        zip_code='89145',
-        latitude=36.9683,
-        longitude=-115.9660,
+        city='Bangor',
+        state='ME',
+        zip_code='04401',
+        latitude=44.8016,
+        longitude=-68.7712,
         start_at=datetime(2019,5,2,10)
     )
     db.session.add(p10)

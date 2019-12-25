@@ -7,7 +7,7 @@ from flask import request, jsonify, render_template
 from flask_jwt_simple import create_jwt, decode_jwt, get_jwt
 from sqlalchemy import desc, asc
 from utils import (APIException, check_params, jwt_link, update_table, 
-    sha256, role_jwt_required, resolve_pagination)
+    sha256, role_jwt_required, resolve_pagination, isFloat)
 from models import (db, Users, Profiles, Tournaments, Swaps, Flights, 
     Buy_ins, Transactions, Devices)
 from notifications import send_email
@@ -334,7 +334,7 @@ def attach(app):
             
             # Past tournaments
             if request.args.get('history') == 'true':
-                trmnts = trmnts.filter( Tournaments.end_at < now )
+                trmnts = trmnts.filter( Tournaments.start_at < now )
 
             # Current and future tournaments
             elif name is None:
@@ -343,18 +343,21 @@ def attach(app):
             # By zip code
             zip = request.args.get('zip', '')
             if zip.isnumeric():
-                z = Zip_Codes.query.get(zip)
-                lat = str(z.latitude)
-                lon = str(z.longitude)
+                import requests
+                data = requests.get('http://localhost:3333/zipcode/'+zip).json()
+                if data is None:
+                    raise APIException('Sorry Gabe, this zip code is not in the 30,000 records I have in the database')
+                lat = data['latitude']
+                lon = data['longitude']
 
             # By user location
             else:
                 lat = request.args.get('lat', '')
                 lon = request.args.get('lon', '')
 
-            if lat.isnumeric() and lon.isnumeric():
+            if isFloat(lat) and isFloat(lon):
                 trmnts = trmnts.order_by( 
-                    (int(lon) - Tournaments.longitude + int(lat) - Tournaments.latitude)
+                    ( db.func.abs(float(lon) - Tournaments.longitude) + db.func.abs(float(lat) - Tournaments.latitude) )
                 .asc() )
 
             # By ascending date
@@ -370,6 +373,12 @@ def attach(app):
             trmnts = trmnts.offset( offset ).limit( limit )
                             
             return jsonify([x.serialize() for x in trmnts]), 200
+            return jsonify([{
+                'lat': x.latitude,
+                'lon': x.longitude,
+                'city': x.city,
+                'state': x.state,
+                'date': x.start_at} for x in trmnts]), 200
 
 
         # Single tournament by id
