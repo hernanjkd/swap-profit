@@ -408,7 +408,7 @@ def attach(app):
         check_params(req, 'tournament_id', 'recipient_id', 'percentage')
 
         swap_cost = abs( req.get('cost', 1) )
-        if sender.user.get_coins() < swap_cost:
+        if sender.get_coins() < swap_cost:
             raise APIException('Insufficient coins to make this swap', 402)
 
         percentage = abs( req['percentage'] )
@@ -487,7 +487,7 @@ def attach(app):
             raise APIException('This user has no access to this swap. ' +
                                 'Try swap id: ' + swap.counter_swap_id, 401)
 
-        if sender.user.get_coins() < swap.cost:
+        if sender.get_coins() < swap.cost:
             raise APIException('Insufficient coins to see this swap', 402)
 
         unpermitted_status = ['canceled','rejected','agreed']
@@ -546,7 +546,7 @@ def attach(app):
 
         if req.get('status') == 'agreed':
 
-            if recipient.user.get_coins() < swap.cost:
+            if recipient.get_coins() < swap.cost:
                 raise APIException('Recipient has insufficient coins to process this swap')
 
             db.session.add( Transactions(

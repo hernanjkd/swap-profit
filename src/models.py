@@ -17,17 +17,9 @@ class Users(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     profile = db.relationship('Profiles', back_populates='user', uselist=False)
-    transactions = db.relationship('Transactions', back_populates='user')
-    devices = db.relationship('Devices', back_populates='user')
 
     def __repr__(self):
         return f'<Users {self.email}>'
-
-    def get_coins(self):
-        total = 0
-        for transaction in self.transactions:
-            total += transaction.coins
-        return total
 
     def serialize(self):
         return {
@@ -35,9 +27,7 @@ class Users(db.Model):
             'email': self.email,
             'valid': self.valid,
             'created_at': self.created_at,
-            'updated_at': self.updated_at,
-            'transactions': [x.serialize() for x in self.transactions],
-            'devices': [x.serialize() for x in self.devices]
+            'updated_at': self.updated_at
         }
 
 
@@ -56,11 +46,19 @@ class Profiles(db.Model):
 
     user = db.relationship('Users', back_populates='profile', uselist=False)
     buy_ins = db.relationship('Buy_ins', back_populates='user')
+    transactions = db.relationship('Transactions', back_populates='user')
+    devices = db.relationship('Devices', back_populates='user')
     # sending_swaps
     # receiving_swaps
 
     def __repr__(self):
         return f'<Profiles {self.first_name} {self.last_name}>'
+
+    def get_coins(self):
+        total = 0
+        for transaction in self.transactions:
+            total += transaction.coins
+        return total
 
     def available_percentage(self, tournament_id):
         status_to_consider = ['pending','agreed']
@@ -95,9 +93,11 @@ class Profiles(db.Model):
             'profile_pic_url': self.profile_pic_url,
             'hendon_url': self.hendon_url,
             'roi': self.roi,
-            'coins': self.user.get_coins(),
+            'coins': self.get_coins(),
             'created_at': self.created_at,
-            'updated_at': self.updated_at
+            'updated_at': self.updated_at,
+            'transactions': [x.serialize() for x in self.transactions],
+            'devices': [x.serialize() for x in self.devices]
         }
 
 
@@ -318,13 +318,13 @@ class Buy_ins(db.Model):
 class Transactions(db.Model):
     __tablename__ = 'transactions'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
     coins = db.Column(db.Integer, nullable=False)
     dollars = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    user = db.relationship('Users', back_populates='transactions')
+    user = db.relationship('Profiles', back_populates='transactions')
 
     def __repr__(self):
         return f'<Transactions user:{self.user.email} coins:{self.coins} dollars:{self.dollars}>'
@@ -344,12 +344,12 @@ class Transactions(db.Model):
 class Devices(db.Model):
     __tablename__ = 'devices'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('profiles.id'))
     token = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    user = db.relationship('Users', back_populates='devices')
+    user = db.relationship('Profiles', back_populates='devices')
 
     def __repr__(self):
         return f'<Devices id:{self.id} user_email:{self.user.email}>'
