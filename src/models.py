@@ -171,7 +171,6 @@ class Tournaments(db.Model):
     state = db.Column(db.String(20))
     zip_code = db.Column(db.String(14))
     start_at = db.Column(db.DateTime)
-    end_at = db.Column(db.DateTime)
     results_link = db.Column(db.String(256))
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
@@ -227,7 +226,6 @@ class Tournaments(db.Model):
             'state': self.state,
             'zip_code': self.zip_code,
             'start_at': self.start_at,
-            'end_at': self.end_at,
             'longitude': self.longitude,
             'latitude': self.latitude,
             'results_link': self.results_link,
