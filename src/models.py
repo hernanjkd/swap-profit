@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import asc, desc
-from datetime import datetime
+from datetime import datetime, timedelta
 import enum
 
 db = SQLAlchemy()
@@ -185,9 +185,9 @@ class Tournaments(db.Model):
 
     @staticmethod
     def get_user_live_upcoming(user_id):
-        now = datetime.utcnow()
+        now = datetime.utcnow() - timedelta(days=1)
         trmnts = (Tournaments.query
-                    .filter( Tournaments.end_at > now )
+                    .filter( Tournaments.start_at > now )
                     .filter( Tournaments.flights.any( 
                         Flights.buy_ins.any( user_id = user_id )))
                     .order_by( Tournaments.start_at.asc() ))
@@ -195,11 +195,11 @@ class Tournaments(db.Model):
 
     @staticmethod
     def get_user_history(user_id):
-        now = datetime.utcnow()
+        now = datetime.utcnow() - timedelta(days=1)
         trmnts = (Tournaments.query
                     .filter( Tournaments.flights.any( 
                         Flights.buy_ins.any( user_id = user_id )))
-                    .filter( Tournaments.end_at < now )
+                    .filter( Tournaments.start_at < now )
                     .order_by( Tournaments.start_at.desc() ))
         return trmnts if trmnts.count() > 0 else None
 
