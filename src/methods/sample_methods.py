@@ -16,10 +16,21 @@ def attach(app):
 
     @app.route('/testing', methods=['GET'])
     def first_endpoint():
+        
+        return jsonify( requests.get('http://localhost:3333/zipcode/89145').json() )
 
-        return jsonify([{**x.serialize(), 'cccccc': x.counter_swap.serialize()} for x in models.Swaps.query.all()])
-
+        trmnts = models.Tournaments.query.all()
+        lst = []
+        for t in trmnts:
+            data = requests.get('http://localhost:3333/zipcode/' + str(t.zip_code)).json()
+            if data:
+                lst = [*lst, data]
+                # t.longitude = data.longitude
+                # t.latitude = data.latitude
+                # models.db.session.commit()
+        return jsonify(lst)
         return jsonify({ 'details': "All good my friend"}), 200
+
 
     @app.route('/mailgun')
     def get_logs():
