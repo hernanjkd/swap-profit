@@ -1,4 +1,5 @@
 import os
+import json
 import cloudinary
 import cloudinary.uploader
 from google.cloud import vision
@@ -343,12 +344,11 @@ def attach(app):
             # By zip code
             zip = request.args.get('zip', '')
             if zip.isnumeric():
-                import requests
-                data = requests.get('http://localhost:3333/zipcode/'+zip).json()
-                if data is None:
-                    raise APIException('Sorry Gabe, this zip code is not in the 30,000 records I have in the database')
-                lat = data['latitude']
-                lon = data['longitude']
+                with open('src/zip_codes.json') as zip_file:
+                    data = json.load(zip_file)
+                    zipcode = data[zip]
+                    lat = zipcode['latitude']
+                    lon = zipcode['longitude']
 
             # By user location
             else:
