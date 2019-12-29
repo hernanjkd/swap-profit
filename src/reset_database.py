@@ -892,4 +892,284 @@ def run_seeds():
     db.session.add(p10)
 
 
+    # ONE
+    ocean = Tournaments(
+        name='Ocean’s Masters 11',
+        address='3600 S Las Vegas Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89109',
+        latitude=36.1126,
+        longitude=115.1767,
+        start_at=datetime(2019,12,26,10)
+    )
+    flight1_ocean = Flights(
+        start_at=now,
+        end_at=now + timedelta(hours=5),
+        tournament= ocean,
+        day=1
+    )
+    db.session.add_all([ocean, flight1_ocean])
+
+    db.session.add(Buy_ins(
+        chips=1200,
+        table=1,
+        seat=2,
+        user=cary,
+        flight=flight1_ocean
+    ))
+
+
+    # TWO
+    royale = Tournaments(
+        name='Casino Royale 2020',
+        address='One MGM Way',
+        city='Springfield',
+        state='MA',
+        zip_code='01103',
+        latitude=42.0988,
+        longitude=72.5877,
+        start_at=datetime(2019,12,26,10)
+    )
+    flight1_royale = Flights(
+        start_at=now,
+        end_at=now + timedelta(hours=5),
+        tournament= royale,
+        day=1
+    )
+    db.session.add_all([royale, flight1_royale])
+
+    db.session.add(Buy_ins(
+        chips=1200,
+        table=1,
+        seat=2,
+        user=cary,
+        flight=flight1_royale
+    ))
+
+
+    # THREE
+    loathing = Tournaments(
+        name='Fear and Loathing in Final Bet',
+        address='3799 S. Las Vegas Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89109',
+        latitude=36.1026,
+        longitude=115.1703,
+        start_at=datetime(2019,12,26,10)
+    )
+    flight1_loathing = Flights(
+        start_at=now,
+        end_at=now + timedelta(hours=5),
+        tournament= loathing,
+        day=1
+    )
+    db.session.add_all([loathing, flight1_loathing])
+
+    db.session.add(Buy_ins(
+        chips=1200,
+        table=1,
+        seat=2,
+        user=cary,
+        flight=flight1_loathing
+    ))
+
+
+    # FOUR
+    country = Tournaments(
+        name='No Country for Dead Hands',
+        address='287 Carrizo Canyon Rd',
+        city='Mescalero',
+        state='NM',
+        zip_code='12084',
+        latitude=33.2956,
+        longitude=105.6901,
+        start_at=datetime(2019,12,26,10)
+    )
+    flight1_country = Flights(
+        start_at=now,
+        end_at=now + timedelta(hours=5),
+        tournament= country,
+        day=1
+    )
+    db.session.add_all([country, flight1_country])
+
+    db.session.add(Buy_ins(
+        chips=1200,
+        table=1,
+        seat=2,
+        user=cary,
+        flight=flight1_country
+    ))
+
+
+    # FIVE
+    hangover = Tournaments(
+        name='The Hangover Part 2020',
+        address='3570 S Las Vegas Blvd',
+        city='Las Vegas',
+        state='NV',
+        zip_code='89109',
+        latitude=36.1162,
+        longitude=-115.1745,
+        start_at=datetime(2019,12,26,10)
+    )
+    flight1_hangover = Flights(
+        start_at=now,
+        end_at=now + timedelta(hours=5),
+        tournament= hangover,
+        day=1
+    )
+    db.session.add_all([hangover, flight1_hangover])
+
+    db.session.add(Buy_ins(
+        chips=1200,
+        table=1,
+        seat=2,
+        user=cary,
+        flight=flight1_hangover
+    ))
+
+
+    # SIX
+    king = Tournaments(
+        name='King of Games 2020',
+        address='1 Seminole Way',
+        city='Hollywood',
+        state='FL',
+        zip_code='3314',
+        latitude=26.0510,
+        longitude=80.2110,
+        start_at=datetime(2019,12,26,10)
+    )
+    flight1_king = Flights(
+        start_at=now,
+        end_at=now + timedelta(hours=5),
+        tournament= king,
+        day=1
+    )
+    db.session.add_all([king, flight1_king])
+
+    db.session.add(Buy_ins(
+        chips=1200,
+        table=1,
+        seat=2,
+        user=cary,
+        flight=flight1_king
+    ))
+
+
+    # SEVEN
+    kakegurui = Tournaments(
+        name='Kakegurui All-In Stakes 2020',
+        address='794 Lucky Eagle Dr',
+        city='Eagle Pass',
+        state='TX',
+        zip_code='78852',
+        latitude=28.6107,
+        longitude=100.4416,
+        start_at=datetime(2019,12,26,10)
+    )
+    flight1_kakegurui = Flights(
+        start_at=now,
+        end_at=now + timedelta(hours=5),
+        tournament= kakegurui,
+        day=1
+    )
+    db.session.add_all([kakegurui, flight1_kakegurui])
+
+    db.session.add(Buy_ins(
+        chips=1200,
+        table=1,
+        seat=2,
+        user=cary,
+        flight=flight1_kakegurui
+    ))
+
+
+    # EIGHT
+    ultimate = Tournaments(
+        name='Ultimate Survivor 2020',
+        address='2705 Central Ave',
+        city='Hot Springs',
+        state='AR',
+        zip_code='71901',
+        latitude=34.4840,
+        longitude=93.0592,
+        start_at=datetime(2019,12,26,10)
+    )
+    flight1_ultimate = Flights(
+        start_at=now,
+        end_at=now + timedelta(hours=5),
+        tournament= ultimate,
+        day=1
+    )
+    db.session.add_all([ultimate, flight1_ultimate])
+
+    db.session.add(Buy_ins(
+        chips=1200,
+        table=1,
+        seat=2,
+        user=cary,
+        flight=flight1_ultimate
+    ))
+
+
+    # NINE
+    thankyou = Tournaments(
+        name='Thank You For Gambling ‘20',
+        address='7002 Arundel Mills Cir #7777',
+        city='Hanover',
+        state='MD',
+        zip_code='21076',
+        latitude=39.1573,
+        longitude=76.7272,
+        start_at=datetime(2019,12,26,10)
+    )
+    flight1_thankyou = Flights(
+        start_at=now,
+        end_at=now + timedelta(hours=5),
+        tournament= thankyou,
+        day=1
+    )
+    db.session.add_all([thankyou, flight1_thankyou])
+
+    db.session.add(Buy_ins(
+        chips=1200,
+        table=1,
+        seat=2,
+        user=cary,
+        flight=flight1_thankyou
+    ))
+
+
+    # TEN
+    battle = Tournaments(
+        name='Poker Battle Royale 2020',
+        address='91 WA-108',
+        city='Shelton',
+        state='WA',
+        zip_code='98584',
+        latitude=47.1282,
+        longitude=123.1013,
+        start_at=datetime(2019,12,26,10)
+    )
+    flight1_battle = Flights(
+        start_at=now,
+        end_at=now + timedelta(hours=5),
+        tournament= battle,
+        day=1
+    )
+    db.session.add_all([battle, flight1_battle])
+
+    db.session.add(Buy_ins(
+        chips=1200,
+        table=1,
+        seat=2,
+        user=cary,
+        flight=flight1_battle
+    ))
+
+
     db.session.commit()

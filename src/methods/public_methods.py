@@ -89,7 +89,7 @@ def attach(app):
             user.valid = True
             db.session.commit()
 
-        send_email(type='account_created', to=user.email)
+        send_email(type='welcome', to=user.email)
 
         return render_template('email_validated_success.html')
 
