@@ -32,10 +32,10 @@ def attach(app):
             password = sha256(req['password'])
         )
         db.session.add(user)
-        db.session.add( Devices(
-            token = req['device_token'],
-            user = user
-        ))
+        # db.session.add( Devices(
+        #     token = req['device_token'],
+        #     user = user
+        # ))
         db.session.commit()
 
         user = Users.query.filter_by(email=req['email']).first()

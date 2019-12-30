@@ -327,7 +327,6 @@ def attach(app):
         if id == 'all':
             now = datetime.utcnow() - timedelta(days=1)
 
-
             # Filter past tournaments
             if request.args.get('history') == 'true':
                 trmnts = Tournaments.get_history()
@@ -335,8 +334,7 @@ def attach(app):
             # Filter current and future tournaments
             else:
                 trmnts = Tournaments.get_live_upcoming()
-            
-        
+                    
             # Filter by name
             name = request.args.get('name') 
             if name is not None:
@@ -357,7 +355,6 @@ def attach(app):
                 lat = request.args.get('lat', '')
                 lon = request.args.get('lon', '')
 
-
             if isFloat(lat) and isFloat(lon):
                 trmnts = trmnts.order_by( 
                     ( db.func.abs(float(lon) - Tournaments.longitude) + db.func.abs(float(lat) - Tournaments.latitude) )
@@ -375,7 +372,8 @@ def attach(app):
             # Pagination
             offset, limit = resolve_pagination( request.args )
             trmnts = trmnts.offset( offset ).limit( limit )
-                            
+
+
             return jsonify([x.serialize() for x in trmnts]), 200
 
 
