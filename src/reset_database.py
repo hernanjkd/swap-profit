@@ -640,7 +640,7 @@ def run_seeds():
         start_at=datetime(1990,5,2,10)
     )
     flight1_oldvegas = Flights(
-        start_at=now + timedelta(days=1),
+        start_at=datetime(1990,5,2,10),
         end_at=now + timedelta(days=1, hours=5),
         tournament=oldvegas,
         day=1
