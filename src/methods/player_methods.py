@@ -326,22 +326,24 @@ def attach(app):
 
         if id == 'all':
             now = datetime.utcnow() - timedelta(days=1)
-            trmnts = Tournaments.query
 
-            # By name
+
+            # Filter past tournaments
+            if request.args.get('history') == 'true':
+                trmnts = Tournaments.get_history()
+
+            # Filter current and future tournaments
+            else:
+                trmnts = Tournaments.get_live_upcoming()
+            
+        
+            # Filter by name
             name = request.args.get('name') 
             if name is not None:
                 trmnts = trmnts.filter( Tournaments.name.ilike(f'%{name}%') )
-            
-            # Past tournaments
-            if request.args.get('history') == 'true':
-                trmnts = trmnts.filter( Tournaments.start_at < now )
 
-            # Current and future tournaments
-            elif name is None:
-                trmnts = trmnts.filter( Tournaments.start_at > now )
 
-            # By zip code
+            # Order by zip code
             zip = request.args.get('zip', '')
             if zip.isnumeric():
                 with open('src/zip_codes.json') as zip_file:
@@ -350,35 +352,37 @@ def attach(app):
                     lat = zipcode['latitude']
                     lon = zipcode['longitude']
 
-            # By user location
+            # Order by user location
             else:
                 lat = request.args.get('lat', '')
                 lon = request.args.get('lon', '')
+
 
             if isFloat(lat) and isFloat(lon):
                 trmnts = trmnts.order_by( 
                     ( db.func.abs(float(lon) - Tournaments.longitude) + db.func.abs(float(lat) - Tournaments.latitude) )
                 .asc() )
 
-            # By ascending date
-            if request.args.get('asc') == 'true':
+            # Order by ascending date
+            elif request.args.get('asc') == 'true':
                 trmnts = trmnts.order_by( Tournaments.start_at.asc() )
 
-            # By descending date
-            if request.args.get('desc') == 'true':
+            # Order by descending date
+            elif request.args.get('desc') == 'true':
                 trmnts = trmnts.order_by( Tournaments.start_at.desc() )
 
+            
             # Pagination
             offset, limit = resolve_pagination( request.args )
             trmnts = trmnts.offset( offset ).limit( limit )
                             
-            return jsonify([x.serialize() for x in trmnts]), 200
             return jsonify([{
-                'lat': x.latitude,
-                'lon': x.longitude,
-                'city': x.city,
-                'state': x.state,
+                # 'lat': x.latitude,
+                # 'lon': x.longitude,
+                # 'city': x.city,
+                # 'state': x.state,
                 'date': x.start_at} for x in trmnts]), 200
+            return jsonify([x.serialize() for x in trmnts]), 200
 
 
         # Single tournament by id
@@ -631,9 +635,9 @@ def attach(app):
     def swap_tracker(user_id):
         
         if request.args.get('history') == 'true':
-            trmnts = Tournaments.get_user_history(user_id=user_id)
+            trmnts = Tournaments.get_history(user_id=user_id)
         else:
-            trmnts = Tournaments.get_user_live_upcoming(user_id=user_id)
+            trmnts = Tournaments.get_live_upcoming(user_id=user_id)
 
         swap_trackers = []
 

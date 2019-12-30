@@ -171,7 +171,7 @@ class Tournaments(db.Model):
     state = db.Column(db.String(20))
     zip_code = db.Column(db.String(14))
     start_at = db.Column(db.DateTime)
-    results_link = db.Column(db.String(256))
+    results_link = db.Column(db.String(256), default=None)
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -184,25 +184,33 @@ class Tournaments(db.Model):
         return f'<Tournament {self.name}>'
 
     @staticmethod
-    def get_user_live_upcoming(user_id):
-        now = datetime.utcnow() - timedelta(days=1)
-        trmnts = (Tournaments.query
-                    .filter( Tournaments.start_at > now )
-                    .filter( Tournaments.flights.any( 
-                        Flights.buy_ins.any( user_id = user_id )))
-                    .order_by( Tournaments.start_at.asc() ))
+    def get_time():
+        return datetime.utcnow() - timedelta(hours=17)
+
+    @staticmethod
+    def get_live_upcoming(user_id=False):
+        now = Tournaments.get_time()
+        trmnts = Tournaments.query \
+                    .filter( Tournaments.flights.any(
+                        Flights.start_at > now ))
+        if user_id:
+            trmnts =  trmnts.filter( Tournaments.flights.any( 
+                    Flights.buy_ins.any( user_id = user_id ))) \
+                .order_by( Tournaments.start_at.asc() )
         return trmnts if trmnts.count() > 0 else None
 
     @staticmethod
-    def get_user_history(user_id):
-        now = datetime.utcnow() - timedelta(days=1)
-        trmnts = (Tournaments.query
-                    .filter( Tournaments.flights.any( 
-                        Flights.buy_ins.any( user_id = user_id )))
-                    .filter( Tournaments.start_at < now )
-                    .order_by( Tournaments.start_at.desc() ))
+    def get_history(user_id=False):
+        now = Tournaments.get_time()
+        trmnts = Tournaments.query \
+                    .filter( Tournaments.flights.any(
+                        db.not_( Flights.start_at > now )))
+        if user_id:
+            trmnts = trmnts.filter( Tournaments.flights.any( 
+                            Flights.buy_ins.any( user_id = user_id ))) \
+                        .order_by( Tournaments.start_at.desc() )
         return trmnts if trmnts.count() > 0 else None
-
+    
     def get_all_users_latest_buyins(self):
         all_buyins = Buy_ins.query.filter( 
                         Buy_ins.flight.has( 
