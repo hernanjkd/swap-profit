@@ -376,12 +376,6 @@ def attach(app):
             offset, limit = resolve_pagination( request.args )
             trmnts = trmnts.offset( offset ).limit( limit )
                             
-            return jsonify([{
-                # 'lat': x.latitude,
-                # 'lon': x.longitude,
-                # 'city': x.city,
-                # 'state': x.state,
-                'date': x.start_at} for x in trmnts]), 200
             return jsonify([x.serialize() for x in trmnts]), 200
 
 
