@@ -68,7 +68,8 @@ def attach(app):
                 f'buyin_'
             ]
         )
-        
+        cloudinary.uploader.destroy('ocr')
+        return jsonify(result)
         client = vision.ImageAnnotatorClient()
         image = vision.types.Image()
         image.source.image_uri = result['secure_url']

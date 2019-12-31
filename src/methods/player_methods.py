@@ -298,6 +298,20 @@ def attach(app):
             ]
         )
 
+        #########################################################
+        receipt_validation = False
+        if receipt_validation is False:
+            send_email(type='wrong_receipt', to=buyin.user.user.email,
+                data={
+                    'receipt_url': buyin.receipt_img_url,
+                    'tournament_name': buyin.flight.tournament.name,
+                    'flight_day': buyin.flight.day,
+                    'start_date': buyin.flight.tournament.start_at,
+                    'upload_time': result['created_at']
+                })
+            raise APIException('Wrong receipt was upload', 400)
+        #########################################################
+
         buyin.receipt_img_url = result['secure_url']
         db.session.commit()
 
@@ -305,12 +319,9 @@ def attach(app):
             data={
                 'receipt_url': buyin.receipt_img_url,
                 'tournament_name': buyin.flight.tournament.name,
-                'start_date': buyin.flight.tournament.start_at,
-                'chips': buyin.chips,
-                'seat': buyin.seat,
-                'table': buyin.table
-            }
-        )
+                'flight_day': buyin.flight.day,
+                'start_date': buyin.flight.tournament.start_at
+            })
 
         return jsonify({
             'message':'Image uploaded successfully. Email sent.'

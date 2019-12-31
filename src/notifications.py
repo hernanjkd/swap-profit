@@ -92,17 +92,18 @@ def send_fcm(type, user_id, data={}):
 def get_template_content(type, data={}, formats=None):
     
     subjects = {
-        'email_validation': 'Swap Profit: Email Validation',
-        'welcome': 'Swap Profit: Welcome to Swap Profit',
-        'swap_created': 'Swap Profit: You Have A New Swap',
-        'buyin_receipt': 'Swap Profit: Your Buy In Receipt'
+        'email_validation': 'Swap Profit Email Verification',
+        'welcome': 'Welcome to Swap Profit!',
+        'swap_confirmation': 'Swap Confirmation',
+        'buyin_receipt': 'Your receipt has been uploaded!',
+        'wrong_receipt': 'Oops! We have an issue with your receipt!'
     }
 
     con = {
-        'API_URL': os.environ.get('API_URL'),
+        'API_URL': os.environ.get('API_HOST'),
         'COMPANY_NAME': 'Swap Profit',
         'COMPANY_LEGAL_NAME': 'Swap Profit LLC',
-        'COMPANY_ADDRESS': '2323 Hello, Coral Gables, 33134'
+        'COMPANY_ADDRESS': '700 Executive Center Drive #29, West Palm Beach, FL 33401'
     }
     template_data = {**con, **data}
     
