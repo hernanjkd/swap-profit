@@ -29,16 +29,16 @@ def attach(app):
             email = req['email'], 
             password = sha256(req['password']) 
         ).first()
-        user = Users.query.get(72)
+        
         if user is None:
             raise APIException('User not found', 404)
 
-        user.valid = False
+        user.status._value_ = 'invalid'
         user.email = req['new_email']
 
         db.session.commit()
 
-        send_email( type='email_validation', to=user.email, 
+        send_email( template='email_validation', emails=user.email, 
             data={'validation_link': jwt_link(user.id)} )
 
         return jsonify({'message': 'Please verify your new email'}), 200
@@ -301,7 +301,7 @@ def attach(app):
         #########################################################
         receipt_validation = False
         if receipt_validation is False:
-            send_email(type='wrong_receipt', to=buyin.user.user.email,
+            send_email(template='wrong_receipt', emails=buyin.user.user.email,
                 data={
                     'receipt_url': buyin.receipt_img_url,
                     'tournament_date': buyin.flight.tournament.start_at,
@@ -315,7 +315,7 @@ def attach(app):
         buyin.receipt_img_url = result['secure_url']
         db.session.commit()
 
-        send_email(type='buyin_receipt', to=buyin.user.user.email,
+        send_email(template='buyin_receipt', emails=buyin.user.user.email,
             data={
                 'receipt_url': buyin.receipt_img_url,
                 'tournament_date': buyin.flight.tournament.start_at,
@@ -567,7 +567,7 @@ def attach(app):
                 coins = -swap.cost
             ))
 
-            send_email( type='swap_confirmation', to=[sender.user.email, recipient.user.email],
+            send_email( template='swap_confirmation', emails=[sender.user.email, recipient.user.email],
                 data={
                     'tournament_date': swap.tournament.start_at,
                     'tournament_name': swap.tournament.name,

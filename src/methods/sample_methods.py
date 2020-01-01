@@ -9,9 +9,9 @@ def attach(app):
     @app.route('/sendemail')
     def sendemailtest():
         msg = {'name':'Hello Hernan'}
-        send_email(type='account_created',to='hernanjkd@gmail.com',data=msg)
-        l = 'testing'
-        return 'email sent'
+        r = send_email('account_suspension','hernanjkd@gmail.com',data=msg)
+        
+        return str(r)
 
 
     @app.route('/testing', methods=['GET'])
@@ -29,7 +29,7 @@ def attach(app):
                 # t.latitude = data.latitude
                 # models.db.session.commit()
         return jsonify(lst)
-        return jsonify({ 'details': "All good my friend"}), 200
+        return jsonify({ 'details': 'All good my friend'}), 200
 
 
     @app.route('/mailgun')

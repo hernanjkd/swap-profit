@@ -7,12 +7,17 @@ db = SQLAlchemy()
 
 
 
+class UserStatus(enum.Enum):
+    valid = 'valid'
+    invalid = 'invalid'
+    suspended = 'suspended'
+
 class Users(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
-    valid = db.Column(db.Boolean, default=False)
+    status = db.Column(db.Enum(UserStatus), default=UserStatus.invalid)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -25,7 +30,7 @@ class Users(db.Model):
         return {
             'id': self.id,
             'email': self.email,
-            'valid': self.valid,
+            'status': self.status._value_,
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
