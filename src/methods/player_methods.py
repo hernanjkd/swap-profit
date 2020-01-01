@@ -567,13 +567,19 @@ def attach(app):
                 coins = -swap.cost
             ))
 
-            send_email( type='swap_created', to=sender.user.email,
-                data={}
-            )
-            send_email( type='swap_created', to=recipient.user.email,
-                data={}
-            )
-
+            send_email( type='swap_confirmation', to=[sender.user.email, recipient.user.email],
+                data={
+                    'user1_name': f'{sender.first_name} {sender.last_name}',
+                    'user1_prof_pic': sender.profile_pic_url,
+                    'user1_percentage': swap.percentage,
+                    'user1_receipt': Buy_ins.get_latest(sender.id, swap.tournament_id) \
+                                        .receipt_img_url,
+                    'user2_name': f'{recipient.first_name} {recipient.last_name}',
+                    'user2_prof_pic': recipient.profile_pic_url,
+                    'user2_percentage': counter_swap.percentage,
+                    'user2_receipt': Buy_ins.get_latest(recipient.id, swap.tournament_id) \
+                                        .receipt_img_url
+                })
 
         return jsonify([
             swap.serialize(),

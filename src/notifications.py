@@ -13,29 +13,34 @@ EMAIL_NOTIFICATIONS_ENABLED = os.environ.get('EMAIL_NOTIFICATIONS_ENABLED')
 
 
 
-def send_email(type, to, data={}):
+def send_email(type, emails, data={}):
     
-    if EMAIL_NOTIFICATIONS_ENABLED == 'TRUE':
+    if EMAIL_NOTIFICATIONS_ENABLED != 'TRUE':
+        raise APIException('Emails are not enabled', 500)
         
-        template = get_template_content(type, data, ['email'])
-        domain = os.environ.get('MAILGUN_DOMAIN')
+    template = get_template_content(type, data, ['email'])
+    domain = os.environ.get('MAILGUN_DOMAIN')
 
+    if isinstance(emails, str):
+        emails = [emails]
+
+    for email in emails:
         r = requests.post(f'https://api.mailgun.net/v3/{domain}/messages',
             auth=(
                 'api',
                 os.environ.get('MAILGUN_API_KEY')),
             data={
-                'from': f'{domain} <mailgun@swapprofit-test.herokuapp.com>',
-                'to': to,
+                'from': f'{domain} <mailgun@swapprofit.herokuapp.com>',
+                'to': email,
                 'subject': template['subject'],
                 'text': template['text'],
                 'html': template['html']
             })
         
-        return r.status_code == 200
-        
-    return False
+        if r.status_code != 200:
+            raise APIException(f'Error sending email to {email}', 500)
 
+    return True
 
 
 def send_sms(type, phone_number, data={}):
