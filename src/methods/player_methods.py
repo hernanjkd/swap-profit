@@ -304,9 +304,9 @@ def attach(app):
             send_email(type='wrong_receipt', to=buyin.user.user.email,
                 data={
                     'receipt_url': buyin.receipt_img_url,
+                    'tournament_date': buyin.flight.tournament.start_at,
                     'tournament_name': buyin.flight.tournament.name,
                     'flight_day': buyin.flight.day,
-                    'start_date': buyin.flight.tournament.start_at,
                     'upload_time': result['created_at']
                 })
             raise APIException('Wrong receipt was upload', 400)
@@ -318,9 +318,9 @@ def attach(app):
         send_email(type='buyin_receipt', to=buyin.user.user.email,
             data={
                 'receipt_url': buyin.receipt_img_url,
+                'tournament_date': buyin.flight.tournament.start_at,
                 'tournament_name': buyin.flight.tournament.name,
-                'flight_day': buyin.flight.day,
-                'start_date': buyin.flight.tournament.start_at
+                'flight_day': buyin.flight.day
             })
 
         return jsonify({
@@ -569,16 +569,18 @@ def attach(app):
 
             send_email( type='swap_confirmation', to=[sender.user.email, recipient.user.email],
                 data={
+                    'tournament_date': swap.tournament.start_at,
+                    'tournament_name': swap.tournament.name,
+                    
                     'user1_name': f'{sender.first_name} {sender.last_name}',
                     'user1_prof_pic': sender.profile_pic_url,
                     'user1_percentage': swap.percentage,
-                    'user1_receipt': Buy_ins.get_latest(sender.id, swap.tournament_id) \
-                                        .receipt_img_url,
+                    'user1_receipt_url': Buy_ins.get_latest(sender.id, swap.tournament_id).receipt_img_url,
+
                     'user2_name': f'{recipient.first_name} {recipient.last_name}',
                     'user2_prof_pic': recipient.profile_pic_url,
                     'user2_percentage': counter_swap.percentage,
-                    'user2_receipt': Buy_ins.get_latest(recipient.id, swap.tournament_id) \
-                                        .receipt_img_url
+                    'user2_receipt_url': Buy_ins.get_latest(recipient.id, swap.tournament_id).receipt_img_url
                 })
 
         return jsonify([

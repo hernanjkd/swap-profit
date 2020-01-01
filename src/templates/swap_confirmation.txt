@@ -16,12 +16,12 @@ Paying
 {{ user2_percentage }}%
 
 In the following event:
-{{ start_date }} - {{ tournament_date }}
+{{ tournament_date }} - {{ tournament_name }}
 Whereas both parties acknowledge and attest that the receipts uploaded below by them personally are for said event:
 
-{{ user1_receipt }}
+{{ user1_receipt_url }}
 
-{{ user2_receipt }}
+{{ user2_receipt_url }}
 
 Whereas both parties are in agreement to pay the agreed percentage on any profit earned (winnings earned minus the amount of one (1) original entry into this event) to each other.
 

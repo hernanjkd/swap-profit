@@ -5,10 +5,11 @@ It seems there is an issue with the receipt you uploaded on:
 {{ upload_time }}
 
 Your receipt was uploaded for the following event:
-{{ start_date }} - {{ tournament_name }} - {{ flight_day }}
+{{ tournament_date }} - {{ tournament_name }} - {{ flight_day }}
 
 Below is a copy of the receipt that you uploaded:
  
+{{ receipt_url }}
 
 Please click here to upload the correct receipt for this event.
 USER UNDERSTANDS THAT INTENTIONALLY UPLOADING A FALSE OR MISREPRESENTED RECEIPT MAY RESULT IN SUSPENSION AND/OR TERMINATION OF SWAP ACCOUNT AND THAT USER MAY BE SUBJECT TO LEGAL ACTION.
