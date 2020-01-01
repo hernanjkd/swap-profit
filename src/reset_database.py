@@ -32,7 +32,7 @@ def run_seeds():
     lou = Users(
         email='lou@gmail.com',
         password=sha256('loustadler'),
-        valid=True
+        status='valid'
     )
     db.session.add(lou)
     lou = Profiles(
@@ -48,7 +48,7 @@ def run_seeds():
     cary = Users(
         email='katz234@gmail.com',
         password=sha256('carykatz'),
-        valid=True
+        status='valid'
     )
     db.session.add(cary)
     cary = Profiles(
@@ -64,7 +64,7 @@ def run_seeds():
     kate = Users(
         email='hoang28974@gmail.com',
         password=sha256('kateHoang'),
-        valid=True
+        status='valid'
     )
     db.session.add(kate)
     kate = Profiles(
@@ -80,7 +80,7 @@ def run_seeds():
     nikita = Users(
         email='mikitapoker@gmail.com',
         password=sha256('nikitapoker'),
-        valid=True
+        status='valid'
     )
     db.session.add(nikita)
     nikita = Profiles(
