@@ -487,7 +487,7 @@ line-height:150% !important;
                             <table border="0" cellspacing="0" class="mcnTextContentContainer" width="100%" style="min-width: 100% !important;background-color: #EDEAEA;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">
                                 <tbody><tr>
                                     <td valign="top" class="mcnTextContent" style="padding: 18px;color: #FFFFFF;font-family: Helvetica;font-size: 14px;font-weight: normal;text-align: center;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;line-height: 150%;">
-                                        <span style="font-size:18px"><span style="color:#000000"><strong>Friday, December 3, 2019 - 3:00 PM - Seminole Hard Rock Hollywood - Rock N Roll Poker Open Event #21 - NLH $100,000 Guaranteed - Day 1E</strong></span></span>
+                                        <span style="font-size:18px"><span style="color:#000000"><strong>{{ tournament_date }} - {{ tournament_name }}</strong></span></span>
                                     </td>
                                 </tr>
                             </tbody></table>
@@ -522,7 +522,7 @@ line-height:150% !important;
                        
                         <td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: center;">
                        
-                            <span style="font-size:18px"><strong><span style="color:#000000">To see the full list of results for this tournament </span><a href="https://pokerdb.thehendonmob.com/event.php?a=r&amp;n=617911" target="_blank" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;color: #007C89;font-weight: normal;text-decoration: underline;"><span style="color:#000000">click here</span></a><span style="color:#000000">.</span></strong></span>
+                            <span style="font-size:18px"><strong><span style="color:#000000">To see the full list of results for this tournament </span><a href="{{ results_link }}" target="_blank" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;color: #007C89;font-weight: normal;text-decoration: underline;"><span style="color:#000000">click here</span></a><span style="color:#000000">.</span></strong></span>
                         </td>
                     </tr>
                 </tbody></table>
@@ -556,7 +556,7 @@ line-height:150% !important;
                             <table border="0" cellspacing="0" class="mcnTextContentContainer" width="100%" style="min-width: 100% !important;background-color: #FFFFFF;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">
                                 <tbody><tr>
                                     <td valign="top" class="mcnTextContent" style="padding: 18px;color: #F2F2F2;font-family: Helvetica;font-size: 14px;font-weight: normal;text-align: center;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;line-height: 150%;">
-                                        <span style="font-size:24px"><span style="color:#000000"><strong>You made 3 Swaps in this event:</strong></span></span>
+                                        <span style="font-size:24px"><span style="color:#000000"><strong>You made {{ amount_swaps }} in this event:</strong></span></span>
                                     </td>
                                 </tr>
                             </tbody></table>
@@ -766,7 +766,7 @@ line-height:150% !important;
                                     <td valign="top" class="mcnTextContent" style="padding: 18px;color: #F2F2F2;font-family: Helvetica;font-size: 14px;font-weight: normal;text-align: center;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;line-height: 150%;">
                                         <span style="font-size:24px"><span style="color:#000000"><strong>Your Swaps for this event:<br>
 &nbsp;</strong></span></span><br>
-<span style="font-size:30px"><span style="color:#000000"><strong>+$56.35</strong></span></span>
+<span style="font-size:30px"><span style="color:#000000"><strong>{{ swap_money_amount }}</strong></span></span>
                                     </td>
                                 </tr>
                             </tbody></table>
@@ -805,7 +805,7 @@ line-height:150% !important;
         <td class="mcnTextContent" valign="top" style="padding: 0 9px 0 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: center;" width="564">
             <span style="color:#000000"><span style="font-size:18px"><strong>Your new ROI Rating is:</strong></span><br>
 <br>
-<span style="font-size:30px"><strong>44%</strong></span></span>
+<span style="font-size:30px"><strong>{{ roi_rating }}%</strong></span></span>
         </td>
     </tr>
 </tbody></table>
@@ -838,7 +838,7 @@ line-height:150% !important;
         <td class="mcnTextContent" valign="top" style="padding: 0 9px 0 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: center;" width="564">
             <span style="color:#000000"><span style="font-size:18px"><strong>Your current Swap Rating is:</strong></span><br>
 <br>
-<span style="font-size:30px"><strong>4.8</strong></span></span>
+<span style="font-size:30px"><strong>{{ swap_rating }}</strong></span></span>
         </td>
     </tr>
 </tbody></table>

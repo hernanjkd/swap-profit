@@ -118,6 +118,13 @@ def get_template_content(template, data={}, formats=None):
         'COMPANY_NAME': 'Swap Profit',
         'COMPANY_LEGAL_NAME': 'Swap Profit LLC',
         'COMPANY_ADDRESS': '700 Executive Center Drive #29, West Palm Beach, FL 33401'
+        # 'terms_conditions_link': ''
+        # 'mail_settings_link': '',
+        # 'unsubscribe_link': '',
+        # 'facebook_link': 'https://facebook.com/',
+        # 'twitter_link': 'https://twitter.com/',
+        # 'instagram_link': 'https://instagram.com/',
+        # 'mailchimp_link': 'https://mailchimp.com/'
     }
 
     if formats is None or 'email' in formats:

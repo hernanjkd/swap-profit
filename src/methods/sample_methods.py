@@ -13,6 +13,20 @@ def attach(app):
         
         return str(r)
 
+        #swap_results
+        send_email('swap_results','hernanjkd@gmail.com',
+            data={
+                'tournament_date': buyin.flight.tournament.start_at,
+                'tournament_name': buyin.flight.tournament.name,
+                'flight_day': buyin.flight.day,
+                'results_link': '',
+                'amount_of_swaps': '3 Swaps',
+                'swap_money_mount': '+$56.35',
+                'swaps': '',
+                'roi_rating': '44',
+                'swap_rating': '4.8'
+            })
+
 
     @app.route('/testing', methods=['GET'])
     def first_endpoint():
