@@ -14,6 +14,36 @@ def attach(app):
         return str(r)
 
         #swap_results
+
+        all_swaps_in_tournament = 'get all swaps'
+        swaps = {}
+        
+        for swap in all_swaps_in_tournament:
+            id = str(swap.recipient_id)
+            if id not in consolidated_swaps:
+
+
+
+        render_swaps = ''
+        swap_number = 1
+        for swap in consolidated_swaps:
+            swap_data = {
+                'swap_number': swap_number,
+                'amount_of_swaps': 'You have 2 swaps with this person for the following total amounts:',
+                'entry_fee': '',
+                'total_earnings_sender': '',
+                'swap_percentage_sender': '',
+                'swap_profit_sender': '',
+                'amount_owed_sender': '',
+                'total_earnings_recipient': '',
+                'swap_percentage_recipient': '',
+                'swap_profit_recipient': '',
+                'amount_owed_recipient': ''
+            }
+            render_swaps += render_template('swap.html', **swap_data)
+            swap_number += 1
+
+
         send_email('swap_results','hernanjkd@gmail.com',
             data={
                 'tournament_date': buyin.flight.tournament.start_at,
@@ -22,7 +52,7 @@ def attach(app):
                 'results_link': '',
                 'amount_of_swaps': '3 Swaps',
                 'swap_money_mount': '+$56.35',
-                'swaps': '',
+                'render_swaps': render_swaps,
                 'roi_rating': '44',
                 'swap_rating': '4.8'
             })
