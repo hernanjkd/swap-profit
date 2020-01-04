@@ -18,15 +18,26 @@ def attach(app):
         all_swaps_in_tournament = 'get all swaps'
         swaps = {}
         
-        for swap in all_swaps_in_tournament:
-            id = str(swap.recipient_id)
-            if id not in consolidated_swaps:
+        for swap in swaps:
+            id = str( swap.recipient_id )
+            if id not in swaps:
+                swaps[id] = {
+                    **swap,
+                    'count': 1
+                }
+            else:
+                swaps[id] = {
+                    **swap,
+                    'count': swaps[id]['count'] + 1,
+                    'percentage': swaps[id]['percentage'] + swap.percentage,
+                    'counter_percentage': swaps[id].
+                }
 
-
+        return 
 
         render_swaps = ''
         swap_number = 1
-        for swap in consolidated_swaps:
+        for swap in swaps:
             swap_data = {
                 'swap_number': swap_number,
                 'amount_of_swaps': 'You have 2 swaps with this person for the following total amounts:',
