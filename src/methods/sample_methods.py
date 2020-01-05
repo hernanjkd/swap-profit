@@ -15,9 +15,10 @@ def attach(app):
 
         #swap_results
 
+        # Consolidate swaps if multiple with same user
         all_swaps_in_tournament = 'get all swaps'
         swaps = {}
-        
+    
         for swap in swaps:
             id = str( swap.recipient_id )
             if id not in swaps:
@@ -33,19 +34,20 @@ def attach(app):
                     'counter_percentage': swaps[id].
                 }
 
-        return 
-
+        # Create the swap templates
+        msg = lambda x: \
+            f'You have {x} swaps with this person for the following total amounts:'
         render_swaps = ''
         swap_number = 1
         for swap in swaps:
             swap_data = {
                 'swap_number': swap_number,
-                'amount_of_swaps': 'You have 2 swaps with this person for the following total amounts:',
-                'entry_fee': '',
-                'total_earnings_sender': '',
-                'swap_percentage_sender': '',
-                'swap_profit_sender': '',
-                'amount_owed_sender': '',
+                'amount_of_swaps': msg(swap['count']) if swap['count'] > 1 else ''
+                'entry_fee': 'tournament buy in, get when get results',
+                'total_earnings_sender': 'earnings from results',
+                'swap_percentage_sender': swap['percentage'],
+                'swap_profit_sender': 'entry fee minus total earnings',
+                'amount_owed_sender': 'swap_profit',
                 'total_earnings_recipient': '',
                 'swap_percentage_recipient': '',
                 'swap_profit_recipient': '',
