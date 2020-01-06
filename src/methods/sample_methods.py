@@ -16,10 +16,10 @@ def attach(app):
         #swap_results
 
         # Consolidate swaps if multiple with same user
-        all_swaps_in_tournament = 'get all swaps'
+        all_agreed_swaps = 'get all swaps'
         swaps = {}
     
-        for swap in swaps:
+        for swap in all_agreed_swaps:
             id = str( swap.recipient_id )
             if id not in swaps:
                 swaps[id] = {
