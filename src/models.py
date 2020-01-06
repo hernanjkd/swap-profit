@@ -88,6 +88,13 @@ class Profiles(db.Model):
             'swaps': swaps
         }
 
+    def get_agreed_swaps(self, tournament_id):
+        agreed_swaps = []
+        filter(lambda swap: \
+            swap.tournament_id == tournament_id and \
+            swap.status._value_ == 'agreed'
+            , self.sending_swaps)
+
     def serialize(self):
         return {
             'id': self.id,

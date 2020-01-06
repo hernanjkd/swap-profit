@@ -384,7 +384,7 @@ def attach(app):
             offset, limit = resolve_pagination( request.args )
             trmnts = trmnts.offset( offset ).limit( limit )
 
-
+            
             return jsonify([x.serialize() for x in trmnts]), 200
 
 

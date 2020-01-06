@@ -31,7 +31,7 @@ def attach(app):
                     **swap,
                     'count': swaps[id]['count'] + 1,
                     'percentage': swaps[id]['percentage'] + swap.percentage,
-                    'counter_percentage': swaps[id].
+                    'counter_percentage': swaps[id].counter_swap.percentage
                 }
 
         # Create the swap templates
@@ -42,7 +42,7 @@ def attach(app):
         for swap in swaps:
             swap_data = {
                 'swap_number': swap_number,
-                'amount_of_swaps': msg(swap['count']) if swap['count'] > 1 else ''
+                'amount_of_swaps': msg(swap['count']) if swap['count'] > 1 else '',
                 'entry_fee': 'tournament buy in, get when get results',
                 'total_earnings_sender': 'earnings from results',
                 'swap_percentage_sender': swap['percentage'],
