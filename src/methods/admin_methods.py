@@ -9,6 +9,91 @@ from reset_database import run_seeds
 def attach(app):
 
 
+    @app.route('/get_results', methods=['POST'])
+    def get_results():
+        s = Profiles.query.get(1).get_agreed_swaps(1)
+        s = filter(lambda x: x.id == 1, s)
+        return jsonify([x.recipient_user.serialize() for x in s])
+        '''
+        results = {
+            'tournament_id': 45,
+            'tournament_buy_in': 150,
+            'users': {
+                'sdfoij@yahoo.com': {
+                    'position': 11,
+                    'winning_prize': 200,
+                }
+            }
+        }
+        '''
+
+        results  = request.get_json()
+
+        for email, user_result in results['users'].items():
+            
+            user = Profiles.query.filter( 
+                        Profiles.user.email == email ).first()
+
+            # Consolidate swaps if multiple with same user
+            all_agreed_swaps = user.get_agreed_swaps( results['tournament_id'] )
+            swaps = {}
+        
+            for swap in all_agreed_swaps:
+                id = str( swap.recipient_id )
+                if id not in swaps:
+                    swaps[id] = {
+                        'count': 1,
+                        'percentage': swap.percentage,
+                        'counter_percentage': swap.counter_swap.percentage
+                    }
+                else:
+                    x = swaps[id]
+                    swaps[id] = {
+                        'count': x['count'] + 1,
+                        'percentage': x['percentage'] + swap.percentage,
+                        'counter_percentage': x['counter_percentage'] + \
+                                                swap.counter_swap.percentage
+                    }
+
+            # Create the swap templates
+            msg = lambda x: \
+                f'You have {x} swaps with this person for the following total amounts:'
+            render_swaps = ''
+            swap_number = 1
+
+            for swap in swaps:
+                swap_data = {
+                    'swap_number': swap_number,
+                    'amount_of_swaps': msg(swap['count']) if swap['count'] > 1 else '',
+                    'entry_fee': results['tournament_buy_in'],
+                    'total_earnings_sender': user_result['winning_prize'],
+                    'swap_percentage_sender': swap['percentage'],
+                    'swap_profit_sender': 'entry fee minus total earnings',
+                    'amount_owed_sender': 'swap_profit',
+                    'total_earnings_recipient': 'results[ swap. ]',
+                    'swap_percentage_recipient': swap['counter_percentage'],
+                    'swap_profit_recipient': '',
+                    'amount_owed_recipient': ''
+                }
+                render_swaps += render_template('swap.html', **swap_data)
+                swap_number += 1
+
+
+            send_email('swap_results','hernanjkd@gmail.com',
+                data={
+                    'tournament_date': buyin.flight.tournament.start_at,
+                    'tournament_name': buyin.flight.tournament.name,
+                    'flight_day': buyin.flight.day,
+                    'results_link': '',
+                    'amount_of_swaps': '3 Swaps',
+                    'swap_money_mount': '+$56.35',
+                    'render_swaps': render_swaps,
+                    'roi_rating': '44',
+                    'swap_rating': '4.8'
+                })
+
+
+
     @app.route('/reset_database')
     @jwt_required
     def populate():

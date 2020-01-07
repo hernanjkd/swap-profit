@@ -13,62 +13,7 @@ def attach(app):
         
         return str(r)
 
-        #swap_results
 
-        # Consolidate swaps if multiple with same user
-        all_agreed_swaps = 'get all swaps'
-        swaps = {}
-    
-        for swap in all_agreed_swaps:
-            id = str( swap.recipient_id )
-            if id not in swaps:
-                swaps[id] = {
-                    **swap,
-                    'count': 1
-                }
-            else:
-                swaps[id] = {
-                    **swap,
-                    'count': swaps[id]['count'] + 1,
-                    'percentage': swaps[id]['percentage'] + swap.percentage,
-                    'counter_percentage': swaps[id].counter_swap.percentage
-                }
-
-        # Create the swap templates
-        msg = lambda x: \
-            f'You have {x} swaps with this person for the following total amounts:'
-        render_swaps = ''
-        swap_number = 1
-        for swap in swaps:
-            swap_data = {
-                'swap_number': swap_number,
-                'amount_of_swaps': msg(swap['count']) if swap['count'] > 1 else '',
-                'entry_fee': 'tournament buy in, get when get results',
-                'total_earnings_sender': 'earnings from results',
-                'swap_percentage_sender': swap['percentage'],
-                'swap_profit_sender': 'entry fee minus total earnings',
-                'amount_owed_sender': 'swap_profit',
-                'total_earnings_recipient': '',
-                'swap_percentage_recipient': '',
-                'swap_profit_recipient': '',
-                'amount_owed_recipient': ''
-            }
-            render_swaps += render_template('swap.html', **swap_data)
-            swap_number += 1
-
-
-        send_email('swap_results','hernanjkd@gmail.com',
-            data={
-                'tournament_date': buyin.flight.tournament.start_at,
-                'tournament_name': buyin.flight.tournament.name,
-                'flight_day': buyin.flight.day,
-                'results_link': '',
-                'amount_of_swaps': '3 Swaps',
-                'swap_money_mount': '+$56.35',
-                'render_swaps': render_swaps,
-                'roi_rating': '44',
-                'swap_rating': '4.8'
-            })
 
 
     @app.route('/testing', methods=['GET'])
