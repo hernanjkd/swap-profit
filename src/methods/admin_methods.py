@@ -13,11 +13,12 @@ def attach(app):
     def get_results():
         s = Profiles.query.get(1).get_agreed_swaps(1)
         s = filter(lambda x: x.id == 1, s)
-        return jsonify([x.recipient_user.serialize() for x in s])
+        return jsonify(len(s))
         '''
         results = {
             'tournament_id': 45,
             'tournament_buy_in': 150,
+            'link': 'https://poker-society.herokuapp.com/results_link/234
             'users': {
                 'sdfoij@yahoo.com': {
                     'position': 11,
@@ -62,30 +63,37 @@ def attach(app):
             swap_number = 1
 
             for swap in swaps:
+                
+                entry_fee = results['tournament_buy_in']
+                profit_sender = user_result['winning_prize'] - entry_fee
+                earning_recipient = results[ swap.recipient_user.user.email ]['winning_prize']
+                profit_recipient = earning_recipient - entry_fee
+                
                 swap_data = {
                     'swap_number': swap_number,
                     'amount_of_swaps': msg(swap['count']) if swap['count'] > 1 else '',
-                    'entry_fee': results['tournament_buy_in'],
+                    'entry_fee': entry_fee,
                     'total_earnings_sender': user_result['winning_prize'],
                     'swap_percentage_sender': swap['percentage'],
-                    'swap_profit_sender': 'entry fee minus total earnings',
-                    'amount_owed_sender': 'swap_profit',
-                    'total_earnings_recipient': 'results[ swap. ]',
+                    'swap_profit_sender': profit_sender,
+                    'amount_owed_sender': profit_sender * swap['percentage'] / 100,
+                    'total_earnings_recipient': earning_recipient,
                     'swap_percentage_recipient': swap['counter_percentage'],
-                    'swap_profit_recipient': '',
-                    'amount_owed_recipient': ''
+                    'swap_profit_recipient': profit_recipient,
+                    'amount_owed_recipient': profit_recipient * swap['counter_percentage'] / 100
                 }
+                
                 render_swaps += render_template('swap.html', **swap_data)
                 swap_number += 1
 
-
+            total_swaps = ''
             send_email('swap_results','hernanjkd@gmail.com',
                 data={
                     'tournament_date': buyin.flight.tournament.start_at,
                     'tournament_name': buyin.flight.tournament.name,
                     'flight_day': buyin.flight.day,
-                    'results_link': '',
-                    'amount_of_swaps': '3 Swaps',
+                    'results_link': results['link'],
+                    'total_swaps': total_swaps,
                     'swap_money_mount': '+$56.35',
                     'render_swaps': render_swaps,
                     'roi_rating': '44',
