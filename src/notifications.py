@@ -136,4 +136,3 @@ def get_template_content(template, data={}, formats=None):
 
     
     return templates
-
