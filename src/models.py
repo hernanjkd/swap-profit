@@ -66,9 +66,6 @@ class Profiles(db.Model):
             total += transaction.coins
         return total
 
-    def get_total_swaps(self):
-        return jsonify(len(self.sending_swaps))
-
     def available_percentage(self, tournament_id):
         status_to_consider = ['pending','agreed']
         total = 0

@@ -11,7 +11,7 @@ def attach(app):
 
     @app.route('/get_results', methods=['POST'])
     def get_results():
-        return jsonify(Profiles.query.get(1).get_total_swaps())
+        
         '''
         results = {
             "tournament_id": 45,
@@ -65,11 +65,13 @@ def attach(app):
             swap_number = 1
 
             for swap in swaps:
-                
+                recipient_email = swap.recipient_user.user.email
+                recipient = Profiles.query.filter( Profiles.user.email == recipient_email )
+
                 entry_fee = results['tournament_buy_in']
                 profit_sender = user_result['winning_prize'] - entry_fee
                 amount_owed_sender = profit_sender * swap['percentage'] / 100
-                earning_recipient = results[ swap.recipient_user.user.email ]['winning_prize']
+                earning_recipient = results[ recipient_email ]['winning_prize']
                 profit_recipient = earning_recipient - entry_fee
                 amount_owed_recipient = profit_recipient * swap['counter_percentage'] / 100
 
@@ -83,8 +85,8 @@ def attach(app):
                     'swap_profit_sender': profit_sender,
                     'amount_owed_sender': amount_owed_sender,
 
-                    'recipient_name': ,
-                    'recipient_profile_pic_url': 
+                    'recipient_name': f'{recipient.firt_name} {recipient.last_name}',
+                    'recipient_profile_pic_url': recipient.profile_pic_url,
                     'total_earnings_recipient': earning_recipient,
                     'swap_percentage_recipient': swap['counter_percentage'],
                     'swap_profit_recipient': profit_recipient,
@@ -96,7 +98,8 @@ def attach(app):
                 render_swaps += render_template('swap.html', **swap_data)
                 swap_number += 1
 
-            # save new roi_rating to user here
+            # save new roi_rating
+            
 
             sign = '-' if total_swap_earnings < 0 else '+'
             send_email('swap_results','hernanjkd@gmail.com',
