@@ -9,7 +9,7 @@ from reset_database import run_seeds
 def attach(app):
 
 
-    @app.route('/get_results', methods=['POST'])
+    @app.route('/results', methods=['POST'])
     def get_results():
         
         '''
@@ -99,7 +99,7 @@ def attach(app):
                 swap_number += 1
 
             # save new roi_rating
-            
+
 
             sign = '-' if total_swap_earnings < 0 else '+'
             send_email('swap_results','hernanjkd@gmail.com',
