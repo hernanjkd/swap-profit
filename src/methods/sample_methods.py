@@ -51,7 +51,6 @@ def attach(app):
         import cloudinary.uploader
         from google.cloud import vision
 
-        # return cloudinary.uploader.destroy('ocr')
 
         result = cloudinary.uploader.upload(
             request.files['image'],
@@ -71,15 +70,24 @@ def attach(app):
             ]
         )
         cloudinary.uploader.destroy('ocr')
-        return jsonify(result)
+        
         client = vision.ImageAnnotatorClient()
         image = vision.types.Image()
         image.source.image_uri = result['secure_url']
 
         response = client.text_detection(image=image)
         texts = response.text_annotations
+        msg = texts[0].description
 
-        cloudinary.uploader.destroy('ocr')
+        buyin = re.search(r'buy[\s\-_]*in\D{1,5}([0-9,\.]+)', msg, re.IGNORECASE)
+        buyin = buyin and buyin.group(1)
+        seat = re.search(r'seat\D{,5}([0-9]+)', msg, re.IGNORECASE)
+        seat = seat and seat.group(1)
+        table = re.search(r'table\D{,5}([0-9]+)', msg, re.IGNORECASE)
+        table = table and table.group(1)
+        name = re.search(r'name[ :,]+([a-zA-Z() ]+)', msg, re.IGNORECASE)
+        name = name and name.group(1)
+
         return jsonify(texts[0].description)
 
     return app
