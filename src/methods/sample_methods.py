@@ -88,6 +88,12 @@ def attach(app):
         name = re.search(r'name[ :,]+([a-zA-Z() ]+)', msg, re.IGNORECASE)
         name = name and name.group(1)
 
-        return jsonify(texts[0].description)
+        return jsonify({
+            'text': msg,
+            'buy_in': buyin,
+            'seat': seat,
+            'table': table,
+            'name': name
+        })
 
     return app

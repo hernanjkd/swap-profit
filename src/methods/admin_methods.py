@@ -98,8 +98,10 @@ def attach(app):
                 render_swaps += render_template('swap.html', **swap_data)
                 swap_number += 1
 
-            # save new roi_rating
 
+            user.calculate_total_swaps_save()
+            user.calculate_roi_save()
+            db.session.commit()
 
             sign = '-' if total_swap_earnings < 0 else '+'
             send_email('swap_results','hernanjkd@gmail.com',
