@@ -1,8 +1,8 @@
-from flask import Flask, jsonify, request
-from notifications import send_email
-import requests
 import os
 import models
+import requests
+from flask import Flask, jsonify, request
+from notifications import send_email
 
 def attach(app):
 
