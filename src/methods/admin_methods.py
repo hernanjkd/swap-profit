@@ -22,7 +22,8 @@ def attach(app):
             "users": {
                 "sdfoij@yahoo.com": {
                     "position": 11,
-                    "winning_prize": 200
+                    "winning_prize": 200,
+                    "winning_swaps": 34
                 }
             }
         }
@@ -100,7 +101,7 @@ def attach(app):
 
 
             user.calculate_total_swaps_save()
-            user.calculate_roi_save()
+            user.roi_rating = user.total_swaps / user_result['winning_swaps']
             db.session.commit()
 
             sign = '-' if total_swap_earnings < 0 else '+'

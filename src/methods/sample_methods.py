@@ -18,9 +18,12 @@ def attach(app):
 
     @app.route('/testing', methods=['GET'])
     def first_endpoint():
+        req = requests.get('http://localhost:3333/roi/data/asd');return req.text
+        d = dir(req)
+        class_info = { 'attributes': {attr: str(val) for attr, val in req.__dict__.items()} }
+        class_info['methods'] = [method for method in d if method not in class_info['attributes']]
+        return jsonify( class_info )
         
-        return jsonify( requests.get('http://localhost:3333/zipcode/89145').json() )
-
         trmnts = models.Tournaments.query.all()
         lst = []
         for t in trmnts:
