@@ -207,7 +207,7 @@ class Tournaments(db.Model):
     zip_code = db.Column(db.String(14))
     start_at = db.Column(db.DateTime)
     results_link = db.Column(db.String(256), default=None)
-    tournament_status = db.Column(db.Enum(TournamentStatus), default=TournamentStatus.open)
+    status = db.Column(db.Enum(TournamentStatus), default=TournamentStatus.open)
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -273,6 +273,7 @@ class Tournaments(db.Model):
             'longitude': self.longitude,
             'latitude': self.latitude,
             'results_link': self.results_link,
+            'tournament_status': self.status._value_,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'flights': [x.serialize() for x in self.flights],
