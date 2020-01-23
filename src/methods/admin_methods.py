@@ -2,7 +2,7 @@ import requests
 from flask import request, jsonify
 from flask_jwt_simple import JWTManager, create_jwt, get_jwt, jwt_required
 from sqlalchemy import desc
-from utils import APIException, role_jwt_required
+from utils import APIException, role_jwt_required, update_table
 from models import db, Profiles, Tournaments, Swaps, Flights, Buy_ins
 from datetime import datetime
 from reset_database import run_seeds
@@ -11,14 +11,16 @@ def attach(app):
 
 
     @app.route('/tournaments', methods=['POST'])
+    # @role_jwt_required(['admin'])
     def add_tournaments():
 
         trmnt_list = request.get_json()
-
+        for x in trmnt_list:
+            print(x)
+        return 'data received'
         for coming_trmnt in trmnt_lst:
 
-            trmnt = Tournaments.query.get( coming_trmnt['id'] )
-            if trmnt is None:
+            if coming_trmnt['new'] is True:
                 db.session.add( Tournaments(
                     id = coming_trmnt['id'],
                     name = coming_trmnt['name'],
@@ -30,6 +32,12 @@ def attach(app):
                     longitude = coming_trmnt['longitude'],
                     latitude = coming_trmnt['latitude']
                 ))
+
+            else:
+                trmnt = Tournaments.query.get( coming_trmnt['id'] )
+                update_table(trmnt, coming_trmnt, 
+                    ignore=['h1','casino_id','blinds','notes','starting_stack','date'])
+
 
 
     @app.route('/results', methods=['POST'])
