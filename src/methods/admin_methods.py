@@ -10,6 +10,28 @@ from reset_database import run_seeds
 def attach(app):
 
 
+    @app.route('/tournaments', methods=['POST'])
+    def add_tournaments():
+
+        trmnt_list = request.get_json()
+
+        for coming_trmnt in trmnt_lst:
+
+            trmnt = Tournaments.query.get( coming_trmnt['id'] )
+            if trmnt is None:
+                db.session.add( Tournaments(
+                    id = coming_trmnt['id'],
+                    name = coming_trmnt['name'],
+                    address = coming_trmnt['address'],
+                    city = coming_trmnt['city'],
+                    state = coming_trmnt['state'],
+                    zip_code = coming_trmnt['zip_code'],
+                    start_at = coming_trmnt['start_at'],
+                    longitude = coming_trmnt['longitude'],
+                    latitude = coming_trmnt['latitude']
+                ))
+
+
     @app.route('/results', methods=['POST'])
     def get_results():
         
@@ -34,6 +56,7 @@ def attach(app):
 
         trmnt = Tournaments.query.get( 45 )
         trmnt.results_link = results['results_link']
+        trmnt.status = 'closed'
         db.session.commit()
 
         for email, user_result in results['users'].items():
