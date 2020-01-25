@@ -1,4 +1,3 @@
-import requests
 from flask import request, jsonify
 from flask_jwt_simple import JWTManager, create_jwt, get_jwt, jwt_required
 from sqlalchemy import desc
@@ -17,7 +16,7 @@ def attach(app):
         trmnt_list = request.get_json()
         for x in trmnt_list:
             print(x)
-        return 'data received'
+        return 'ok'
         for coming_trmnt in trmnt_lst:
 
             if coming_trmnt['new'] is True:
