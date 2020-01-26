@@ -19,10 +19,13 @@ def attach(app):
     
     @app.route('/users/me/email', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_email():
+    def update_email(user_id):
         
         req = request.get_json()
         check_params(req, 'email', 'password', 'new_email')
+
+        if req['email'] == req['new_email']:
+            return jsonify({'message':'Your email is already '+req['new_email']})
 
         user = Users.query.filter_by( 
             id = user_id, 
@@ -39,7 +42,7 @@ def attach(app):
         db.session.commit()
 
         send_email( template='email_validation', emails=user.email, 
-            data={'validation_link': jwt_link(user.id)} )
+            data={'validation_link': jwt_link(user.id, role='email_change')} )
 
         return jsonify({'message': 'Please verify your new email'}), 200
 

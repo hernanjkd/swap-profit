@@ -10,8 +10,8 @@ def attach(app):
 
 
     @app.route('/tournaments', methods=['POST'])
-    # @role_jwt_required(['admin'])
-    def add_tournaments():
+    @role_jwt_required(['admin'])
+    def add_tournaments(user_id):
         
         trmnt_list = request.get_json()
         
