@@ -39,7 +39,10 @@ def attach(app):
         send_email( template='email_validation', emails=user.email, 
             data={'validation_link': jwt_link(user.id)} )
 
-        return jsonify({'message': 'Please verify your email'}), 200
+        return jsonify({
+            'message': 'Please verify your email',
+            'validation_link': jwt_link(user.id)
+        }), 200
 
 
 
@@ -48,7 +51,7 @@ def attach(app):
     def login():
 
         req = request.get_json()
-        check_params(req, 'email', 'password','device_token')
+        check_params(req, 'email', 'password', 'device_token')
 
         user = Users.query.filter_by( email=req['email'], password=sha256(req['password']) ).first()
 

@@ -90,6 +90,8 @@ def attach(app):
 
         # User forgot their password
         if request.args.get('forgot') == 'true':
+            send_email('reset_password_link', emails=req['email'], 
+                data={'link':jwt_link(user_id, '/users/reset_password/', req['email'])})
             return jsonify({
                 'message': 'A link has been sent to your email to reset the password',
                 'link': jwt_link(user_id, '/users/reset_password/', req['email'])
