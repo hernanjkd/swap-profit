@@ -88,7 +88,7 @@ def attach(app):
 
 
     @app.route('/users/me/password', methods=['PUT'])
-    def reset_password(user_id):
+    def reset_password():
 
         req = request.get_json()
         check_params(req, 'email')
@@ -509,7 +509,7 @@ def attach(app):
         db.session.add_all([s1, s2])
         db.session.commit()
 
-        # Send notification here
+        # send_fcm()
 
         return jsonify({'message':'Swap created successfully.'}), 200
 
