@@ -1,4 +1,5 @@
 import os
+import ocr
 import json
 import cloudinary
 import cloudinary.uploader
@@ -257,38 +258,32 @@ def attach(app):
 
 
 
-    @app.route('/me/buy_ins', methods=['POST'])
-    @role_jwt_required(['user'])
-    def create_buy_in(user_id):
+    # @app.route('/me/buy_ins', methods=['POST'])
+    # @role_jwt_required(['user'])
+    # def create_buy_in(user_id):
 
-        req = request.get_json()
-        check_params(req, 'flight_id', 'chips', 'table', 'seat')
+    #     req = request.get_json()
+    #     check_params(req, 'flight_id', 'chips', 'table', 'seat')
 
-        prof = Profiles.query.get(user_id)
+    #     buyin = Buy_ins(
+    #         user_id = user_id,
+    #         flight_id = req['flight_id'],
+    #         chips = req['chips'],
+    #         table = req['table'],
+    #         seat = req['seat'],
+    #         receipt_img_url = ''
+    #     )
+    #     db.session.add(buyin)
+    #     db.session.flush()
+    #     # db.session.commit()
 
-        buyin = Buy_ins(
-            user_id = user_id,
-            flight_id = req['flight_id'],
-            chips = req['chips'],
-            table = req['table'],
-            seat = req['seat']
-        )
-        db.session.add(buyin)
-        db.session.commit()
+    #     prof = Profiles.query.get(user_id)
+    #     name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
 
-        name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
-
-        buyin = Buy_ins.query.filter_by(
-            user_id = user_id,
-            flight_id = req['flight_id'],
-            chips = req['chips'],
-            table = req['table'],
-            seat = req['seat']
-        ).order_by(Buy_ins.id.desc()).first()
-
-        return jsonify({ **buyin.serialize(), "name": name }), 200
+    #     return jsonify({ **buyin.serialize(), "name": name }), 200
 
 
+        
 
 
     @app.route('/me/buy_ins/<int:id>', methods=['PUT'])
@@ -303,7 +298,8 @@ def attach(app):
         if buyin is None:
             raise APIException('Buy_in not found', 404)
 
-        update_table(buyin, req, ignore=['user_id','flight_id','receipt_img_url'])
+        update_table(buyin, req, 
+            ignore=['user_id','flight_id','receipt_img_url','place'])
 
         db.session.commit()
         
@@ -312,9 +308,9 @@ def attach(app):
 
 
 
-    @app.route('/me/buy_ins/<int:id>/image', methods=['PUT'])
+    @app.route('/me/buy_ins/image', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_buyin_image(user_id, id):
+    def update_buyin_image(user_id):
 
         buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
         if buyin is None:
@@ -340,7 +336,15 @@ def attach(app):
                 f'buyin_{str(buyin.id)}'
             ]
         )
+        cloudinary.uploader.destroy('buyin' + str(buyin.id))
+        
+        client = vision.ImageAnnotatorClient()
+        image = vision.types.Image()
+        image.source.image_uri = result['secure_url']
 
+        response = client.text_detection(image=image)
+        texts = response.text_annotations
+        msg = texts[0].description
         #########################################################
         receipt_validation = False
         if receipt_validation is False:
