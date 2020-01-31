@@ -258,33 +258,30 @@ def attach(app):
 
 
 
-    # @app.route('/me/buy_ins', methods=['POST'])
-    # @role_jwt_required(['user'])
-    # def create_buy_in(user_id):
+    @app.route('/me/buy_ins', methods=['POST'])
+    @role_jwt_required(['user'])
+    def create_buy_in(user_id):
 
-    #     req = request.get_json()
-    #     check_params(req, 'flight_id', 'chips', 'table', 'seat')
+        req = request.get_json()
+        check_params(req, 'flight_id')
 
-    #     buyin = Buy_ins(
-    #         user_id = user_id,
-    #         flight_id = req['flight_id'],
-    #         chips = req['chips'],
-    #         table = req['table'],
-    #         seat = req['seat'],
-    #         receipt_img_url = ''
-    #     )
-    #     db.session.add(buyin)
-    #     db.session.flush()
-    #     # db.session.commit()
+        buyin = Buy_ins(
+            user_id = user_id,
+            flight_id = req['flight_id']
+        )
+        db.session.add(buyin)
+        db.session.commit()
+        
+        prof = Profiles.query.get(user_id)
+        name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
 
-    #     prof = Profiles.query.get(user_id)
-    #     name = prof.nickname if prof.nickname else f'{prof.first_name} {prof.last_name}'
-
-    #     return jsonify({ **buyin.serialize(), "name": name }), 200
+        return jsonify({ 
+            'buyin_id': buyin.id, 
+            'name': name 
+        }), 200
 
 
         
-
 
     @app.route('/me/buy_ins/<int:id>', methods=['PUT'])
     @role_jwt_required(['user'])
@@ -303,14 +300,14 @@ def attach(app):
 
         db.session.commit()
         
-        return jsonify(Buy_ins.query.get(id).serialize())
+        return jsonify(buyin.serialize())
 
 
 
 
-    @app.route('/me/buy_ins/image', methods=['PUT'])
+    @app.route('/me/buy_ins/<int:id>/image', methods=['PUT'])
     @role_jwt_required(['user'])
-    def update_buyin_image(user_id):
+    def update_buyin_image(user_id, id):
 
         buyin = Buy_ins.query.filter_by(id=id, user_id=user_id).first()
         if buyin is None:
@@ -332,8 +329,8 @@ def attach(app):
             }],
             tags=[
                 'buyin_receipt',
-                f'user_{str(buyin.user_id)}',
-                f'buyin_{str(buyin.id)}'
+                'user_'+ str(user_id),
+                'buyin_'+ str(buyin.id)
             ]
         )
         cloudinary.uploader.destroy('buyin' + str(buyin.id))
@@ -346,16 +343,16 @@ def attach(app):
         texts = response.text_annotations
         msg = texts[0].description
         #########################################################
-        receipt_validation = False
-        if receipt_validation is False:
-            send_email(template='wrong_receipt', emails=buyin.user.user.email,
-                data={
-                    'receipt_url': buyin.receipt_img_url,
-                    'tournament_date': buyin.flight.tournament.start_at,
-                    'tournament_name': buyin.flight.tournament.name,
-                    'upload_time': result['created_at']
-                })
-            raise APIException('Wrong receipt was upload', 400)
+        # receipt_validation = False
+        # if receipt_validation is False:
+        #     send_email(template='wrong_receipt', emails=buyin.user.user.email,
+        #         data={
+        #             'receipt_url': buyin.receipt_img_url,
+        #             'tournament_date': buyin.flight.tournament.start_at,
+        #             'tournament_name': buyin.flight.tournament.name,
+        #             'upload_time': result['created_at']
+        #         })
+        #     raise APIException('Wrong receipt was upload', 400)
         #########################################################
 
         buyin.receipt_img_url = result['secure_url']
@@ -368,14 +365,11 @@ def attach(app):
                 'tournament_name': buyin.flight.tournament.name
             })
 
-        return jsonify({
-            'message':'Image uploaded successfully. Email sent.'
-        }), 200
+        return jsonify({'message':'Image uploaded successfully. Email sent.'}), 200
 
 
 
 
-    # Can search by id, 'name' or 'all'
     @app.route('/tournaments/<id>', methods=['GET'])
     @role_jwt_required(['user'])
     def get_tournaments(user_id, id):
@@ -415,7 +409,8 @@ def attach(app):
 
             if isFloat(lat) and isFloat(lon):
                 trmnts = trmnts.order_by( 
-                    ( db.func.abs(float(lon) - Tournaments.longitude) + db.func.abs(float(lat) - Tournaments.latitude) )
+                    ( db.func.abs(float(lon) - Tournaments.longitude) + 
+                      db.func.abs(float(lat) - Tournaments.latitude) )
                 .asc() )
 
             # Order by ascending date
