@@ -12,8 +12,9 @@ def hard_rock(text):
     account_number = '' # get account_number
     return {
         'name': name,
+        'date': None,
         'buyin': buyin,
         'seat': seat,
         'table': table,
-        'account_number': ''
+        'account_number': None
     }
