@@ -1,6 +1,8 @@
 import os
 import re
 import hashlib
+import cloudinary
+import cloudinary.uploader
 from flask import jsonify, url_for
 from flask_jwt_simple import create_jwt, jwt_required, get_jwt
 from datetime import datetime
@@ -66,10 +68,10 @@ def isFloat(string):
     except:
         return False
 
-def cloudinary_uploader(**kwargs):
+def cloudinary_uploader(image, public_id, tags):
     return cloudinary.uploader.upload(
-        request.files['image'],
-        public_id='profile' + str(user.id),
+        image,
+        public_id=public_id,
         crop='limit',
         width=450,
         height=450,
@@ -78,7 +80,7 @@ def cloudinary_uploader(**kwargs):
             'crop': 'thumb', 'gravity': 'face',
             'radius': 100
         }],
-        tags=['profile_picture']
+        tags=tags
     )
 
 # Notes: 'admin' will have access even if arg not passed

@@ -222,7 +222,11 @@ def attach(app):
         if 'image' not in request.files:
             raise APIException('Image property missing on the files array', 404)
 
-        result = utils.cloudinary_uploader
+        result = utils.cloudinary_uploader(
+            image = request.files['image'],
+            public_id = 'profile' + str(user.id),
+            tags = ['profile_picture']
+        )
 
         user.profile.profile_pic_url = result['secure_url']
 
@@ -326,22 +330,12 @@ def attach(app):
         if 'image' not in request.files:
             raise APIException('Image property missing in the files array', 404)
 
-        result = cloudinary.uploader.upload(
-            request.files['image'],
-            public_id='buyin' + str(buyin.id),
-            crop='limit',
-            width=450,
-            height=450,
-            eager=[{
-                'width': 200, 'height': 200,
-                'crop': 'thumb', 'gravity': 'face',
-                'radius': 100
-            }],
-            tags=[
-                'buyin_receipt',
+        result = cloudinary_uploader(
+            image = request.files['image'],
+            public_id = 'buyin' + str(buyin.id),
+            tags = ['buyin_receipt',
                 'user_'+ str(user_id),
-                'buyin_'+ str(buyin.id)
-            ]
+                'buyin_'+ str(buyin.id)]
         )
         
         buyin.receipt_img_url = result['secure_url']
