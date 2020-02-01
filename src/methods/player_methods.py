@@ -313,35 +313,53 @@ def attach(app):
         if buyin is None:
             raise APIException('Buy_in not found', 404)
 
-        if 'image' not in request.files:
-            raise APIException('Image property missing in the files array', 404)
 
-        result = cloudinary.uploader.upload(
-            request.files['image'],
-            public_id='buyin' + str(buyin.id),
-            crop='limit',
-            width=450,
-            height=450,
-            eager=[{
-                'width': 200, 'height': 200,
-                'crop': 'thumb', 'gravity': 'face',
-                'radius': 100
-            }],
-            tags=[
-                'buyin_receipt',
-                'user_'+ str(user_id),
-                'buyin_'+ str(buyin.id)
-            ]
-        )
-        cloudinary.uploader.destroy('buyin' + str(buyin.id))
-        
-        client = vision.ImageAnnotatorClient()
-        image = vision.types.Image()
-        image.source.image_uri = result['secure_url']
+        if request.args.get('review') != 'true':
 
-        response = client.text_detection(image=image)
-        texts = response.text_annotations
-        msg = texts[0].description
+            if 'image' not in request.files:
+                raise APIException('Image property missing in the files array', 404)
+
+            result = cloudinary.uploader.upload(
+                request.files['image'],
+                public_id='buyin' + str(buyin.id),
+                crop='limit',
+                width=450,
+                height=450,
+                eager=[{
+                    'width': 200, 'height': 200,
+                    'crop': 'thumb', 'gravity': 'face',
+                    'radius': 100
+                }],
+                tags=[
+                    'buyin_receipt',
+                    'user_'+ str(user_id),
+                    'buyin_'+ str(buyin.id)
+                ]
+            )
+            
+            buyin.receipt_img_url = result['secure_url']
+            db.session.commit()
+
+            client = vision.ImageAnnotatorClient()
+            image = vision.types.Image()
+            image.source.image_uri = result['secure_url']
+
+            response = client.text_detection(image=image)
+            texts = response.text_annotations
+            msg = texts[0].description
+            
+            cloudinary.uploader.destroy('buyin' + str(buyin.id))
+
+            return jsonify( ocr.hard_rock(msg) )
+
+
+        # request.args.get('review') == 'true'
+
+        req = request.get_json()
+
+        if req.get('valid') == 'true':
+            
+
         #########################################################
         # receipt_validation = False
         # if receipt_validation is False:
@@ -354,9 +372,6 @@ def attach(app):
         #         })
         #     raise APIException('Wrong receipt was upload', 400)
         #########################################################
-
-        buyin.receipt_img_url = result['secure_url']
-        db.session.commit()
 
         send_email(template='buyin_receipt', emails=buyin.user.user.email,
             data={
