@@ -66,6 +66,21 @@ def isFloat(string):
     except:
         return False
 
+def cloudinary_uploader(**kwargs):
+    return cloudinary.uploader.upload(
+        request.files['image'],
+        public_id='profile' + str(user.id),
+        crop='limit',
+        width=450,
+        height=450,
+        eager=[{
+            'width': 200, 'height': 200,
+            'crop': 'thumb', 'gravity': 'face',
+            'radius': 100
+        }],
+        tags=['profile_picture']
+    )
+
 # Notes: 'admin' will have access even if arg not passed
 def role_jwt_required(valid_roles=['invalid']):
     def decorator(func):
