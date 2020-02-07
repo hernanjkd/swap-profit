@@ -9,22 +9,22 @@ engine = create_engine( os.environ.get('DATABASE_URL'))
 Session = sessionmaker( bind=engine )
 session = Session()
 
-time = datetime.utcnow() + timedelta(days=1)
-trmnt = session.query(Tournaments) \
-    .filter( func.max(Tournaments.id) )
-x = [z for z in trmnt]
-print(x)
-# trmnts = session.query(Tournaments) \
-    # .filter_by(name='New Vegas Strip - Texas Hold\'em Finale') \
-    # .filter( Tournaments.flights.any(
-    #     func.max(Flights.start_at) < time
-    # ))
 
+_17hrs_ago = datetime.utcnow() - timedelta(hours=17)
+trmnts = session.query(Tournaments) \
+            .filter( Tournaments.status == 'open') \
+            .filter( Tournaments.flights.any(
+                Flights.start_at < _17hrs_ago
+            ))
 
-# _17hrs_ago = datetime.utcnow() - timedelta(hours=17)
-# trmnts = session.query(Tournaments) \
-#             .filter( Tournaments.status == 'open')
-#             .where( Tournaments.flights.any( 
-#                 func.max(Flights.start_at) < _17hrs_ago ))
-            # .filter( Tournaments.flights)
+# for trmnt in trmnts:
+#     change_status = True
+#     for flight in trmnt.flights:
+#         if flight.start_at > _17hrs_ago:
+#             change_status = False
+#     if change_status:
+#         trmnt.status = 'waiting_results'
+
+# session.commit()
+
 
