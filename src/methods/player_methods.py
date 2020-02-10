@@ -467,6 +467,16 @@ def attach(app):
         req = request.get_json()
         utils.check_params(req, 'tournament_id', 'recipient_id', 'percentage')
 
+        # Can only send one swap offer at a time
+        pending_swaps = Swaps.query.filter_by(
+            status = 'pending',
+            sender_id = user_id,
+            recipient_id = req['recipient_id']
+        )
+        if pending_swaps is not None:
+            raise APIException('Already have a pending swap with this user', 401)
+
+        # Check for sufficient coins
         swap_cost = abs( req.get('cost', 1) )
         if sender.get_coins() < swap_cost:
             raise APIException('Insufficient coins to make this swap', 402)
