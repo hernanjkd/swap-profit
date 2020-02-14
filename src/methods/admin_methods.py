@@ -343,17 +343,6 @@ def attach(app):
 
 
 
-    @app.route('/devices/<int:id>', methods=['DELETE'])
-    @role_jwt_required(['admin'])
-    def delete_device_tool(id, **kwargs):
-        req = request.get_json()
-        db.session.delete()
-        db.session.commit()
-        return jsonify({'message':'Device deleted'})
-
-
-
-
     @app.route('/swaps/all', methods=['GET'])
     @role_jwt_required(['admin'])
     def get_swaps(**kwargs):
