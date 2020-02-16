@@ -354,6 +354,9 @@ def attach(app):
         if req['table'] > 999:
             raise APIException('Too many characters for table')
 
+        if buyin.status._value_ == 'pending':
+            buyin.status = 'active'
+
         buyin.chips = req['chips']
         buyin.table = req['table']
         buyin.seat = req['seat']
