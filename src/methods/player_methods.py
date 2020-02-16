@@ -349,12 +349,18 @@ def attach(app):
         if buyin is None:
             raise APIException('Buy_in not found', 404)
 
-        if request.args.get('validate') == 'true':
+        if buyin.status._value_ == 'busted':
+            raise APIException('This buyin has a status of "busted"')
+
+        if request.args.get('validate') == 'true' and buyin.status._value_ == 'pending':
             buyin.status = 'active'
             db.session.commit()
-
-        if buyin.status._value_ == 'pending':
+        elif buyin.status._value_ == 'pending':
             raise APIException('This buyin has not been validated', 406)
+
+        if req.get('status') == 'busted':
+            buyin.status = 'busted'
+            db.session.commit()
 
         if req['chips'] > 999999:
             raise APIException('Too many characters for chips')
@@ -366,10 +372,7 @@ def attach(app):
         buyin.seat = req['seat']
         db.session.commit()
         
-        return jsonify({
-            'message': 'Email sent, buy in updated',
-            'buy_in': buyin.serialize()
-        })
+        return jsonify({'buy_in': buyin.serialize()})
 
 
 
