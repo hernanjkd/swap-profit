@@ -273,18 +273,18 @@ def attach(app):
         db.session.add(buyin)
         db.session.flush()
 
-        if 'image' not in request.files:
-            raise APIException('"image" property missing in the files array', 404)
+        # if 'image' not in request.files:
+        #     raise APIException('"image" property missing in the files array', 404)
         
-        result = utils.cloudinary_uploader(
-            image = request.files['image'],
-            public_id = 'buyin' + str(buyin.id),
-            tags = ['buyin_receipt',
-                'user_'+ str(user_id),
-                'buyin_'+ str(buyin.id)]
-        )
+        # result = utils.cloudinary_uploader(
+        #     image = request.files['image'],
+        #     public_id = 'buyin' + str(buyin.id),
+        #     tags = ['buyin_receipt',
+        #         'user_'+ str(user_id),
+        #         'buyin_'+ str(buyin.id)]
+        # )
         
-        buyin.receipt_img_url = result['secure_url']
+        # buyin.receipt_img_url = result['secure_url']
         db.session.commit()
 
         # client = vision.ImageAnnotatorClient()
@@ -316,12 +316,12 @@ def attach(app):
         #         })
         #     raise APIException('Wrong receipt was upload', 400)
 
-        send_email(template='buyin_receipt', emails=buyin.user.user.email,
-        data={
-            'receipt_url': buyin.receipt_img_url,
-            'tournament_date': buyin.flight.tournament.start_at,
-            'tournament_name': buyin.flight.tournament.name
-        })
+        # send_email(template='buyin_receipt', emails=buyin.user.user.email,
+        # data={
+        #     'receipt_url': buyin.receipt_img_url,
+        #     'tournament_date': buyin.flight.tournament.start_at,
+        #     'tournament_name': buyin.flight.tournament.name
+        # })
 
         return jsonify({
             'buyin_id': buyin.id,
@@ -349,13 +349,17 @@ def attach(app):
         if buyin is None:
             raise APIException('Buy_in not found', 404)
 
+        if request.args.get('validate') == 'true':
+            buyin.status = 'active'
+            db.session.commit()
+
+        if buyin.status._value_ == 'pending':
+            raise APIException('This buyin has not been validated', 406)
+
         if req['chips'] > 999999:
             raise APIException('Too many characters for chips')
         if req['table'] > 999:
             raise APIException('Too many characters for table')
-
-        if buyin.status._value_ == 'pending':
-            buyin.status = 'active'
 
         buyin.chips = req['chips']
         buyin.table = req['table']
