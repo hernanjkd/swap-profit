@@ -273,18 +273,18 @@ def attach(app):
         db.session.add(buyin)
         db.session.flush()
 
-        # if 'image' not in request.files:
-        #     raise APIException('"image" property missing in the files array', 404)
+        if 'image' not in request.files:
+            raise APIException('"image" property missing in the files array', 404)
         
-        # result = utils.cloudinary_uploader(
-        #     image = request.files['image'],
-        #     public_id = 'buyin' + str(buyin.id),
-        #     tags = ['buyin_receipt',
-        #         'user_'+ str(user_id),
-        #         'buyin_'+ str(buyin.id)]
-        # )
+        result = utils.cloudinary_uploader(
+            image = request.files['image'],
+            public_id = 'buyin' + str(buyin.id),
+            tags = ['buyin_receipt',
+                'user_'+ str(user_id),
+                'buyin_'+ str(buyin.id)]
+        )
         
-        # buyin.receipt_img_url = result['secure_url']
+        buyin.receipt_img_url = result['secure_url']
         db.session.commit()
 
         # client = vision.ImageAnnotatorClient()
@@ -316,12 +316,12 @@ def attach(app):
         #         })
         #     raise APIException('Wrong receipt was upload', 400)
 
-        # send_email(template='buyin_receipt', emails=buyin.user.user.email,
-        # data={
-        #     'receipt_url': buyin.receipt_img_url,
-        #     'tournament_date': buyin.flight.tournament.start_at,
-        #     'tournament_name': buyin.flight.tournament.name
-        # })
+        send_email(template='buyin_receipt', emails=buyin.user.user.email,
+        data={
+            'receipt_url': buyin.receipt_img_url,
+            'tournament_date': buyin.flight.tournament.start_at,
+            'tournament_name': buyin.flight.tournament.name
+        })
 
         return jsonify({
             'buyin_id': buyin.id,
@@ -343,7 +343,7 @@ def attach(app):
     def update_buy_in(user_id, id):
 
         req = request.get_json()
-        utils.check_params(req, 'chips','table','seat')
+        utils.check_params(req)
 
         buyin = Buy_ins.query.get(id)
         if buyin is None:
@@ -353,23 +353,25 @@ def attach(app):
             raise APIException('This buyin has a status of "busted"')
 
         if request.args.get('validate') == 'true' and buyin.status._value_ == 'pending':
+            utils.check_params(req, 'chips','table','seat')
             buyin.status = 'active'
-            db.session.commit()
         elif buyin.status._value_ == 'pending':
             raise APIException('This buyin has not been validated', 406)
 
         if req.get('status') == 'busted':
             buyin.status = 'busted'
-            db.session.commit()
 
-        if req['chips'] > 999999:
-            raise APIException('Too many characters for chips')
-        if req['table'] > 999:
-            raise APIException('Too many characters for table')
+        if req.get('chips') is not None:
+            if req['chips'] > 999999:
+                raise APIException('Too many characters for chips')
+            buyin.chips = req['chips']
+        if req.get('table') is not None:
+            if req['table'] > 999:
+                raise APIException('Too many characters for table')
+            buyin.table = req['table']
+        if req.get('seat') is not None:
+            buyin.seat = req['seat']
 
-        buyin.chips = req['chips']
-        buyin.table = req['table']
-        buyin.seat = req['seat']
         db.session.commit()
         
         return jsonify({'buy_in': buyin.serialize()})
@@ -718,7 +720,6 @@ def attach(app):
         if trmnts is not None:
             
             for trmnt in trmnts:
-
                 my_buyin = Buy_ins.get_latest( user_id=user_id, tournament_id=trmnt.id )
 
                 swaps = Swaps.query.filter_by(
@@ -726,13 +727,51 @@ def attach(app):
                     tournament_id = trmnt.id
                 )
 
-                swaps_buyins = [{
-                    'swap': swap.serialize(),
-                    'buyin': Buy_ins.get_latest(
-                                user_id = swap.recipient_id,
-                                tournament_id = trmnt.id
-                            ).serialize()
-                } for swap in swaps]
+                # separate swaps by recipient
+                swaps_by_recipient = {}
+                for swap in swaps:
+                    rec_id = str(swap.recipient_id)
+                    data = swaps_by_recipient.get( rec_id, [] )
+                    swaps_by_recipient[ rec_id ] = [ *data, swap ]
+
+                swaps_buyins = []
+                for rec_id, swaps in swaps_by_recipient.items():
+                    recipient_buyin = Buy_ins.get_latest(
+                            user_id = rec_id,
+                            tournament_id = trmnt.id
+                        )
+                    data = {
+                        'recipient_user': Profiles.query.get( rec_id ).serialize(),
+                        'recipient_buyin': recipient_buyin.serialize(),
+                        'their_place': recipient_buyin.place,
+                        'you_won': my_buyin.winnings if my_buyin.winnings else 0,
+                        'they_won': recipient_buyin.winnings if recipient_buyin.winnings else 0,
+                        'agreed_swaps': [],
+                        'other_swaps': []
+                    }
+                    you_owe_total = 0
+                    they_owe_total = 0
+                    for swap in swaps:
+                        you_owe = (my_buyin.winnings * swap.percentage / 100) \
+                            if my_buyin.winnings is not None else 0
+                        they_owe = (recipient_buyin.winnings * swap.counter_swap.percentage / 100) \
+                            if recipient_buyin.winnings is not None else 0
+                        you_owe_total += you_owe
+                        they_owe_total += they_owe
+                        single_swap_data = {
+                            'counter_percentage': swap.counter_swap.percentage,
+                            'you_owe': you_owe,
+                            'they_owe': they_owe,
+                            **swap.serialize()
+                        }
+                        if swap.status._value_ == 'agreed':
+                            data['agreed_swaps'].append(single_swap_data)
+                        else:
+                            data['other_swaps'].append(single_swap_data)
+                    data['you_owe_total'] = you_owe_total
+                    data['they_owe_total'] = they_owe_total
+
+                    swaps_buyins.append(data)
 
                 swap_trackers.append({
                     'tournament': trmnt.serialize(),
