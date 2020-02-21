@@ -26,9 +26,20 @@ def swap_tracker_json(trmnt, user_id):
                 tournament_id = trmnt.id
             )
         if recipient_buyin is None:
-            return { 'message':'Error',
-                'swaps with user': [x.serialize() for x in swaps],
-                'recipient buyin': None }
+            return { 'ERROR':'Recipient has swaps with user in this tournament but no buy-in',
+                'recipient buyin': None,
+                'swaps with user': [{
+                    'recipient_name': f'{x.recipient_user.first_name} {x.recipient_user.last_name}',
+                    'sender_name': f'{x.sender_user.first_name} {x.sender_user.last_name}',
+                    'tournament_name': x.tournament.name } for x in swaps] }
+        if my_buyin is None:
+            return { 'ERROR':'User has swaps in this tournament but no buy-in',
+                'buyin': None,
+                'user swaps': [{
+                    'recipient_name': f'{x.recipient_user.first_name} {x.recipient_user.last_name}',
+                    'sender_name': f'{x.sender_user.first_name} {x.sender_user.last_name}',
+                    'tournament_name': x.tournament.name } for x in swaps] }
+
 
         data = {
             'recipient_user': Profiles.query.get( rec_id ).serialize(),
