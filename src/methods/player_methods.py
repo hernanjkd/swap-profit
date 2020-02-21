@@ -438,7 +438,7 @@ def attach(app):
 
             
             return jsonify( 
-                [ jsonify( actions.swap_tracker_json( trmnt, user_id )) for trmnt in trmnts ]
+                [ actions.swap_tracker_json( trmnt, user_id ) for trmnt in trmnts ]
             ), 200
 
 
