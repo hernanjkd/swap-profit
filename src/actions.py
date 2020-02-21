@@ -1,8 +1,8 @@
 from models import Profiles, Buy_ins, Swaps
 
 
-def create_swap_tracker_json(trmnt, user_id):
-
+def swap_tracker_json(trmnt, user_id):
+    
     my_buyin = Buy_ins.get_latest( user_id=user_id, tournament_id=trmnt.id )
     final_profit = 0
 
@@ -17,6 +17,7 @@ def create_swap_tracker_json(trmnt, user_id):
         rec_id = str(swap.recipient_id)
         data = swaps_by_recipient.get( rec_id, [] )
         swaps_by_recipient[ rec_id ] = [ *data, swap ]
+    
 
     swaps_buyins = []
     for rec_id, swaps in swaps_by_recipient.items():
@@ -24,6 +25,11 @@ def create_swap_tracker_json(trmnt, user_id):
                 user_id = rec_id,
                 tournament_id = trmnt.id
             )
+        if recipient_buyin is None:
+            return { 'message':'Error',
+                'swaps with user': [x.serialize() for x in swaps],
+                'recipient buyin': None }
+
         data = {
             'recipient_user': Profiles.query.get( rec_id ).serialize(),
             'recipient_buyin': recipient_buyin.serialize(),
@@ -33,6 +39,8 @@ def create_swap_tracker_json(trmnt, user_id):
             'agreed_swaps': [],
             'other_swaps': []
         }
+
+
         you_owe_total = 0
         they_owe_total = 0
         for swap in swaps:
@@ -52,6 +60,8 @@ def create_swap_tracker_json(trmnt, user_id):
                 data['agreed_swaps'].append(single_swap_data)
             else:
                 data['other_swaps'].append(single_swap_data)
+
+
         data['you_owe_total'] = you_owe_total
         data['they_owe_total'] = they_owe_total
         final_profit -= you_owe_total
@@ -59,9 +69,10 @@ def create_swap_tracker_json(trmnt, user_id):
 
         swaps_buyins.append(data)
 
-        return {
-            'tournament': trmnt.serialize(),
-            'my_buyin': my_buyin.serialize(),
-            'buyins': swaps_buyins,
-            'final_profit': final_profit
-        }
+
+    return {
+        'tournament': trmnt.serialize(),
+        'my_buyin': my_buyin and my_buyin.serialize(),
+        'buyins': swaps_buyins,
+        'final_profit': final_profit
+    }

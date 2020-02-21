@@ -521,6 +521,14 @@ def run_seeds():
     ))
 
     db.session.add(Buy_ins(
+        chips=250,
+        table=1,
+        seat=5,
+        user=cary,
+        flight=flight1_heartland
+    ))
+
+    db.session.add(Buy_ins(
         chips=500,
         table=3,
         seat=2,
