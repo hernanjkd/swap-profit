@@ -1,3 +1,4 @@
+import seeds
 import utils
 from flask import request, jsonify
 from flask_jwt_simple import JWTManager, create_jwt, get_jwt, jwt_required
@@ -5,7 +6,6 @@ from sqlalchemy import desc
 from utils import APIException, role_jwt_required
 from models import db, Profiles, Tournaments, Swaps, Flights, Buy_ins, Devices
 from datetime import datetime
-from reset_database import run_seeds
 
 def attach(app):
 
@@ -171,12 +171,12 @@ def attach(app):
 
     @app.route('/reset_database')
     @jwt_required
-    def populate():
+    def run_seeds():
 
         if get_jwt()['role'] != 'admin':
             raise APIException('Access denied', 403)
 
-        run_seeds()
+        seeds.run()
 
         lou = Profiles.query.filter_by(nickname='Lou').first()
 

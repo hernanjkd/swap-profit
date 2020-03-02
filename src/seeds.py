@@ -5,7 +5,7 @@ from utils import sha256
 
 # db = SQLAlchemy('postgres://Francine@localhost/swapprofit')
 
-def run_seeds():
+def run():
 
 
     Devices.query.delete()
