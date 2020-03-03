@@ -15,33 +15,36 @@ def attach(app):
     def add_tournaments(user_id):
         
         trmnt_list = request.get_json()
+
+        ref = {'Tournament ID':'id','Tournament':'name'
+            'Results Link':'results_link'}
         
-        for coming_trmnt in trmnt_list:
+        for t in trmnt_list:
             
-            trmnt = Tournaments.query.get( coming_trmnt['id'] )
+            start_at = datetime.strptime(
+                t['Date'][:10] + t['Time'], 
+                '%Y-%m-%d%H:%M:%S' )
+
+            trmnt = Tournaments.query.get( t['id'] )
 
             if trmnt is None:
                 db.session.add( Tournaments(
-                    id = coming_trmnt['id'],
-                    name = coming_trmnt['tournament'],
-                    address = coming_trmnt['address'],
-                    city = coming_trmnt['city'],
-                    state = coming_trmnt['state'],
-                    zip_code = coming_trmnt['zip_code'],
-                    start_at = coming_trmnt['start_at'],
-                    results_link = coming_trmnt['results link'],
-                    longitude = coming_trmnt['longitude'],
-                    latitude = coming_trmnt['latitude']
+                    id = t['Tournament ID'],
+                    name = t['Tournament'],
+                    results_link = t['Results Link'],
+                    start_at = start_at,
+                    address = t['address'],
+                    city = t['city'],
+                    state = t['state'],
+                    zip_code = t['zip_code'],
+                    longitude = t['longitude'],
+                    latitude = t['latitude']
                 ))
 
             else:
-                db_fields = {'name':'tournament','address':'address',
-                    'city':'city','state':'state','zip_code':'zip_code',
-                    'start_at':'start_at','results_link':'results link',
-                    'longitude':'longitude','latitude':'latitude'}
                 for db_name, entry_name in db_fields.items():
-                    if getattr(trmnt, db_name) != coming_trmnt[entry_name]:
-                        setattr(trmnt, db_name, coming_trmnt[entry_name])
+                    if getattr(trmnt, db_name) != t[entry_name]:
+                        setattr(trmnt, db_name, t[entry_name])
             
             db.session.commit()
 
