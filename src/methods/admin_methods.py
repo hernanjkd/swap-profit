@@ -14,39 +14,49 @@ def attach(app):
     @role_jwt_required(['admin'])
     def add_tournaments(user_id):
         
-        trmnt_list = request.get_json()
-
-        ref = {'Tournament ID':'id','Tournament':'name'
-            'Results Link':'results_link'}
+        data = request.get_json()
         
-        for t in trmnt_list:
+        for r in data:
             
+            trmnt_name, flight_day = utils.resolve_name_day( r['Tournament'] )
             start_at = datetime.strptime(
-                t['Date'][:10] + t['Time'], 
+                r['Date'][:10] + r['Time'], 
                 '%Y-%m-%d%H:%M:%S' )
 
-            trmnt = Tournaments.query.get( t['id'] )
+            ref = { 'name':trmnt_name, 'start_at':start_at,
+                'results_link':r['Results Link'].strip() }
+
+            trmnt = Tournaments.query.get( r['id'] )
 
             if trmnt is None:
-                db.session.add( Tournaments(
-                    id = t['Tournament ID'],
-                    name = t['Tournament'],
-                    results_link = t['Results Link'],
+                trmnt = Tournaments(
+                    **{ db_col: val for db_col, val in ref.items() }
+                    id = r['Tournament ID'],
+                    address = r['address'],
+                    city = r['city'],
+                    state = r['state'],
+                    zip_code = r['zip_code'],
+                    longitude = r['longitude'],
+                    latitude = r['latitude']
+                )
+                db.session.add( trmnt )
+                db.session.commit()
+                
+                db.session.add( Flights(
+                    tournament_id = trmnt.id,
                     start_at = start_at,
-                    address = t['address'],
-                    city = t['city'],
-                    state = t['state'],
-                    zip_code = t['zip_code'],
-                    longitude = t['longitude'],
-                    latitude = t['latitude']
+                    day = flight_day
                 ))
 
-            else:
-                for db_name, entry_name in db_fields.items():
-                    if getattr(trmnt, db_name) != t[entry_name]:
-                        setattr(trmnt, db_name, t[entry_name])
+            # else:
+            #     for db_col, val in ref.items():
+            #         if getattr(trmnt, db_col) != val:
+            #             setattr(trmnt, db_col, val)
+            #     flight = Flights.query.filter_by(
+            #         tournament_id=trmnt.id, day=flight_day )
+
             
-            db.session.commit()
+            # db.session.commit()
 
         return jsonify({'message':'Tournament csv has been proccessed successfully'}), 200
 
