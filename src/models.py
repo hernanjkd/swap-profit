@@ -166,9 +166,9 @@ class Swaps(db.Model):
     due_at = db.Column(db.DateTime, default=None)
     paid = db.Column(db.Boolean, default=False)
     cost = db.Column(db.Integer, default=1)
+    status = db.Column(db.Enum(SwapStatus), default=SwapStatus.pending)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    status = db.Column(db.Enum(SwapStatus), default=SwapStatus.pending)
     
     tournament = db.relationship('Tournaments', back_populates='swaps')
     sender_user = db.relationship('Profiles', foreign_keys=[sender_id], backref='sending_swaps')
