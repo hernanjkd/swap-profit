@@ -494,22 +494,16 @@ def attach(app):
 
 
         # Can only send one swap offer at a time
-        pending_swaps = Swaps.query.filter_by(
-            status = 'pending',
+        existing_swaps = Swaps.query.filter_by(
             sender_id = user_id,
             recipient_id = recipient.id,
             tournament_id = req['tournament_id']
         )
-        if pending_swaps.count() > 0:
-            raise APIException('Already have a pending swap with this player', 401)
-        incoming_swaps = Swaps.query.filter_by(
-            status = 'incoming',
-            sender_id = user_id,
-            recipient_id = recipient.id,
-            tournament_id = req['tournament_id']
-        )
-        if incoming_swaps.count() > 0:
-            raise APIException('Already have an incoming swap with this player', 401)
+        unacceptable_status = ['pending','incoming','counter_incoming']
+        for swap in existing_swaps:
+            if swap.status._value_ in unacceptable_status:
+                raise APIException(
+                    f'Already have a swap with status "{swap.status._value_}" with this player', 401 )
 
 
         percentage = abs( req['percentage'] )
@@ -602,12 +596,13 @@ def attach(app):
             percentage = abs( req['percentage'] )
             counter = abs( req.get('counter_percentage', percentage) )
 
-            sender_availability = sender.available_percentage( swap.tournament_id )
+            sender_availability = sender.available_percentage( swap.tournament_id, swap.percentage )
             if percentage > sender_availability:
                 raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
                                     f'You have available: {sender_availability}%'), 400)
 
-            recipient_availability = recipient.available_percentage( swap.tournament_id )
+            recipient_availability = \
+                recipient.available_percentage( swap.tournament_id, counter_swap.percentage )
             if counter > recipient_availability:
                 raise APIException(('Swap percentage too large for recipient. '
                                     f'He has available to swap: {recipient_availability}%'), 400)
@@ -626,8 +621,8 @@ def attach(app):
         
         counter_swap_body['status'] = Swaps.counter_status( swap.status._value_ )
 
-
-        utils.update_table( swap, req, ignore=['tournament_id','recipient_id','paid','counter_percentage','cost'])
+        ignore_list = ['tournament_id','recipient_id','paid','counter_percentage','cost','status']
+        utils.update_table( swap, req, ignore=ignore_list )
         utils.update_table( counter_swap, counter_swap_body )
 
         db.session.commit()
