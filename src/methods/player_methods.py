@@ -537,8 +537,7 @@ def attach(app):
             recipient_id = recipient.id,
             percentage = percentage,
             cost = swap_cost,
-            status = 'pending'
-        )
+            status = 'pending' )
         s2 = Swaps(
             sender_id = recipient.id,
             tournament_id = req['tournament_id'],
@@ -546,15 +545,24 @@ def attach(app):
             percentage = counter,
             cost = swap_cost,
             status = 'incoming',
-            counter_swap = s1
-        )
+            counter_swap = s1 )
         s1.counter_swap = s2
-        
+
         db.session.add_all([s1, s2])
         db.session.commit()
 
+        log = {
+            '1before sender availability': sender_availability,
+            '2after sender availability': sender.available_percentage( req['tournament_id'] ),
+            '3before recipient availability': recipient_availability,
+            '4after recipient availability': recipient.available_percentage( req['tournament_id'] ),
+            '5sender swap actions': sender.get_swaps_actions(req['tournament_id']),
+            '6recipient swap actions': recipient.get_swaps_actions(req['tournament_id'])
+        }
+
         # send_fcm('swap_incoming_notification', recipient.id)
-        return jsonify({'message':'Swap created successfully.'}), 200
+        return jsonify({'message':'Swap created successfully.',
+            'log':log}), 200
 
 
 
@@ -689,10 +697,20 @@ def attach(app):
             #         'user2_percentage': counter_swap.percentage,
             #         'user2_receipt_url': user2_receipt and user2_receipt.receipt_img_url
             #     })
-        
+
+        log = {
+            '1before sender availability': sender_availability,
+            '2after sender availability': sender.available_percentage( req['tournament_id'] ),
+            '3before recipient availability': recipient_availability,
+            '4after recipient availability': recipient.available_percentage( req['tournament_id'] ),
+            '5sender swap actions': sender.get_swaps_actions(req['tournament_id']),
+            '6recipient swap actions': recipient.get_swaps_actions(req['tournament_id'])
+        }
+
         return jsonify([
             swap.serialize(),
-            counter_swap.serialize()
+            counter_swap.serialize(),
+            log
         ])
 
 
