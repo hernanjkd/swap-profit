@@ -478,14 +478,10 @@ def attach(app):
                                 f'recipient_id: {req["recipient_id"]}' )
 
         # Check for sufficient coins
-        swap_cost = abs( req.get('cost', 1) )
+        swap_cost = req.get('cost', 1)
+        if swap_cost < 1:
+            raise APIException('No free swaps', 400)
         if sender.get_coins() - sender.get_reserved_coins() < swap_cost:
-            return jsonify({
-                'sender coins': sender.get_coins(),
-                'reserved_coins': sender.get_reserved_coins(),
-                'subtraction': sender.get_coins() - sender.get_reserved_coins(),
-                'swap_cost': swap_cost
-            })
             raise APIException('Insufficient coins to make this swap', 402)
         
 
@@ -512,9 +508,10 @@ def attach(app):
                     f'Already have a swap with status "{swap.status._value_}" with this player', 401 )
 
 
-        percentage = abs( req['percentage'] )
-        counter = abs( req.get('counter_percentage', percentage) )
-
+        percentage = req['percentage']
+        counter = req.get('counter_percentage', percentage)
+        if percentage < 1 or counter < 1:
+            raise APIException('Cannot swap less than %1', 400)
 
         # Check tournament existance
         trmnt = Tournaments.query.get( req['tournament_id'] )
@@ -557,16 +554,6 @@ def attach(app):
         db.session.commit()
 
         # send_fcm('swap_incoming_notification', recipient.id)
-        return jsonify({
-                'sender_user': sender.serialize(),
-                'recipient_user': recipient.serialize(),
-                'sender_available_percentage': sender_availability,
-                'recipient_available_percentage': recipient_availability,
-                'new_percentage': percentage,
-                'swap': s1.percentage,
-                'status': s1.status._value_,
-                'id': s1.id
-            })
         return jsonify({'message':'Swap created successfully.'}), 200
 
 
@@ -608,8 +595,11 @@ def attach(app):
 
 
         if 'percentage' in req:
-            percentage = abs( req['percentage'] )
-            counter = abs( req.get('counter_percentage', percentage) )
+            
+            percentage = req['percentage']
+            counter = req.get('counter_percentage', percentage)
+            if percentage < 1 or counter < 1:
+                raise APIException('Cannot swap less than %1', 400)
 
             sender_availability = sender.available_percentage( swap.tournament_id )
             if (percentage - swap.percentage) > sender_availability:
@@ -631,8 +621,7 @@ def attach(app):
             raise APIException('Can not agree a swap on a pending status', 400)
         
         # If pending swap, leave status as they are
-        if swap.status._value_ != 'pending': 
-        
+        if swap.status._value_ != 'pending':       
             # Update status
             swap.status = Swaps.counter_status( swap.status._value_ )
             counter_swap.status = Swaps.counter_status( counter_swap.status._value_ )
@@ -660,33 +649,22 @@ def attach(app):
 
             # send_fcm('swap_agreed_notificatin', recipient.id)
 
-            # send_email( template='swap_confirmation', emails=[sender.user.email, recipient.user.email],
-            #     data={
-            #         'tournament_date': swap.tournament.start_at,
-            #         'tournament_name': swap.tournament.name,
+            send_email( template='swap_confirmation', emails=[sender.user.email, recipient.user.email],
+                data={
+                    'tournament_date': swap.tournament.start_at,
+                    'tournament_name': swap.tournament.name,
                     
-            #         'user1_name': f'{sender.first_name} {sender.last_name}',
-            #         'user1_prof_pic': sender.profile_pic_url,
-            #         'user1_percentage': swap.percentage,
-            #         'user1_receipt_url': Buy_ins.get_latest(sender.id, swap.tournament_id).receipt_img_url,
+                    'user1_name': f'{sender.first_name} {sender.last_name}',
+                    'user1_prof_pic': sender.profile_pic_url,
+                    'user1_percentage': swap.percentage,
+                    'user1_receipt_url': Buy_ins.get_latest(sender.id, swap.tournament_id).receipt_img_url,
 
-            #         'user2_name': f'{recipient.first_name} {recipient.last_name}',
-            #         'user2_prof_pic': recipient.profile_pic_url,
-            #         'user2_percentage': counter_swap.percentage,
-            #         'user2_receipt_url': Buy_ins.get_latest(recipient.id, swap.tournament_id).receipt_img_url
-            #     })
-        return jsonify(
-            {
-                '6sender_available_percentage': sender_availability,
-                '5recipient_available_percentage': recipient_availability,
-                'current_percentage': current_percentage,
-                'new_percentage': swap.percentage,
-                '2swap status': swap.status._value_,
-                '4rec swap status': counter_swap.status._value_,
-                'id': swap.id,
-                '3rec id': swap.recipient_id,
-                '1sender id': swap.sender_id
-            })
+                    'user2_name': f'{recipient.first_name} {recipient.last_name}',
+                    'user2_prof_pic': recipient.profile_pic_url,
+                    'user2_percentage': counter_swap.percentage,
+                    'user2_receipt_url': Buy_ins.get_latest(recipient.id, swap.tournament_id).receipt_img_url
+                })
+        
         return jsonify([
             swap.serialize(),
             counter_swap.serialize()
