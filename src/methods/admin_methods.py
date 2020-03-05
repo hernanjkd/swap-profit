@@ -17,6 +17,10 @@ def attach(app):
     @role_jwt_required(['admin'])
     def add_tournaments(user_id):
         
+        # store casino data so not to request constantly for same casinos
+        casinos_cache = {}
+        casino_ref = ['name','address','city','state','zip_code','longitude','latitude']
+                
         # data comes in as a string
         data = json.loads( request.get_json() )
 
@@ -40,15 +44,22 @@ def attach(app):
 
             if trmnt is None:
 
-                # casino_ref = ['name','address','city','state','zip_code','longitude','latitude']
-                # casino = requests \
-                #     .get( f"{os.environ['POKERSOCIETY_HOST']}/casinos/{r['Casinos ID']}" ) \
-                #     .json()
-                
+                casino = casinos_cache.get( r['Casino ID'] )
+
+                if casinos is None:
+                    r = requests.get( 
+                        f"{os.environ['POKERSOCIETY_HOST']}/casinos/{r['Casino ID']}" )
+                    if not r.ok:
+                        raise APIException(f'Casino with id "{r["Casino ID"]}" not found', 404)               
+                    
+                    casino = r.json()
+                    casinos_cache[ r['Casino ID'] ] = casino
+
+
                 trmnt = Tournaments(
                     id = r['Tournament ID'],
                     **{ db_col: val for db_col, val in ref.items() },
-                    # **{ db_col: casino[db_col] for db_col in casino_ref}
+                    **{ db_col: casino[db_col] for db_col in casino_ref}
                 )
                 db.session.add( trmnt )
                 db.session.commit()
