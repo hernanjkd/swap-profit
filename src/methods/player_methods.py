@@ -480,6 +480,12 @@ def attach(app):
         # Check for sufficient coins
         swap_cost = abs( req.get('cost', 1) )
         if sender.get_coins() - sender.get_reserved_coins() < swap_cost:
+            return jsonify({
+                'sender coins': sender.get_coins(),
+                'reserved_coins': sender.get_reserved_coins(),
+                'subtraction': sender.get_coins() - sender.get_reserved_coins(),
+                'swap_cost': swap_cost
+            })
             raise APIException('Insufficient coins to make this swap', 402)
         
 
@@ -551,7 +557,16 @@ def attach(app):
         db.session.commit()
 
         # send_fcm('swap_incoming_notification', recipient.id)
-        
+        return jsonify({
+                'sender_user': sender.serialize(),
+                'recipient_user': recipient.serialize(),
+                'sender_available_percentage': sender_availability,
+                'recipient_available_percentage': recipient_availability,
+                'new_percentage': percentage,
+                'swap': s1.percentage,
+                'status': s1.status._value_,
+                'id': s1.id
+            })
         return jsonify({'message':'Swap created successfully.'}), 200
 
 
@@ -572,7 +587,7 @@ def attach(app):
         swap = Swaps.query.get(id)
         if sender.id != swap.sender_id:
             raise APIException('Access denied: You are not the sender of this swap', 401)
-
+        current_percentage = swap.percentage
         if sender.get_coins() < swap.cost:
             raise APIException('Insufficient coins to see this swap', 402)
 
@@ -596,14 +611,14 @@ def attach(app):
             percentage = abs( req['percentage'] )
             counter = abs( req.get('counter_percentage', percentage) )
 
-            sender_availability = sender.available_percentage( swap.tournament_id, swap.percentage )
-            if percentage > sender_availability:
+            sender_availability = sender.available_percentage( swap.tournament_id )
+            if (percentage - swap.percentage) > sender_availability:
                 raise APIException(('Swap percentage too large. You can not exceed 50% per tournament. '
                                     f'You have available: {sender_availability}%'), 400)
 
             recipient_availability = \
-                recipient.available_percentage( swap.tournament_id, counter_swap.percentage )
-            if counter > recipient_availability:
+                recipient.available_percentage( swap.tournament_id )
+            if (counter - counter_swap.percentage) > recipient_availability:
                 raise APIException(('Swap percentage too large for recipient. '
                                     f'He has available to swap: {recipient_availability}%'), 400)
  
@@ -645,22 +660,33 @@ def attach(app):
 
             # send_fcm('swap_agreed_notificatin', recipient.id)
 
-            send_email( template='swap_confirmation', emails=[sender.user.email, recipient.user.email],
-                data={
-                    'tournament_date': swap.tournament.start_at,
-                    'tournament_name': swap.tournament.name,
+            # send_email( template='swap_confirmation', emails=[sender.user.email, recipient.user.email],
+            #     data={
+            #         'tournament_date': swap.tournament.start_at,
+            #         'tournament_name': swap.tournament.name,
                     
-                    'user1_name': f'{sender.first_name} {sender.last_name}',
-                    'user1_prof_pic': sender.profile_pic_url,
-                    'user1_percentage': swap.percentage,
-                    'user1_receipt_url': Buy_ins.get_latest(sender.id, swap.tournament_id).receipt_img_url,
+            #         'user1_name': f'{sender.first_name} {sender.last_name}',
+            #         'user1_prof_pic': sender.profile_pic_url,
+            #         'user1_percentage': swap.percentage,
+            #         'user1_receipt_url': Buy_ins.get_latest(sender.id, swap.tournament_id).receipt_img_url,
 
-                    'user2_name': f'{recipient.first_name} {recipient.last_name}',
-                    'user2_prof_pic': recipient.profile_pic_url,
-                    'user2_percentage': counter_swap.percentage,
-                    'user2_receipt_url': Buy_ins.get_latest(recipient.id, swap.tournament_id).receipt_img_url
-                })
-
+            #         'user2_name': f'{recipient.first_name} {recipient.last_name}',
+            #         'user2_prof_pic': recipient.profile_pic_url,
+            #         'user2_percentage': counter_swap.percentage,
+            #         'user2_receipt_url': Buy_ins.get_latest(recipient.id, swap.tournament_id).receipt_img_url
+            #     })
+        return jsonify(
+            {
+                '6sender_available_percentage': sender_availability,
+                '5recipient_available_percentage': recipient_availability,
+                'current_percentage': current_percentage,
+                'new_percentage': swap.percentage,
+                '2swap status': swap.status._value_,
+                '4rec swap status': counter_swap.status._value_,
+                'id': swap.id,
+                '3rec id': swap.recipient_id,
+                '1sender id': swap.sender_id
+            })
         return jsonify([
             swap.serialize(),
             counter_swap.serialize()
@@ -747,8 +773,8 @@ def attach(app):
 
         db.session.commit()
 
-        user = Users.query.get(user_id)
-        return jsonify({'total_coins': user.get_total_coins()})
+        user = Profiles.query.get( user_id )
+        return jsonify({'total_coins': user.get_coins()})
 
 
 
