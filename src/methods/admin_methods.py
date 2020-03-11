@@ -54,17 +54,6 @@ def attach(app):
                 cache = json.load(f)
         else: cache = {}
 
-        data = json.loads( request.get_json() )
-
-
-        full_list = cache + data
-
-        with open( path_cache, 'w' ) as f:
-            json.dump(full_list, f, indent=2)
-        
-        return 'ok'
-
-
 
         casino_ref = ['address','city','state','zip_code','longitude','latitude']
 
