@@ -123,9 +123,6 @@ def load_tournament_file():
             cache = json.load(f)
     else: cache = {}
 
-    casino_ref = ['address','city','state','zip_code','longitude',
-        'latitude','time_zone']
-
 
     for r in data:
         
@@ -141,36 +138,49 @@ def load_tournament_file():
             r['Date'][:10] + r['Time'], 
             '%Y-%m-%d%H:%M:%S' )
 
-        ref = {
+        trmntjson = { 
+            'id': r['Tournament ID'],
             'name': trmnt_name, 
             'start_at': start_at,
-            'results_link': r['Results Link'] 
+            'results_link': str( r['Results Link'] ).strip()
         }
-        flight_ref = { 
-            'start_at': start_at, 
-            'day': flight_day }
+        flightjson = {
+            'start_at':start_at,
+            'day': flight_day
+        }
 
 
         if trmnt is None:
 
             casino = cache.get( r['Casino ID'] )
             
+            trmntjson = {
+                **trmntjson,
+                'address': casino['address'].strip,
+                'city': casino['city'].strip,
+                'state': casino['state'].strip,
+                'zip_code': str( casino['zip_code'] ).strip,
+                'longitude': float( casino['longitude'] ),
+                'latitude': float( casino['latitude'] )
+            }
+
             # Create tournament
             trmnt = Tournaments(
-                id = r['Tournament ID'],
-                **{ db_col: val for db_col, val in ref.items() },
-                **{ db_col: casino[db_col] for db_col in casino_ref }
+                **trmntjson
             )
             db.session.add( trmnt )
             db.session.commit()
             
             # Create flight
-            db.session.add( Flights( **flight_ref, tournament_id=trmnt.id ))
+            db.session.add( Flights( 
+                tournament_id=trmnt.id,
+                **flightjson
+            ))
 
             db.session.commit()
 
         else:
-            for db_col, val in ref.items():
+            for db_col, val in trmntjson.items():
                 if getattr(trmnt, db_col) != val:
                     setattr(trmnt, db_col, val)
 
@@ -180,11 +190,14 @@ def load_tournament_file():
 
             # Create flight
             if flight is None:
-                db.session.add( Flights( **flight_ref, tournament_id=trmnt.id ))
+                db.session.add( Flights( 
+                    tournament_id=trmnt.id,
+                    **flightjson
+                ))
             
             # Update flight
             else:
-                for db_col, val in flight_ref.items():
+                for db_col, val in flightjson.items():
                     if getattr(flight, db_col) != val:
                         setattr(flight, db_col, val)
 

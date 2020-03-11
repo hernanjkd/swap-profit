@@ -1,4 +1,5 @@
 import os
+import utils
 import models
 import requests
 from flask import Flask, jsonify, request
@@ -60,20 +61,16 @@ def attach(app):
         import cloudinary.uploader
         from google.cloud import vision
 
-        path = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
-        if not os.path.exists( path ):
-            credentials = os.environ['GOOGLE_CREDENTIALS'].replace("\\\\","\\")
-            with open(path, 'w') as credentials_file:
-                credentials_file.write( credentials )
+        utils.resolve_google_credentials()
         
         result = cloudinary.uploader.upload(
             request.files['image'],
             public_id='ocr',
             crop='limit',
-            width=450,
-            height=450,
+            width=800,
+            height=1000,
             eager=[{
-                'width': 200, 'height': 200,
+                'width': 600, 'height': 600,
                 'crop': 'thumb', 'gravity': 'face',
                 'radius': 100
             }],

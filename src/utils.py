@@ -68,12 +68,18 @@ def resolve_name_day(string):
     flight_day = a and a.group(2)
     return [tournament_name, flight_day]
 
+def resolve_google_credentials():
+    path = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
+    if not os.path.exists( path ):
+        credentials = os.environ['GOOGLE_CREDENTIALS'].replace("\\\\","\\")
+        with open(path, 'w') as credentials_file:
+            credentials_file.write( credentials )
+
 def isfloat(string):
     try:
         float(string)
         return True
-    except:
-        return False
+    except: return False
 
 def cloudinary_uploader(image, public_id, tags):
     return cloudinary.uploader.upload(
