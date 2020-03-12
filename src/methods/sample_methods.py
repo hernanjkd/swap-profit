@@ -67,10 +67,10 @@ def attach(app):
             request.files['image'],
             public_id='ocr',
             crop='limit',
-            width=800,
-            height=1000,
+            width=450,
+            height=450,
             eager=[{
-                'width': 600, 'height': 600,
+                'width': 200, 'height': 200,
                 'crop': 'thumb', 'gravity': 'face',
                 'radius': 100
             }],
