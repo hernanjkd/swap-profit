@@ -96,7 +96,6 @@ def swap_tracker_json(trmnt, user_id):
         # Append json
         swaps_buyins.append(data)
 
-
     return {
         'tournament': trmnt.serialize(),
         'my_buyin': my_buyin and my_buyin.serialize(),
@@ -156,10 +155,10 @@ def load_tournament_file():
             
             trmntjson = {
                 **trmntjson,
-                'address': casino['address'].strip,
-                'city': casino['city'].strip,
-                'state': casino['state'].strip,
-                'zip_code': str( casino['zip_code'] ).strip,
+                'address': casino['address'].strip(),
+                'city': casino['city'].strip(),
+                'state': casino['state'].strip(),
+                'zip_code': str( casino['zip_code'] ).strip(),
                 'longitude': float( casino['longitude'] ),
                 'latitude': float( casino['latitude'] )
             }
